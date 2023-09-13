@@ -4,7 +4,8 @@
   "description": "Implementation of the AppSync utils helpers",
   "main": "index.ts",
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "evaluate": "node ./scripts/evaluate.js code.js context.json"
   },
   "repository": {
     "type": "git",
@@ -17,6 +18,7 @@
   },
   "homepage": "https://github.com/localstack/localstack-appsync-utils#readme",
   "devDependencies": {
+    "@aws-sdk/client-appsync": "^3.410.0",
     "@types/jest": "^29.5.4",
     "jest": "^29.7.0",
     "ts-jest": "^29.1.1",
