@@ -7,10 +7,17 @@ import { util } from '..';
 describe("dynamodb helpers", () => {
   test("toString", () => {
     expect(util.dynamodb.toString("foo")).toStrictEqual({ S: "foo" });
+    expect(util.dynamodb.toString(null)).toStrictEqual(null);
   });
 
-  test("toStringSet", () => {
-    expect(util.dynamodb.toStringSet(["foo", "bar", "baz"])).toStrictEqual({ SS: ["foo", "bar", "baz"] });
+  describe("toStringSet", () => {
+    test.each([
+      [["foo", "bar", "baz"], {SS: ["foo", "bar", "baz"]}],
+      [null, null],
+      [[], {SS: []}],
+    ])("input is %s", (test, expected) => {
+      expect(util.dynamodb.toStringSet(test)).toStrictEqual(expected);
+    });
   });
 
   test.skip("toNumber", () => {
