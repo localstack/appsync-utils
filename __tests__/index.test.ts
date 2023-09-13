@@ -24,7 +24,7 @@ describe("dynamodb helpers", () => {
     });
   });
 
-  test.skip("toNumber", () => {
+  test("toNumber", () => {
     expect(util.dynamodb.toNumber(12345)).toStrictEqual({ N: 12345 });
   });
 

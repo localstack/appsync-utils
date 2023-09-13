@@ -91,7 +91,11 @@ export const util: Util = {
           }
         },
         toNumber: function(num: OptionalInputType<number>): DynamoDBNumberResult | null {
-            throw new Error("Function not implemented.");
+          if (num) {
+            return {N: num};
+          } else {
+            return null;
+          }
         },
         toNumberSet: function(numbers: OptionalInputType<number[]>): DynamoDBNumberSetResult | null {
             throw new Error("Function not implemented.");
