@@ -2,6 +2,7 @@
 
 import urllib.request
 import os
+import glob
 import tempfile
 import subprocess as sp
 import shutil
@@ -10,7 +11,6 @@ import tarfile
 PACKAGE_NAME = "@aws-appsync/utils"
 
 
-# Fetch source tarball
 download_url = sp.check_output(["npm", "view", PACKAGE_NAME, "dist.tarball"]).decode().strip()
 with tempfile.NamedTemporaryFile(suffix=".tar.gz") as tfile:
     urllib.request.urlretrieve(download_url, filename=tfile.name)
@@ -32,25 +32,8 @@ with tempfile.NamedTemporaryFile(suffix=".tar.gz") as tfile:
         shutil.rmtree("./lib", ignore_errors=True)
         shutil.move(os.path.join(output_dir, "package", "lib"), ".")
 
-
-
-# Unpack to temporary directory
-# Copy source files into project dir
-# Compile
-
-# set -euo pipefail
-
-# set -x
-
-# DOWNLOAD_URL=$(npm view @appsync/utils dist.tarball)
-# TARBALL_NAME=
-# TDIR=$(mktemp -d)
-
-# # don't rm -rf /!
-# if test -z "${TDIR}"; then
-#     echo "No temp dir set; cannot continue" >&2
-#     exit 1
-# fi
-# trap "rm -rf ${TDIR}" EXIT
-
-# (cd $TDIR; curl -LO ${DOWNLOAD_URL})
+# apply patches
+patch_files = sorted(glob.glob("patches/*.patch"))
+for patch_file in patch_files:
+    cmd = ["patch", "-p1", "-i", patch_file]
+    sp.check_call(cmd)

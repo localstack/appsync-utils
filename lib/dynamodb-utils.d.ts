@@ -5,7 +5,7 @@ export type DynamoDBStringSetResult = {
     SS: string[];
 };
 export type DynamoDBNumberResult = {
-    N: string;
+    N: number;
 };
 export type DynamoDBNumberSetResult = {
     NS: string[];
