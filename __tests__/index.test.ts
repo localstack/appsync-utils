@@ -5,16 +5,20 @@
 import { util } from '..';
 
 describe("dynamodb helpers", () => {
-  test("toString", () => {
-    expect(util.dynamodb.toString("foo")).toStrictEqual({ S: "foo" });
-    expect(util.dynamodb.toString(null)).toStrictEqual(null);
+  describe("toString", () => {
+    test.each([
+      ["foo", { S: "foo" }],
+      [null, null],
+    ])("input is %s", (test, expected) => {
+      expect(util.dynamodb.toString(test)).toStrictEqual(expected);
+    });
   });
 
   describe("toStringSet", () => {
     test.each([
-      [["foo", "bar", "baz"], {SS: ["foo", "bar", "baz"]}],
+      [["foo", "bar", "baz"], { SS: ["foo", "bar", "baz"] }],
       [null, null],
-      [[], {SS: []}],
+      [[], { SS: [] }],
     ])("input is %s", (test, expected) => {
       expect(util.dynamodb.toStringSet(test)).toStrictEqual(expected);
     });
