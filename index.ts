@@ -79,7 +79,7 @@ export const util: Util = {
       return {S: obj!};
     },
     toStringSet: function(list: OptionalInputType<string[]>): DynamoDBStringSetResult | null {
-      throw new Error('Function not implemented.');
+      return {SS: list!};
     },
     toNumber: function(num: OptionalInputType<number>): DynamoDBNumberResult | null {
       throw new Error('Function not implemented.');
