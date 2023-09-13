@@ -5,6 +5,27 @@
 import { util } from '..';
 
 describe("dynamodb helpers", () => {
+  describe("toDynamoDB", () => {
+    test.each([
+      ["foo", { S: "foo" }],
+      [10, { N: 10 }],
+      [true, { BOOL: true }],
+      // [["foo", 123, { "bar": "baz" }], {
+      //   "L": [
+      //     { "S": "foo" },
+      //     { "N": 123 },
+      //     {
+      //       "M": {
+      //         "bar": { "S": "baz" }
+      //       }
+      //     }
+      //   ]
+      // }],
+    ])("input is %s", (test, expected) => {
+      expect(util.dynamodb.toDynamoDB(test)).toStrictEqual(expected);
+    });
+  });
+
   describe("toString", () => {
     test.each([
       ["foo", { S: "foo" }],
@@ -32,19 +53,19 @@ describe("dynamodb helpers", () => {
     expect(util.dynamodb.toNumberSet([1, 23, 4.56])).toStrictEqual({ NS: [1, 23, 4.56] });
   });
 
-  test.skip("toBinary", () => {
+  test("toBinary", () => {
     expect(util.dynamodb.toBinary("foo")).toStrictEqual({ B: "foo" });
   });
 
-  test.skip("toBinarySet", () => {
+  test("toBinarySet", () => {
     expect(util.dynamodb.toBinarySet(["foo", "bar", "baz"])).toStrictEqual({ BS: ["foo", "bar", "baz"] });
   });
 
-  test.skip("toBoolean", () => {
+  test("toBoolean", () => {
     expect(util.dynamodb.toBoolean(true)).toStrictEqual({ BOOL: true });
   });
 
-  test.skip("toNull", () => {
+  test("toNull", () => {
     expect(util.dynamodb.toNull()).toStrictEqual({ NULL: null });
   });
 

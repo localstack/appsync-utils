@@ -74,7 +74,20 @@ export const util: Util = {
   },
   dynamodb: {
     toDynamoDB: function <T>(obj: T): DynamoDBReturnType<T> {
-      throw new Error("Function not implemented.");
+      if (!obj) {
+        return null as DynamoDBReturnType<T>;
+      }
+
+      switch (typeof obj) {
+        case "string":
+          return this.toString(obj) as DynamoDBReturnType<T>;
+        case "number":
+          return this.toNumber(obj) as DynamoDBReturnType<T>;
+        case "boolean":
+          return this.toBoolean(obj) as DynamoDBReturnType<T>;
+        default:
+          throw new Error(`toDynamoDB for type ${typeof (obj)} is not implemented`);
+      }
     },
     toString: function(obj: OptionalInputType<string>): DynamoDBStringResult | null {
       if (obj) {
@@ -105,18 +118,36 @@ export const util: Util = {
       }
     },
     toBinary: function(value: OptionalInputType<string>): DynamoDBBinaryResult | null {
-      throw new Error("Function not implemented.");
+      if (value) {
+        return { B: value };
+      } else {
+        return null;
+      }
     },
     toBinarySet: function(values: OptionalInputType<string[]>): DynamoDBBinarySetResult | null {
-      throw new Error("Function not implemented.");
+      if (values) {
+        return { BS: values };
+      } else {
+        return null;
+      }
     },
     toBoolean: function(value: OptionalInputType<boolean>): DynamoDBBooleanResult | null {
-      throw new Error("Function not implemented.");
+      if ((value !== null) && (value !== undefined)) {
+        return { BOOL: value };
+      } else {
+        return null;
+      }
     },
     toNull: function(): DynamoDBNullResult {
-      throw new Error("Function not implemented.");
+      return { NULL: null };
     },
     toList: function <T>(value: OptionalInputType<T>): T extends (infer L)[] ? DynamoDBListResult<L> : null {
+      // if (!value) {
+      //   return null;
+      // }
+
+      // return {L: value};
+
       throw new Error("Function not implemented.");
     },
     toMap: function <T>(value: T): T extends Record<string, unknown> ? DynamoDBMapResult<T> : null {
