@@ -29,6 +29,7 @@ with tempfile.NamedTemporaryFile(suffix=".tar.gz") as tfile:
 
                 infile.extract(member, path=output_dir)
 
+        shutil.rmtree("./lib", ignore_errors=True)
         shutil.move(os.path.join(output_dir, "package", "lib"), ".")
 
 
