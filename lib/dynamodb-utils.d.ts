@@ -8,7 +8,7 @@ export type DynamoDBNumberResult = {
     N: number;
 };
 export type DynamoDBNumberSetResult = {
-    NS: string[];
+    NS: number[];
 };
 export type DynamoDBBinaryResult = {
     B: string;

@@ -1,0 +1,13 @@
+diff --git a/lib/dynamodb-utils.d.ts b/lib/dynamodb-utils.d.ts
+index 95a679e99964..fc75759f0382 100644
+--- a/lib/dynamodb-utils.d.ts
++++ b/lib/dynamodb-utils.d.ts
+@@ -8,7 +8,7 @@ export type DynamoDBNumberResult = {
+     N: number;
+ };
+ export type DynamoDBNumberSetResult = {
+-    NS: string[];
++    NS: number[];
+ };
+ export type DynamoDBBinaryResult = {
+     B: string;
