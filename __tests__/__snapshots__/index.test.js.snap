@@ -6,6 +6,104 @@ exports[`dynamodb helpers toBinary 1`] = `
 }
 `;
 
+exports[`dynamodb helpers toBinarySet 1`] = `
+{
+  "BS": [
+    "foo",
+    "bar",
+    "baz",
+  ],
+}
+`;
+
+exports[`dynamodb helpers toBoolean 1`] = `
+{
+  "BOOL": true,
+}
+`;
+
+exports[`dynamodb helpers toDynamoDB boolean 1`] = `
+{
+  "BOOL": true,
+}
+`;
+
+exports[`dynamodb helpers toDynamoDB number 1`] = `
+{
+  "N": 12345,
+}
+`;
+
+exports[`dynamodb helpers toDynamoDB string 1`] = `
+{
+  "S": "test",
+}
+`;
+
+exports[`dynamodb helpers toList 1`] = `
+{
+  "L": [
+    {
+      "S": "foo",
+    },
+    {
+      "N": 123,
+    },
+    {
+      "M": {
+        "bar": {
+          "S": "baz",
+        },
+      },
+    },
+  ],
+}
+`;
+
+exports[`dynamodb helpers toMap 1`] = `
+{
+  "M": {
+    "baz": {
+      "N": 1234,
+    },
+    "beep": {
+      "L": [
+        {
+          "S": "boop",
+        },
+      ],
+    },
+    "foo": {
+      "S": "bar",
+    },
+  },
+}
+`;
+
+exports[`dynamodb helpers toMapValues 1`] = `
+{
+  "baz": {
+    "N": 1234,
+  },
+  "beep": {
+    "L": [
+      {
+        "S": "boop",
+      },
+    ],
+  },
+  "foo": {
+    "S": "bar",
+  },
+}
+`;
+
+exports[`dynamodb helpers toNull 1`] = `
+{
+  "NULL": null,
+}
+`;
+
 exports[`dynamodb helpers toNumber 1`] = `
 {
   "N": 12345,

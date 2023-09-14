@@ -6,13 +6,15 @@ const { checkValid } = require("./helpers.js");
 
 
 describe("dynamodb helpers", () => {
-  describe.skip("toDynamoDB", () => {
-    test.each([
-      ["foo", { S: "foo" }],
-      [10, { N: 10 }],
-      [true, { BOOL: true }],
-    ])("input is %s", (test, expected) => {
-      expect(util.dynamodb.toDynamoDB(test)).toStrictEqual(expected);
+  describe("toDynamoDB", () => {
+    test("string", async () => {
+      await checkValid(`util.dynamodb.toDynamoDB("test")`);
+    });
+    test("number", async () => {
+      await checkValid(`util.dynamodb.toDynamoDB(12345)`);
+    });
+    test("boolean", async () => {
+      await checkValid(`util.dynamodb.toDynamoDB(true)`);
     });
   });
 
@@ -36,62 +38,27 @@ describe("dynamodb helpers", () => {
     await checkValid(`util.dynamodb.toBinary("foo")`);
   });
 
-  test.skip("toBinarySet", () => {
-    expect(util.dynamodb.toBinarySet(["foo", "bar", "baz"])).toStrictEqual({ BS: ["foo", "bar", "baz"] });
+  test("toBinarySet", async () => {
+    await checkValid(`util.dynamodb.toBinarySet(["foo", "bar", "baz"])`);
   });
 
-  test.skip("toBoolean", () => {
-    expect(util.dynamodb.toBoolean(true)).toStrictEqual({ BOOL: true });
+  test("toBoolean", async () => {
+    await checkValid(`util.dynamodb.toBoolean(true)`);
   });
 
-  test.skip("toNull", () => {
-    expect(util.dynamodb.toNull()).toStrictEqual({ NULL: null });
+  test("toNull", async () => {
+    await checkValid(`util.dynamodb.toNull()`);
   });
 
-  test.skip("toList", () => {
-    expect(util.dynamodb.toList(["foo", 123, { bar: "baz" }])).toStrictEqual(
-      {
-        L: [
-          { S: "foo" },
-          { N: 123 },
-          {
-            M: {
-              bar: { S: "baz" },
-            },
-          },
-        ],
-      }
-    );
+  test("toList", async () => {
+    await checkValid(`util.dynamodb.toList(["foo", 123, {bar: "baz" }])`);
   });
 
-  test.skip("toMap", () => {
-    expect(util.dynamodb.toMap({ "foo": "bar", "baz": 1234, "beep": ["boop"] })).toStrictEqual(
-      {
-        "M": {
-          "foo": { "S": "bar" },
-          "baz": { "N": 1234 },
-          "beep": {
-            "L": [
-              { "S": "boop" }
-            ]
-          }
-        }
-      }
-    );
+  test("toMap", async () => {
+    await checkValid(`util.dynamodb.toMap({ "foo": "bar", "baz": 1234, "beep": ["boop"] })`);
   });
 
-  test.skip("toMapValues", () => {
-    expect(util.dynamodb.toMapValues({ "foo": "bar", "baz": 1234, "beep": ["boop"] })
-    ).toStrictEqual(
-      {
-        "foo": { "S": "bar" },
-        "baz": { "N": 1234 },
-        "beep": {
-          "L": [
-            { "S": "boop" }
-          ]
-        }
-      }
-    );
+  test("toMapValues", async () => {
+    await checkValid(`util.dynamodb.toMapValues({ "foo": "bar", "baz": 1234, "beep": ["boop"] })`);
   });
 });
