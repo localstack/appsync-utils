@@ -6,6 +6,16 @@ exports[`dynamodb helpers toNumber 1`] = `
 }
 `;
 
+exports[`dynamodb helpers toNumberSet 1`] = `
+{
+  "NS": [
+    1,
+    23,
+    4.56,
+  ],
+}
+`;
+
 exports[`dynamodb helpers toString 1`] = `
 {
   "S": "test",

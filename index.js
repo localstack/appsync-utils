@@ -17,6 +17,12 @@ const util = {
 
       return { N: value };
     },
+
+    toNumberSet: function(value) {
+      if (value === null) { return null; };
+
+      return { NS: value };
+    },
   },
 };
 

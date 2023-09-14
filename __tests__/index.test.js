@@ -42,13 +42,12 @@ const runOnAWS = async (s) => {
 }
 
 // If TEST_TARGET is AWS_CLOUD then run the check against AWS. Otherwise, run locally.
-const checkValid = async (value, s) => {
+const checkValid = async (s) => {
   let result;
   if (process.env.TEST_TARGET === "AWS_CLOUD") {
-    console.log("running on aws");
     result = await runOnAWS(s);
   } else {
-    result = value;
+    result = eval(s);
   }
   expect(result).toMatchSnapshot();
 }
@@ -65,19 +64,19 @@ describe("dynamodb helpers", () => {
   });
 
   test("toString", async () => {
-    await checkValid(util.dynamodb.toString("test"), `util.dynamodb.toString("test")`);
+    await checkValid(`util.dynamodb.toString("test")`);
   });
 
   test("toStringSet", async () => {
-    await checkValid(util.dynamodb.toStringSet(["foo", "bar", "baz"]), `util.dynamodb.toStringSet(["foo", "bar", "baz"])`);
+    await checkValid(`util.dynamodb.toStringSet(["foo", "bar", "baz"])`);
   });
 
   test("toNumber", async () => {
-    await checkValid(util.dynamodb.toNumber(12345), `util.dynamodb.toNumber(12345)`);
+    await checkValid(`util.dynamodb.toNumber(12345)`);
   });
 
-  test.skip("toNumberSet", () => {
-    expect(util.dynamodb.toNumberSet([1, 23, 4.56])).toStrictEqual({ NS: [1, 23, 4.56] });
+  test("toNumberSet", async () => {
+    await checkValid(`util.dynamodb.toNumberSet([1, 23, 4.56])`);
   });
 
   test.skip("toBinary", () => {
