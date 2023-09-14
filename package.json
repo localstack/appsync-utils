@@ -1,5 +1,5 @@
 {
-    "name": "@aws-appsync/utils",
+    "name": "@localstack/appsync-utils",
     "version": "0.1.0",
     "description": "Implementation of the AppSync utils helpers",
     "type": "module",
