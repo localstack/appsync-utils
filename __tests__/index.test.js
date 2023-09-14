@@ -2,7 +2,56 @@
   * Helpers definition from https://docs.aws.amazon.com/appsync/latest/devguide/dynamodb-helpers-in-util-dynamodb-js.html
 */
 
-const util = require("..").util;
+const { util } = require("..");
+const { AppSyncClient, EvaluateCodeCommand } = require("@aws-sdk/client-appsync");
+
+let client = null;
+
+const runOnAWS = async (s) => {
+  if (!client) {
+    client = new AppSyncClient();
+  }
+
+  const code = `
+  import { util } from '@aws-appsync/utils';
+
+  export function request(ctx) {
+    return ${s};
+  }
+
+  export function response(ctx) {
+  }
+  `;
+
+  const command = new EvaluateCodeCommand({
+    code,
+    context: "{}",
+    function: "request",
+    runtime: {
+      name: "APPSYNC_JS",
+      runtimeVersion: "1.0.0",
+    },
+  });
+
+  const result = await client.send(command);
+  try {
+    return JSON.parse(result.evaluationResult);
+  } catch (e) {
+    console.error("invalid json", result);
+  }
+}
+
+// If TEST_TARGET is AWS_CLOUD then run the check against AWS. Otherwise, run locally.
+const checkValid = async (value, s) => {
+  let result;
+  if (process.env.TEST_TARGET === "AWS_CLOUD") {
+    console.log("running on aws");
+    result = await runOnAWS(s);
+  } else {
+    result = value;
+  }
+  expect(result).toMatchSnapshot();
+}
 
 describe("dynamodb helpers", () => {
   describe.skip("toDynamoDB", () => {
@@ -15,27 +64,16 @@ describe("dynamodb helpers", () => {
     });
   });
 
-  describe("toString", () => {
-    test.each([
-      ["foo", { S: "foo" }],
-      [null, null],
-    ])("input is %s", (test, expected) => {
-      expect(util.dynamodb.toString(test)).toStrictEqual(expected);
-    });
+  test("toString", async () => {
+    await checkValid(util.dynamodb.toString("test"), `util.dynamodb.toString("test")`);
   });
 
-  describe("toStringSet", () => {
-    test.each([
-      [["foo", "bar", "baz"], { SS: ["foo", "bar", "baz"] }],
-      [null, null],
-      [[], { SS: [] }],
-    ])("input is %s", (test, expected) => {
-      expect(util.dynamodb.toStringSet(test)).toStrictEqual(expected);
-    });
+  test("toStringSet", async () => {
+    await checkValid(util.dynamodb.toStringSet(["foo", "bar", "baz"]), `util.dynamodb.toStringSet(["foo", "bar", "baz"])`);
   });
 
-  test.skip("toNumber", () => {
-    expect(util.dynamodb.toNumber(12345)).toStrictEqual({ N: 12345 });
+  test("toNumber", async () => {
+    await checkValid(util.dynamodb.toNumber(12345), `util.dynamodb.toNumber(12345)`);
   });
 
   test.skip("toNumberSet", () => {

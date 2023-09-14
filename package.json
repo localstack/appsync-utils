@@ -1,26 +1,27 @@
 {
-  "name": "@localstack/appsync-utils",
-  "version": "0.1.0",
-  "description": "Implementation of the AppSync utils helpers",
-  "main": "index.js",
-  "scripts": {
-    "test": "jest",
-    "evaluate": "node ./scripts/evaluate.js code.js context.json"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/localstack/localstack-appsync-utils.git"
-  },
-  "author": "LocalStack Team",
-  "license": "Apache-2.0",
-  "bugs": {
-    "url": "https://github.com/localstack/localstack-appsync-utils/issues"
-  },
-  "homepage": "https://github.com/localstack/localstack-appsync-utils#readme",
-  "devDependencies": {
-    "@aws-sdk/client-appsync": "^3.410.0",
-    "jest": "^29.7.0"
-  },
-  "dependencies": {
-  }
+    "name": "@localstack/appsync-utils",
+    "version": "0.1.0",
+    "description": "Implementation of the AppSync utils helpers",
+    "type": "module",
+    "main": "index.js",
+    "scripts": {
+        "test:aws": "TEST_TARGET=AWS_CLOUD jest -u",
+        "test": "jest --ci",
+        "evaluate": "node ./scripts/evaluate.js code.js context.json"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/localstack/localstack-appsync-utils.git"
+    },
+    "author": "LocalStack Team",
+    "license": "Apache-2.0",
+    "bugs": {
+        "url": "https://github.com/localstack/localstack-appsync-utils/issues"
+    },
+    "homepage": "https://github.com/localstack/localstack-appsync-utils#readme",
+    "devDependencies": {
+        "@aws-sdk/client-appsync": "^3.410.0",
+        "jest": "^29.7.0"
+    },
+    "dependencies": {}
 }

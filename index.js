@@ -11,6 +11,12 @@ const util = {
 
       return { SS: value };
     },
+
+    toNumber: function(value) {
+      if (value === null) { return null; };
+
+      return { N: value };
+    },
   },
 };
 
