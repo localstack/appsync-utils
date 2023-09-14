@@ -224,12 +224,3 @@ export const util: Util = {
     }
   }
 };
-// util.dynamodb.toString = (obj: OptionalInputType<string>): DynamoDBStringResult | null => {
-//   if (obj) {
-//     return {S: obj};
-//   } else {
-//     return null;
-//   }
-// };
-
-// export { util };

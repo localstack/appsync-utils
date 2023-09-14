@@ -10,17 +10,6 @@ describe("dynamodb helpers", () => {
       ["foo", { S: "foo" }],
       [10, { N: 10 }],
       [true, { BOOL: true }],
-      // [["foo", 123, { "bar": "baz" }], {
-      //   "L": [
-      //     { "S": "foo" },
-      //     { "N": 123 },
-      //     {
-      //       "M": {
-      //         "bar": { "S": "baz" }
-      //       }
-      //     }
-      //   ]
-      // }],
     ])("input is %s", (test, expected) => {
       expect(util.dynamodb.toDynamoDB(test)).toStrictEqual(expected);
     });
