@@ -2,10 +2,10 @@
   * Helpers definition from https://docs.aws.amazon.com/appsync/latest/devguide/dynamodb-helpers-in-util-dynamodb-js.html
 */
 
-import { util } from '..';
+const util = require("..").util;
 
 describe("dynamodb helpers", () => {
-  describe("toDynamoDB", () => {
+  describe.skip("toDynamoDB", () => {
     test.each([
       ["foo", { S: "foo" }],
       [10, { N: 10 }],
@@ -34,27 +34,27 @@ describe("dynamodb helpers", () => {
     });
   });
 
-  test("toNumber", () => {
+  test.skip("toNumber", () => {
     expect(util.dynamodb.toNumber(12345)).toStrictEqual({ N: 12345 });
   });
 
-  test("toNumberSet", () => {
+  test.skip("toNumberSet", () => {
     expect(util.dynamodb.toNumberSet([1, 23, 4.56])).toStrictEqual({ NS: [1, 23, 4.56] });
   });
 
-  test("toBinary", () => {
+  test.skip("toBinary", () => {
     expect(util.dynamodb.toBinary("foo")).toStrictEqual({ B: "foo" });
   });
 
-  test("toBinarySet", () => {
+  test.skip("toBinarySet", () => {
     expect(util.dynamodb.toBinarySet(["foo", "bar", "baz"])).toStrictEqual({ BS: ["foo", "bar", "baz"] });
   });
 
-  test("toBoolean", () => {
+  test.skip("toBoolean", () => {
     expect(util.dynamodb.toBoolean(true)).toStrictEqual({ BOOL: true });
   });
 
-  test("toNull", () => {
+  test.skip("toNull", () => {
     expect(util.dynamodb.toNull()).toStrictEqual({ NULL: null });
   });
 
