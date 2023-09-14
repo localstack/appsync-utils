@@ -22,8 +22,5 @@
     "devDependencies": {
         "@aws-sdk/client-appsync": "^3.410.0",
         "jest": "^29.7.0"
-    },
-    "dependencies": {
-        "@localstack/appsync-utils": "file:localstack-appsync-utils-0.1.0.tgz"
     }
 }
