@@ -1,5 +1,19 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`dynamodb helpers s3 objects four parameter function 1`] = `
+{
+  "S": "{"s3":{"key":"foo","bucket":"bar","region":"baz","version":"beep"}}",
+}
+`;
+
+exports[`dynamodb helpers s3 objects fromS3ObjectJson 1`] = `undefined`;
+
+exports[`dynamodb helpers s3 objects three parameter function 1`] = `
+{
+  "S": "{"s3":{"key":"foo","bucket":"bar","region":"baz"}}",
+}
+`;
+
 exports[`dynamodb helpers toBinary 1`] = `
 {
   "B": "foo",

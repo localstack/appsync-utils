@@ -73,7 +73,7 @@ const util = {
     },
 
     toMap: function(mapping) {
-      return {M: this.toMapValues(mapping) };
+      return { M: this.toMapValues(mapping) };
     },
 
     toMapValues: function(mapping) {
@@ -82,7 +82,34 @@ const util = {
         out[k] = this.toDynamoDB(v);
       }
       return out;
-    }
+    },
+
+    toS3Object: function(key, bucket, region, version) {
+      let payload;
+      if (version === undefined) {
+        payload = {
+          s3: {
+            key,
+            bucket,
+            region,
+          }
+        };
+      } else {
+        payload = {
+          s3: {
+            key,
+            bucket,
+            region,
+            version,
+          }
+        };
+      };
+      return this.toString(JSON.stringify(payload));
+    },
+
+    fromS3ObjectJson: function(value) {
+      throw new Error("not implemented");
+    },
   },
 };
 

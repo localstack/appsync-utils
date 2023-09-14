@@ -61,4 +61,16 @@ describe("dynamodb helpers", () => {
   test("toMapValues", async () => {
     await checkValid(`util.dynamodb.toMapValues({ "foo": "bar", "baz": 1234, "beep": ["boop"] })`);
   });
+
+  describe("s3 objects", () => {
+    test("three parameter function", async () => {
+      await checkValid(`util.dynamodb.toS3Object("foo", "bar", "baz")`);
+    });
+    test("four parameter function", async () => {
+      await checkValid(`util.dynamodb.toS3Object("foo", "bar", "baz", "beep")`);
+    });
+    test.skip("fromS3ObjectJson", async () => {
+      await checkValid(`util.dynamodb.fromS3ObjectJson({ "S" : "{ \"s3\" : { \"key\" : \"foo\", \"bucket\" : \"bar\", \"region\" : \"baz\", \"version\" = \"beep\" } }" })`);
+    });
+  });
 });
