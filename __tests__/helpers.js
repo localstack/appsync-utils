@@ -1,7 +1,7 @@
 "use strict";;
 
-const { AppSyncClient, EvaluateCodeCommand } = require("@aws-sdk/client-appsync");
-const { util } = require("..");
+import { AppSyncClient, EvaluateCodeCommand } from "@aws-sdk/client-appsync";
+import { util } from "..";
 
 let client = null;
 
@@ -40,7 +40,7 @@ const runOnAWS = async (s) => {
 }
 
 // If TEST_TARGET is AWS_CLOUD then run the check against AWS. Otherwise, run locally.
-const checkValid = async (s) => {
+export const checkValid = async (s) => {
   let result;
   if (process.env.TEST_TARGET === "AWS_CLOUD") {
     result = await runOnAWS(s);
@@ -49,6 +49,3 @@ const checkValid = async (s) => {
   }
   expect(result).toMatchSnapshot();
 }
-
-
-module.exports = { checkValid };

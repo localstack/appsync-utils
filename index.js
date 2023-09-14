@@ -1,4 +1,4 @@
-const util = {
+export const util = {
   dynamodb: {
     toDynamoDB: function(value) {
       if (typeof (value) === "number") {
@@ -112,5 +112,3 @@ const util = {
     },
   },
 };
-
-module.exports = { util };

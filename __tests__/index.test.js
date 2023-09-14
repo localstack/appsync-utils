@@ -2,7 +2,7 @@
   * Helpers definition from https://docs.aws.amazon.com/appsync/latest/devguide/dynamodb-helpers-in-util-dynamodb-js.html
 */
 
-const { checkValid } = require("./helpers.js");
+import { checkValid } from "./helpers.js";
 
 
 describe("dynamodb helpers", () => {
