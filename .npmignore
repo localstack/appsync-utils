@@ -1,0 +1,5 @@
+/__tests__
+/jest.config.js
+/*.tgz
+/scripts
+/.github

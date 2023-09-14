@@ -4,6 +4,7 @@
     "description": "Implementation of the AppSync utils helpers",
     "type": "module",
     "main": "index.js",
+    "private": true,
     "scripts": {
         "test:aws": "TEST_TARGET=AWS_CLOUD jest -u",
         "test": "jest --ci",
