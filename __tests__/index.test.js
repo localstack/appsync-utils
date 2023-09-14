@@ -32,8 +32,8 @@ describe("dynamodb helpers", () => {
     await checkValid(`util.dynamodb.toNumberSet([1, 23, 4.56])`);
   });
 
-  test.skip("toBinary", () => {
-    expect(util.dynamodb.toBinary("foo")).toStrictEqual({ B: "foo" });
+  test("toBinary", async () => {
+    await checkValid(`util.dynamodb.toBinary("foo")`);
   });
 
   test.skip("toBinarySet", () => {

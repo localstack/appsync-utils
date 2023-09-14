@@ -1,5 +1,11 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`dynamodb helpers toBinary 1`] = `
+{
+  "B": "foo",
+}
+`;
+
 exports[`dynamodb helpers toNumber 1`] = `
 {
   "N": 12345,

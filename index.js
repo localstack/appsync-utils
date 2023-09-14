@@ -23,6 +23,12 @@ const util = {
 
       return { NS: value };
     },
+
+    toBinary: function(value) {
+      if (value === null) { return null; };
+
+      return { B: value };
+    },
   },
 };
 
