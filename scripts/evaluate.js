@@ -1,21 +1,19 @@
 #!/usr/bin/env node
 
-const { EvaluateCodeCommand, AppSyncClient } = require("@aws-sdk/client-appsync");
-const { exit } = require("process");
-const fs = require("fs").promises;
+import { EvaluateCodeCommand, AppSyncClient } from "@aws-sdk/client-appsync";
+import { exit } from "process";
+import * as fs from 'fs';
 
 (async () => {
   // parse command line arguments
-  if (process.argv.length != 4) {
-    console.error(`Program usage: ${process.argv[1]} <code.js> <context.json>`);
+  if (process.argv.length != 3) {
+    console.error(`Program usage: ${process.argv[1]} <code.js>`);
     exit(1);
   }
 
   const codeFile = process.argv[2];
-  const contextFile = process.argv[3];
 
-  const code = await fs.readFile(codeFile, "utf8");
-  const context = await fs.readFile(contextFile, "utf8");
+  const code = await fs.promises.readFile(codeFile, "utf8");
 
   const client = new AppSyncClient();
   const command = new EvaluateCodeCommand({
@@ -24,7 +22,7 @@ const fs = require("fs").promises;
       runtimeVersion: "1.0.0",
     },
     code,
-    context,
+    context: JSON.stringify({}),
     function: "request",
   });
 

@@ -7,7 +7,7 @@
     "scripts": {
         "test:aws": "NODE_OPTIONS=\"--experimental-vm-modules\" TEST_TARGET=AWS_CLOUD jest -u",
         "test": "NODE_OPTIONS=\"--experimental-vm-modules\" jest --ci",
-        "evaluate": "node ./scripts/evaluate.js code.js context.json"
+        "evaluate": "node ./scripts/evaluate.js ./scripts/testcode.js"
     },
     "repository": {
         "type": "git",
