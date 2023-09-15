@@ -82,6 +82,12 @@ export const update = (payload) => {
         expression = `SET ${expressionName} = list_append(${expressionName}, ${expressionValue})`;
         value = op.items;
         break;
+      case OPERATION_DECREMENT:
+        expressionName = `#expName_${idx}`;
+        expressionValue = `:expValue_${idx}`;
+        expression = `SET ${expressionName} = ${expressionName} - ${expressionValue}`;
+        value = op.by;
+        break;
       default:
         throw new Error(`update not implemented for ${op.type}`);
     }
