@@ -74,3 +74,9 @@ describe("dynamodb helpers", () => {
     });
   });
 });
+
+describe("DynamoDB module functions", () => {
+  test("get", async () => {
+    await checkValid(`ddb.get({ key: { id: "id" }})`);
+  });
+})

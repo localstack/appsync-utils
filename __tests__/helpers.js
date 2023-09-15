@@ -2,16 +2,22 @@
 
 import { AppSyncClient, EvaluateCodeCommand } from "@aws-sdk/client-appsync";
 import { util } from "..";
+import * as ddb from "../dynamodb";
 
 let client = null;
 
-const runOnAWS = async (s) => {
+const runOnAWS = async (s, context) => {
   if (!client) {
     client = new AppSyncClient();
   }
 
+  if (!context) {
+    context = {};
+  }
+
   const code = `
   import { util } from '@aws-appsync/utils';
+  import * as ddb from '@aws-appsync/utils/dynamodb';
 
   export function request(ctx) {
     return ${s};
@@ -23,7 +29,7 @@ const runOnAWS = async (s) => {
 
   const command = new EvaluateCodeCommand({
     code,
-    context: "{}",
+    context: JSON.stringify(context),
     function: "request",
     runtime: {
       name: "APPSYNC_JS",
@@ -40,10 +46,10 @@ const runOnAWS = async (s) => {
 }
 
 // If TEST_TARGET is AWS_CLOUD then run the check against AWS. Otherwise, run locally.
-export const checkValid = async (s) => {
+export const checkValid = async (s, context) => {
   let result;
   if (process.env.TEST_TARGET === "AWS_CLOUD") {
-    result = await runOnAWS(s);
+    result = await runOnAWS(s, context);
   } else {
     result = eval(s);
   }

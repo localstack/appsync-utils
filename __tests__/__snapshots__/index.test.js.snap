@@ -1,5 +1,16 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`DynamoDB module functions get 1`] = `
+{
+  "key": {
+    "id": {
+      "S": "id",
+    },
+  },
+  "operation": "GetItem",
+}
+`;
+
 exports[`dynamodb helpers s3 objects four parameter function 1`] = `
 {
   "S": "{"s3":{"key":"foo","bucket":"bar","region":"baz","version":"beep"}}",
