@@ -45,6 +45,14 @@ export const sync = (payload) => {
 };
 */
 
+const OPERATION_ADD = "OPERATION_ADD";
+const OPERATION_APPEND = "OPERATION_APPEND";
+const OPERATION_DECREMENT = "OPERATION_DECREMENT";
+const OPERATION_INCREMENT = "OPERATION_INCREMENT";
+const OPERATION_PREPEND = "OPERATION_PREPEND";
+const OPERATION_REPLACE = "OPERATION_REPLACE";
+const OPERATION_UPDATE_LIST_ITEM = "OPERATION_UPDATE_LIST_ITEM";
+
 export const update = (payload) => {
   let out = { operation: "UpdateItem" };
   out.key = util.dynamodb.toMapValues(payload.key);
@@ -62,11 +70,17 @@ export const update = (payload) => {
     let value;
 
     switch (op.type) {
-      case "OPERATION_ADD":
+      case OPERATION_ADD:
         expressionName = `#expName_${idx}`;
         expressionValue = `:expValue_${idx}`;
         expression = `SET ${expressionName} = ${expressionValue}`;
         value = op.value;
+        break;
+      case OPERATION_APPEND:
+        expressionName = `#expName_${idx}`;
+        expressionValue = `:expValue_${idx}`;
+        expression = `SET ${expressionName} = list_append(${expressionName}, ${expressionValue})`;
+        value = op.items;
         break;
       default:
         throw new Error(`update not implemented for ${op.type}`);
@@ -88,24 +102,24 @@ export const update = (payload) => {
 
 export const operations = {
   add: (value) => {
-    return {type: "OPERATION_ADD", value: value};
+    return {type: OPERATION_ADD, value: value};
   },
   append: (value) => {
-    return {type: "OPERATION_APPEND", items: value};
+    return {type: OPERATION_APPEND, items: value};
   },
   decrement: (value) => {
-    return {type: "OPERATION_DECREMENT", by: value};
+    return {type: OPERATION_DECREMENT, by: value};
   },
   increment: (value) => {
-    return {type: "OPERATION_INCREMENT", by: value};
+    return {type: OPERATION_INCREMENT, by: value};
   },
   prepend: (value) => {
-    return {type: "OPERATION_PREPEND", items: value};
+    return {type: OPERATION_PREPEND, items: value};
   },
   replace: (value) => {
-    return {type: "OPERATION_REPLACE", value: value};
+    return {type: OPERATION_REPLACE, value: value};
   },
-  updateListItem: (value) => {
-    return {type: "OPERATION_ADD", value: value};
-  },
+  // updateListItem: (value) => {
+  //   return {type: OPERATION_UPDATE_LIST_ITEM, value: value};
+  // },
 };

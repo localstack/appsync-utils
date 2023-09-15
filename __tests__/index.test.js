@@ -13,7 +13,7 @@ describe("general utilities", () => {
   });
 });
 
-describe.skip("dynamodb helpers", () => {
+describe("dynamodb helpers", () => {
   describe("toDynamoDB", () => {
     test("string", async () => {
       await checkValid(`util.dynamodb.toDynamoDB("test")`);
@@ -109,6 +109,10 @@ describe("DynamoDB module functions", () => {
   describe("update", () => {
     test("add", async () => {
       await checkValid(`ddb.update({ key: { id: "test" }, update: { age: ddb.operations.add(10), } })`);
+    });
+
+    test("append", async () => {
+      await checkValid(`ddb.update({ key: { id: "test" }, update: { values: ddb.operations.append([1, 2, 3]), } })`);
     });
   });
 })

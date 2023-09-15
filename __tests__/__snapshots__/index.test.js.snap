@@ -70,6 +70,38 @@ exports[`DynamoDB module functions update add 1`] = `
 }
 `;
 
+exports[`DynamoDB module functions update append 1`] = `
+{
+  "key": {
+    "id": {
+      "S": "test",
+    },
+  },
+  "operation": "UpdateItem",
+  "update": {
+    "expression": "SET #expName_1 = list_append(#expName_1, :expValue_1)",
+    "expressionNames": {
+      "#expName_1": "values",
+    },
+    "expressionValues": {
+      ":expValue_1": {
+        "L": [
+          {
+            "N": 1,
+          },
+          {
+            "N": 2,
+          },
+          {
+            "N": 3,
+          },
+        ],
+      },
+    },
+  },
+}
+`;
+
 exports[`DynamoDB operations add 1`] = `
 {
   "type": "OPERATION_ADD",

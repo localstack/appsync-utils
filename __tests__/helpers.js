@@ -51,7 +51,6 @@ export const checkValid = async (s, context) => {
   if (process.env.TEST_TARGET === "AWS_CLOUD") {
     result = await runOnAWS(s, context);
   } else {
-    console.log(s);
     result = eval(s);
   }
   expect(result).toMatchSnapshot();
