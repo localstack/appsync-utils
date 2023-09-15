@@ -124,6 +124,28 @@ exports[`DynamoDB module functions update decrement 1`] = `
 }
 `;
 
+exports[`DynamoDB module functions update increment 1`] = `
+{
+  "key": {
+    "id": {
+      "S": "test",
+    },
+  },
+  "operation": "UpdateItem",
+  "update": {
+    "expression": "SET #expName_1 = #expName_1 + :expValue_1",
+    "expressionNames": {
+      "#expName_1": "age",
+    },
+    "expressionValues": {
+      ":expValue_1": {
+        "N": 10,
+      },
+    },
+  },
+}
+`;
+
 exports[`DynamoDB operations add 1`] = `
 {
   "type": "OPERATION_ADD",

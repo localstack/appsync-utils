@@ -118,6 +118,10 @@ describe("DynamoDB module functions", () => {
     test("decrement", async () => {
       await checkValid(`ddb.update({ key: { id: "test" }, update: { age: ddb.operations.decrement(10) } })`);
     });
+
+    test("increment", async () => {
+      await checkValid(`ddb.update({ key: { id: "test" }, update: { age: ddb.operations.increment(10) } })`);
+    });
   });
 })
 
