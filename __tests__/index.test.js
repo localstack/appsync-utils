@@ -91,4 +91,8 @@ describe("DynamoDB module functions", () => {
   test("put", async () => {
     await checkValid(`ddb.put({ key: { id: "abc" }, item: { value: 10 }})`);
   });
+
+  test("remove", async () => {
+    await checkValid(`ddb.remove({ key: { id: "test" } })`);
+  });
 })

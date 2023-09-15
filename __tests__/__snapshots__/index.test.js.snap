@@ -27,6 +27,17 @@ exports[`DynamoDB module functions put 1`] = `
 }
 `;
 
+exports[`DynamoDB module functions remove 1`] = `
+{
+  "key": {
+    "id": {
+      "S": "test",
+    },
+  },
+  "operation": "DeleteItem",
+}
+`;
+
 exports[`dynamodb helpers s3 objects four parameter function 1`] = `
 {
   "S": "{"s3":{"key":"foo","bucket":"bar","region":"baz","version":"beep"}}",

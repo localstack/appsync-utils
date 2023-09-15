@@ -25,3 +25,9 @@ export const put = (payload) => {
 
   return out;
 };
+
+export const remove = (payload) => {
+  let out = { operation: "DeleteItem" };
+  out.key = util.dynamodb.toMapValues(payload.key);
+  return out;
+};
