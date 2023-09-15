@@ -11,6 +11,22 @@ exports[`DynamoDB module functions get 1`] = `
 }
 `;
 
+exports[`DynamoDB module functions put 1`] = `
+{
+  "attributeValues": {
+    "value": {
+      "N": 10,
+    },
+  },
+  "key": {
+    "id": {
+      "S": "abc",
+    },
+  },
+  "operation": "PutItem",
+}
+`;
+
 exports[`dynamodb helpers s3 objects four parameter function 1`] = `
 {
   "S": "{"s3":{"key":"foo","bucket":"bar","region":"baz","version":"beep"}}",

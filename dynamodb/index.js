@@ -1,10 +1,26 @@
 import { util } from '..';
 
+// TODO: consistentRead
+// TODO: projection
 export const get = (input) => {
   let out = { operation: "GetItem" };
+  out.key = util.dynamodb.toMapValues(input.key);
+  return out;
+};
 
-  for (const [k, v] of Object.entries(input)) {
-    out[k] = util.dynamodb.toMapValues(v);
+// TODO: condition
+// TODO: customPartitionKey
+// TODO: populateIndexFields
+// TODO: _version
+export const put = (payload) => {
+  let out = { operation: "PutItem" };
+  out.key = {};
+  for (const [k, v] of Object.entries(payload.key)) {
+    out.key[k] = util.dynamodb.toDynamoDB(v);
+  }
+  out.attributeValues = {};
+  for (const [k, v] of Object.entries(payload.item)) {
+    out.attributeValues[k] = util.dynamodb.toDynamoDB(v);
   }
 
   return out;

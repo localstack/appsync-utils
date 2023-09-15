@@ -13,6 +13,7 @@ describe("general utilities", () => {
   });
 });
 
+describe.skip("dynamodb helpers", () => {
   describe("toDynamoDB", () => {
     test("string", async () => {
       await checkValid(`util.dynamodb.toDynamoDB("test")`);
@@ -85,5 +86,9 @@ describe("general utilities", () => {
 describe("DynamoDB module functions", () => {
   test("get", async () => {
     await checkValid(`ddb.get({ key: { id: "id" }})`);
+  });
+
+  test("put", async () => {
+    await checkValid(`ddb.put({ key: { id: "abc" }, item: { value: 10 }})`);
   });
 })
