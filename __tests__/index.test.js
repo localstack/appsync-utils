@@ -95,4 +95,51 @@ describe("DynamoDB module functions", () => {
   test("remove", async () => {
     await checkValid(`ddb.remove({ key: { id: "test" } })`);
   });
+
+  test("scan", async () => {
+    await checkValid(`ddb.scan({ limit: 10, nextToken: "abc"})`);
+  });
+
+  // Not implemented on AWS
+  // Error: code.js(5,14): error TS2339: Property 'sync' does not exist on type 'typeof import("/var/task/node_modules/@amzn/awsapp-sync-jsvtltranspiler/bundled/@aws-appsync/utils/lib/dynamo-db-helpers")'.
+  test.skip("sync", async () => {
+    await checkValid(`ddb.sync({ limit: 10, nextToken: "abc", lastSync: 1 })`);
+  });
+
+  describe("update", () => {
+    test("add", async () => {
+      await checkValid(`ddb.update({ key: { id: "test" }, update: { age: ddb.operations.add(10), } })`);
+    });
+  });
 })
+
+describe("DynamoDB operations", () => {
+  test("add", async () => {
+    await checkValid(`ddb.operations.add(10)`);
+  });
+
+  test("append", async () => {
+    await checkValid(`ddb.operations.append([1, 2, 3])`);
+  });
+
+  test("decrement", async () => {
+    await checkValid(`ddb.operations.decrement(10)`);
+  });
+
+  test("increment", async () => {
+    await checkValid(`ddb.operations.increment(10)`);
+  });
+
+  test("prepend", async () => {
+    await checkValid(`ddb.operations.prepend([1, 2, 3])`);
+  });
+
+  test("replace", async () => {
+    await checkValid(`ddb.operations.replace({ a: 10 })`);
+  });
+
+  // not implemented currently
+  test.skip("updateListItem", async () => {
+    await checkValid(`ddb.operations.updateListItem('foo', 1)`);
+  });
+});

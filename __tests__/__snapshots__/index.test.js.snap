@@ -38,6 +38,92 @@ exports[`DynamoDB module functions remove 1`] = `
 }
 `;
 
+exports[`DynamoDB module functions scan 1`] = `
+{
+  "limit": 10,
+  "nextToken": "abc",
+  "operation": "Scan",
+}
+`;
+
+exports[`DynamoDB module functions sync 1`] = `undefined`;
+
+exports[`DynamoDB module functions update add 1`] = `
+{
+  "key": {
+    "id": {
+      "S": "test",
+    },
+  },
+  "operation": "UpdateItem",
+  "update": {
+    "expression": "SET #expName_1 = :expValue_1",
+    "expressionNames": {
+      "#expName_1": "age",
+    },
+    "expressionValues": {
+      ":expValue_1": {
+        "N": 10,
+      },
+    },
+  },
+}
+`;
+
+exports[`DynamoDB operations add 1`] = `
+{
+  "type": "OPERATION_ADD",
+  "value": 10,
+}
+`;
+
+exports[`DynamoDB operations append 1`] = `
+{
+  "items": [
+    1,
+    2,
+    3,
+  ],
+  "type": "OPERATION_APPEND",
+}
+`;
+
+exports[`DynamoDB operations decrement 1`] = `
+{
+  "by": 10,
+  "type": "OPERATION_DECREMENT",
+}
+`;
+
+exports[`DynamoDB operations increment 1`] = `
+{
+  "by": 10,
+  "type": "OPERATION_INCREMENT",
+}
+`;
+
+exports[`DynamoDB operations prepend 1`] = `
+{
+  "items": [
+    1,
+    2,
+    3,
+  ],
+  "type": "OPERATION_PREPEND",
+}
+`;
+
+exports[`DynamoDB operations replace 1`] = `
+{
+  "type": "OPERATION_REPLACE",
+  "value": {
+    "a": 10,
+  },
+}
+`;
+
+exports[`DynamoDB operations updateListItem 1`] = `undefined`;
+
 exports[`dynamodb helpers s3 objects four parameter function 1`] = `
 {
   "S": "{"s3":{"key":"foo","bucket":"bar","region":"baz","version":"beep"}}",

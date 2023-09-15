@@ -31,3 +31,81 @@ export const remove = (payload) => {
   out.key = util.dynamodb.toMapValues(payload.key);
   return out;
 };
+
+export const scan = (payload) => {
+  let out = payload;
+  out.operation = "Scan";
+  return out;
+};
+
+// Not implemented on AWS
+// Error: code.js(5,14): error TS2339: Property 'sync' does not exist on type 'typeof import("/var/task/node_modules/@amzn/awsapp-sync-jsvtltranspiler/bundled/@aws-appsync/utils/lib/dynamo-db-helpers")'.
+/*
+export const sync = (payload) => {
+};
+*/
+
+export const update = (payload) => {
+  let out = { operation: "UpdateItem" };
+  out.key = util.dynamodb.toMapValues(payload.key);
+  out.update = {};
+
+  let expressions = [];
+  let expressionNames = {};
+  let expressionValues = {};
+  let idx = 1;
+  for (const [k, op] of Object.entries(payload.update)) {
+
+    let expression;
+    let expressionName;
+    let expressionValue;
+    let value;
+
+    switch (op.type) {
+      case "OPERATION_ADD":
+        expressionName = `#expName_${idx}`;
+        expressionValue = `:expValue_${idx}`;
+        expression = `SET ${expressionName} = ${expressionValue}`;
+        value = op.value;
+        break;
+      default:
+        throw new Error(`update not implemented for ${op.type}`);
+    }
+
+    expressions.push(expression);
+    expressionNames[expressionName] = k;
+    expressionValues[expressionValue] = util.dynamodb.toDynamoDB(value);
+
+    idx++;
+  }
+
+  out.update.expression = expressions.join(",");
+  out.update.expressionNames = expressionNames;
+  out.update.expressionValues = expressionValues;
+
+  return out;
+};
+
+export const operations = {
+  add: (value) => {
+    return {type: "OPERATION_ADD", value: value};
+  },
+  append: (value) => {
+    return {type: "OPERATION_APPEND", items: value};
+  },
+  decrement: (value) => {
+    return {type: "OPERATION_DECREMENT", by: value};
+  },
+  increment: (value) => {
+    return {type: "OPERATION_INCREMENT", by: value};
+  },
+  prepend: (value) => {
+    return {type: "OPERATION_PREPEND", items: value};
+  },
+  replace: (value) => {
+    return {type: "OPERATION_REPLACE", value: value};
+  },
+  updateListItem: (value) => {
+    return {type: "OPERATION_ADD", value: value};
+  },
+};
