@@ -100,6 +100,12 @@ export const update = (payload) => {
         expression = `SET ${expressionName} = list_append(${expressionValue}, ${expressionName})`;
         value = op.items;
         break;
+      case OPERATION_REPLACE:
+        expressionName = `#expName_${idx}`;
+        expressionValue = `:expValue_${idx}`;
+        expression = `SET ${expressionName} = ${expressionValue}`;
+        value = op.value;
+        break;
       default:
         throw new Error(`update not implemented for ${op.type}`);
     }

@@ -178,6 +178,32 @@ exports[`DynamoDB module functions update prepend 1`] = `
 }
 `;
 
+exports[`DynamoDB module functions update replace 1`] = `
+{
+  "key": {
+    "id": {
+      "S": "test",
+    },
+  },
+  "operation": "UpdateItem",
+  "update": {
+    "expression": "SET #expName_1 = :expValue_1",
+    "expressionNames": {
+      "#expName_1": "values",
+    },
+    "expressionValues": {
+      ":expValue_1": {
+        "M": {
+          "a": {
+            "N": 10,
+          },
+        },
+      },
+    },
+  },
+}
+`;
+
 exports[`DynamoDB operations add 1`] = `
 {
   "type": "OPERATION_ADD",

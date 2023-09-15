@@ -126,6 +126,10 @@ describe("DynamoDB module functions", () => {
     test("prepend", async () => {
       await checkValid(`ddb.update({ key: { id: "test" }, update: { values: ddb.operations.prepend([1, 2, 3]) } })`);
     });
+
+    test("replace", async () => {
+      await checkValid(`ddb.update({ key: { id: "test" }, update: { values: ddb.operations.replace({ a: 10 }) }})`);
+    });
   });
 })
 
