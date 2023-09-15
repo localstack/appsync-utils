@@ -122,6 +122,10 @@ describe("DynamoDB module functions", () => {
     test("increment", async () => {
       await checkValid(`ddb.update({ key: { id: "test" }, update: { age: ddb.operations.increment(10) } })`);
     });
+
+    test("prepend", async () => {
+      await checkValid(`ddb.update({ key: { id: "test" }, update: { values: ddb.operations.prepend([1, 2, 3]) } })`);
+    });
   });
 })
 
