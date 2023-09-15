@@ -4,8 +4,15 @@
 
 import { checkValid } from "./helpers.js";
 
+import { util } from "..";
 
-describe("dynamodb helpers", () => {
+describe("general utilities", () => {
+  test("autoId", async () => {
+    // cannot test on AWS due to random nature
+    expect(util.autoId()).toBeTruthy();
+  });
+});
+
   describe("toDynamoDB", () => {
     test("string", async () => {
       await checkValid(`util.dynamodb.toDynamoDB("test")`);

@@ -1,4 +1,9 @@
+import { v4 as uuidv4 } from 'uuid';
+
 export const util = {
+  autoId: function() {
+    return uuidv4();
+  },
   dynamodb: {
     toDynamoDB: function(value) {
       if (typeof (value) === "number") {
