@@ -1,8 +1,47 @@
 import { v4 as uuidv4 } from 'uuid';
 
+const FILTER_CONTAINS = "contains";
+
 export const util = {
   autoId: function() {
     return uuidv4();
+  },
+  transform: {
+    toDynamoDBFilterExpression: function(value) {
+      const items = Object.entries(value);
+      if (items.length != 1) {
+        throw new Error("invalid structure, should have one entry");
+      }
+
+      const [key, filter] = items[0];
+
+      const filterItems = Object.entries(filter);
+      if (filterItems.length !== 1) {
+        throw new Error("invalid structure, should have one filter expression");
+      }
+
+
+      const [filterType, contents] = filterItems[0];
+      const expressionName = `#${key}`;
+      const expressionValue = `:${key}_${filterType}`;
+
+      let expression;
+      let expressionNames = {};
+      let expressionValues = {};
+      switch (filterType) {
+        case FILTER_CONTAINS:
+          expression = `(contains(${expressionName},${expressionValue}))`;
+          expressionNames[expressionName] = key;
+          expressionValues[expressionValue] = util.dynamodb.toDynamoDB(contents);
+          break;
+        default:
+          throw new Error(`Not implemented for ${filterType}`);
+
+      }
+
+      return JSON.stringify({ expression, expressionNames, expressionValues });
+
+    },
   },
   dynamodb: {
     toDynamoDB: function(value) {

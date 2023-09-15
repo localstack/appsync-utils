@@ -45,6 +45,10 @@ export const sync = (payload) => {
 };
 */
 
+// Transformations
+
+// Operations
+
 const OPERATION_ADD = "OPERATION_ADD";
 const OPERATION_APPEND = "OPERATION_APPEND";
 const OPERATION_DECREMENT = "OPERATION_DECREMENT";

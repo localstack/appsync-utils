@@ -133,6 +133,12 @@ describe("DynamoDB module functions", () => {
   });
 })
 
+describe("Transformations", () => {
+  test("toDynamoDBFilterMap", async () => {
+    await checkValid(`util.transform.toDynamoDBFilterExpression({ "title":{ "contains":"Hello World" } })`);
+  });
+});
+
 describe("DynamoDB operations", () => {
   test("add", async () => {
     await checkValid(`ddb.operations.add(10)`);
