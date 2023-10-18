@@ -46,12 +46,15 @@ const runOnAWS = async (s, context) => {
 }
 
 // If TEST_TARGET is AWS_CLOUD then run the check against AWS. Otherwise, run locally.
-export const checkValid = async (s, context) => {
+export const checkValid = async (s, context, postProcess) => {
   let result;
   if (process.env.TEST_TARGET === "AWS_CLOUD") {
     result = await runOnAWS(s, context);
   } else {
     result = eval(s);
+  }
+  if (postProcess) {
+    result = postProcess(result);
   }
   expect(result).toMatchSnapshot();
 }

@@ -137,6 +137,34 @@ describe("Transformations", () => {
   test("toDynamoDBFilterMap", async () => {
     await checkValid(`util.transform.toDynamoDBFilterExpression({ "title":{ "contains":"Hello World" } })`);
   });
+
+  test("toDynamoDBConditionExpression", async () => {
+    // attribute keys are not guaranteed to be ordered
+    const postProcess = (result) => {
+
+      const sortObjectByKeys = (obj) => {
+        return Object.keys(obj).sort().reduce(
+          (res, key) => {
+            res[key] = obj[key];
+            return res;
+          },
+          {}
+        );
+      };
+
+      const { expression, expressionNames, expressionValues } = JSON.parse(result);
+      const transformed = {
+        expression,
+        expressionNames: sortObjectByKeys(expressionNames),
+        expressionValues: sortObjectByKeys(expressionValues),
+      };
+      return JSON.stringify(transformed);
+    };
+    await checkValid(`util.transform.toDynamoDBConditionExpression({
+      id: { attributeExists: true },
+      version: { eq: 10 },
+    })`, {}, postProcess);
+  });
 });
 
 describe("DynamoDB operations", () => {
