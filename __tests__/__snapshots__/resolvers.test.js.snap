@@ -1,0 +1,39 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`dynamodb resolvers something 1`] = `
+{
+  "filter": {
+    "expression": "#shift = :shift",
+    "expressionNames": {
+      "#shift": "shift",
+    },
+    "expressionValues": {
+      ":shift": {
+        "N": 10,
+      },
+    },
+  },
+  "index": "nameIndex",
+  "operation": "Query",
+  "query": {
+    "expression": "#name = :name",
+    "expressionNames": {
+      "#name": "name",
+    },
+    "expressionValues": {
+      ":name": {
+        "S": "test",
+      },
+    },
+  },
+  "select": "ALL_ATTRIBUTES",
+}
+`;
+
+exports[`dynamodb resolvers something 2`] = `
+[
+  {
+    "a": 10,
+  },
+]
+`;
