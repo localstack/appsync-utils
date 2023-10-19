@@ -258,6 +258,8 @@ exports[`DynamoDB operations replace 1`] = `
 
 exports[`DynamoDB operations updateListItem 1`] = `undefined`;
 
+exports[`Transformations toDynamoDBConditionExpression 1`] = `"{"expression":"(attribute_exists(#id)) AND (#version = :version_eq)","expressionNames":{"#id":"id","#version":"version"},"expressionValues":{":version_eq":{"N":10}}}"`;
+
 exports[`Transformations toDynamoDBFilterMap 1`] = `"{"expression":"(contains(#title,:title_contains))","expressionNames":{"#title":"title"},"expressionValues":{":title_contains":{"S":"Hello World"}}}"`;
 
 exports[`dynamodb helpers s3 objects four parameter function 1`] = `
