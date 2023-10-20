@@ -9,6 +9,9 @@ on:
     branches:
       - main
 
+env:
+  TEST_IMAGE_NAME: public.ecr.aws/lambda/nodejs:16
+
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -19,3 +22,9 @@ jobs:
           node-version: 16
       - run: npm ci
       - run: npm test
+
+      - name: Pull test docker image
+        run: docker pull $TEST_IMAGE_NAME
+
+      - name: Integration test with LocalStack invoke method
+        run: bash ./test_in_docker.sh
