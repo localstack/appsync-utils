@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 
 set -euo pipefail
-set -x
 
 # Run as an entrypoint to docker to install the current package, and test that
 # node can import it as per the LocalStack AppSync emulation.
@@ -27,5 +26,9 @@ else
     npm install
 
     echo "import { util } from '@aws-appsync/utils';" > main.mjs
+    echo "console.log('id: ', util.autoId());" >> main.mjs
+    echo "console.log('toDynamoDB: ', util.dynamodb.toDynamoDB('test'));" >> main.mjs
+
+    echo "Checking package:"
     node main.mjs
 fi
