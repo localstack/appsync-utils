@@ -14,7 +14,6 @@ if [ -z ${TEST_IN_DOCKER_ENTRYPOINT:-} ]; then
     project_root=$(dirname $script_path)
     docker run \
         --rm \
-        -it \
         -v $project_root:/src \
         -v $script_path:/test_in_docker.sh:ro \
         --workdir /test \
