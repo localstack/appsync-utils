@@ -37,3 +37,19 @@ exports[`dynamodb resolvers something 2`] = `
   },
 ]
 `;
+
+exports[`rds resolvers postgres 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "UserGroup" WHERE "id" = :P0",
+  ],
+  "variableMap": {
+    ":P0": "123",
+  },
+  "variableTypeHintMap": {
+    ":P0": "UUID",
+  },
+}
+`;
+
+exports[`rds resolvers postgres 2`] = `{}`;
