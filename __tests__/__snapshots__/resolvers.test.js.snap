@@ -38,21 +38,46 @@ exports[`dynamodb resolvers something 2`] = `
 ]
 `;
 
-exports[`rds resolvers postgres 1`] = `
+exports[`rds resolvers createPgStatement-remove 1`] = `
 {
   "statements": [
-    "SELECT * FROM "UserGroup" WHERE "id" = :P0",
+    "DELETE FROM "persons" WHERE "id" = :P0 RETURNING "id", "name"",
   ],
   "variableMap": {
     ":P0": "1232",
   },
-  "variableTypeHintMap": {
-    ":P0": "UUID",
-  },
+  "variableTypeHintMap": {},
 }
 `;
 
-exports[`rds resolvers postgres 2`] = `{}`;
+exports[`rds resolvers createPgStatement-select 1`] = `
+{
+  "statements": [
+    "SELECT "id", "name" FROM "UserGroup" WHERE ("name" = :P0) OR ("id" > :P1) ORDER BY "name" ASC, "id" DESC",
+  ],
+  "variableMap": {
+    ":P0": "Stephane",
+    ":P1": 10,
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`rds resolvers createPgStatement-typeHint 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "UserGroup" WHERE ("id" = :P0) AND ("started" < :P1)",
+  ],
+  "variableMap": {
+    ":P0": "1232",
+    ":P1": "2024-01-26 16:58:57",
+  },
+  "variableTypeHintMap": {
+    ":P0": "UUID",
+    ":P1": "TIMESTAMP",
+  },
+}
+`;
 
 exports[`rds resolvers toJsonObject 1`] = `
 [

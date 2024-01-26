@@ -1,4 +1,7 @@
-/* test full resolver pipelines */
+/* test full resolver pipelines 
+Note: for the request-context the naming must be `arguments` when passing it. 
+Within the request it can be resolved to both, e.g. `ctx.arguments` and `ctx.args`
+*/
 
 import { checkResolverValid } from "./helpers";
 import { util } from "..";
@@ -61,6 +64,7 @@ describe("dynamodb resolvers", () => {
 });
 
 describe("rds resolvers", () => {
+  // https://docs.aws.amazon.com/appsync/latest/devguide/resolver-reference-rds-js.html
     test("toJsonObject", async () => {
         const responseContext = {
             "result": JSON.stringify({
@@ -159,68 +163,89 @@ describe("rds resolvers", () => {
         await checkResolverValid(code, responseContext, "response");
     });
 
-    test("postgres", async () => {
-        const code = `
-    import { select, createPgStatement, toJsonObject, typeHint } from "@aws-appsync/utils/rds"
-    // appsync/resolvers/Query.getPracticeById.js
-    export function request(ctx) {
+    test("createPgStatement-typeHint", async () => {
+      const code = `
+      import { select, createPgStatement, typeHint } from "@aws-appsync/utils/rds"
 
-        const whereClause = { id: { eq: typeHint.UUID(ctx.arguments.id) } }; // TODO ctx.args.id is undefined 
-        // const whereClause = { id: { eq: typeHint.UUID("123") } };
+      export function request(ctx) {
+        const now = util.time.nowFormatted('YYYY-MM-dd HH:mm:ss');
+        const whereClause = { and:[
+          { id: { eq: typeHint.UUID(ctx.args.id) } },
+          { started: { lt: typeHint.TIMESTAMP(now) } } 
+        ] }; 
+        return createPgStatement(select({
+          table: "UserGroup",
+          where: whereClause,
+          }));
+      }
+
+      export function response(ctx) {}
+      `
+      const requestContext = {
+        arguments: {
+            id: "1232",
+            name: "hello",
+
+        }
+    };
+
+    await checkResolverValid(code, requestContext, "request");
+
+    });
+    test("createPgStatement-select", async () => {
+        const code = `
+    import { select, createPgStatement } from "@aws-appsync/utils/rds"
+    export function request(ctx) {
+        const whereClause = { or: [
+          { name: { eq: 'Stephane'} },
+          { id: { gt: 10 } }
+      ]}
         return createPgStatement(select({
             table: "UserGroup",
-            where: whereClause
+            where: whereClause,
+            columns: ['id', 'name'],
+            orderBy: [{column: 'name'}, {column: 'id', dir: 'DESC'}]
         }));
     }
 
-    export function response(ctx) {
-        const { error, result } = ctx;
-        if (error) {
-            return util.appendError(error.message, error.type, result);
-        }
-        const items = toJsonObject(result)[0];
-        if (items.length == 0) {
-            return null;
-        }
-        return items[0];
-    }
+    export function response(ctx) {}
     `;
 
-        const requestContext = {
-            arguments: {
-                id: "1232"
-            }
-        };
-
-        await checkResolverValid(code, requestContext, "request");
-
-        const test_result = {
-            sqlStatementResults: [
-                {
-                    numberOfRecordsUpdated: 0,
-                    records: [
-                        [
-                            {
-                                stringValue: "User One"
-                            },
-                            {
-                                stringValue: "1232"
-                            }
-                        ],
-                    ],
-                    columnMetadata: [
-
-                    ]
-                }
-            ]
+    const requestContext = {
+        arguments: {
+            id: "1232"
         }
+    };
 
-        const responseContext = {
-            error: null,
-            result: JSON.stringify(test_result) // TODO the result is not correctly formatted? :/
-        };
+    await checkResolverValid(code, requestContext, "request");
 
-        await checkResolverValid(code, responseContext, "response");
     });
+    test("createPgStatement-remove", async () => {
+      const code = `
+      import { remove, createPgStatement } from '@aws-appsync/utils/rds'
+
+      export function request(ctx) {
+          const id = ctx.args.id;
+          const where = { id: { eq: id } };
+          const deleteStatement = remove({
+              table: 'persons',
+              where: where,
+              returning: ['id', 'name'],
+          });
+      
+          return createPgStatement(deleteStatement);
+        }
+      export function response(ctx) {}
+  `;
+
+  const requestContext = {
+      arguments: {
+          id: "1232"
+      }
+  };
+
+  await checkResolverValid(code, requestContext, "request");
+
+  });
 });
 
