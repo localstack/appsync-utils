@@ -44,7 +44,7 @@ exports[`rds resolvers postgres 1`] = `
     "SELECT * FROM "UserGroup" WHERE "id" = :P0",
   ],
   "variableMap": {
-    ":P0": "123",
+    ":P0": "1232",
   },
   "variableTypeHintMap": {
     ":P0": "UUID",
@@ -53,3 +53,20 @@ exports[`rds resolvers postgres 1`] = `
 `;
 
 exports[`rds resolvers postgres 2`] = `{}`;
+
+exports[`rds resolvers toJsonObject 1`] = `
+[
+  [
+    {
+      "ISBN-13": "978-1948132817",
+      "author": "Mark Twain",
+      "title": "Adventures of Huckleberry Finn",
+    },
+    {
+      "ISBN-13": "978-1948132275",
+      "author": "Jack London",
+      "title": "The Call of the Wild",
+    },
+  ],
+]
+`;
