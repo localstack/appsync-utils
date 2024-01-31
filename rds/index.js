@@ -27,3 +27,19 @@ export function toJsonObject(inputStr) {
     }
     return perStatement;
 }
+
+export const typeHint = {
+    UUID: function(value) {
+        return {
+            type: "UUID",
+            value,
+        };
+    },
+
+    TIMESTAMP: function(value) {
+        return {
+            type: "TIMESTAMP",
+            value: value.toISOString(),
+        };
+    }
+};

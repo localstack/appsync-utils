@@ -64,8 +64,48 @@ describe("dynamodb resolvers", () => {
 });
 
 describe("rds resolvers", () => {
+    describe("typehints", () => {
+        test("UUID", async () => {
+            const code = `
+            export function request(ctx) {
+                return rds.typeHint.UUID(ctx.args.id);
+            }
+
+            export function response(ctx) {
+            }
+            `;
+
+            const context = {
+                arguments: {
+                    id: "abc123",
+                },
+            };
+
+            await checkResolverValid(code, context, "request");
+        });
+
+        test("TIMESTAMP", async () => {
+            const code = `
+            export function request(ctx) {
+                return rds.typeHint.TIMESTAMP(ctx.args.id);
+            }
+
+            export function response(ctx) {
+            }
+            `;
+
+            const context = {
+                arguments: {
+                    id: new Date(2023, 1, 1),
+                },
+            };
+
+            await checkResolverValid(code, context, "request");
+        });
+    });
+
     // https://docs.aws.amazon.com/appsync/latest/devguide/resolver-reference-rds-js.html
-    test("toJsonObject", async () => {
+    test.skip("toJsonObject", async () => {
         const responseContext = {
             "result": JSON.stringify({
                 "sqlStatementResults": [

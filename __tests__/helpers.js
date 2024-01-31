@@ -70,10 +70,17 @@ export const checkResolverValid = async (code, context, functionName) => {
         const module = await import(dataUri);
 
         const fn = module[functionName];
+
+        transformContextForAppSync(context);
         result = fn(context);
     }
     expect(result).toMatchSnapshot();
 };
+
+// manipulate the context object to behave like the AppSync equivalent
+function transformContextForAppSync(context) {
+    context.args = context.arguments;
+}
 
 // If TEST_TARGET is AWS_CLOUD then run the check against AWS. Otherwise, run locally.
 export const checkValid = async (s, context, postProcess) => {
