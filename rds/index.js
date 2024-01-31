@@ -56,10 +56,9 @@ class PgStatementBuilder {
                     const { table, columns, where, orderBy, limit, offset } = properties;
                     const tableName = `"${table}"`;
                     let query;
+
                     if (columns) {
                         const columnNames = columns.map(name => `"${name}"`).join(', ');
-
-
                         query = `SELECT ${columnNames} FROM ${tableName}`;
                     } else {
                         query = `SELECT * FROM ${tableName}`;
@@ -139,69 +138,49 @@ class PgStatementBuilder {
         if (where.or) {
             const parts = [];
             for (const part of where.or) {
-                const columnName = Object.keys(part)[0];
-                const condition = part[columnName];
-
-                const conditionType = Object.keys(condition)[0];
-                const value = this.newVariable(condition[conditionType]);
-                switch (conditionType) {
-                    case "eq":
-                        parts.push(`("${columnName}" = ${value})`);
-                        break;
-                    case "gt":
-                        parts.push(`("${columnName}" > ${value})`);
-                        break;
-                    case "lt":
-                        parts.push(`("${columnName}" < ${value})`);
-                        break;
-                    default:
-                        throw new Error(`Unhandled condition type ${conditionType}`);
-                }
+                parts.push(this.buildWhereStatement(part));
             }
             blocks.push(parts.join(" OR "));
         } else if (where.and) {
             const parts = [];
             for (const part of where.and) {
-                const columnName = Object.keys(part)[0];
-                const condition = part[columnName];
-
-                const conditionType = Object.keys(condition)[0];
-                const value = this.newVariable(condition[conditionType]);
-                switch (conditionType) {
-                    case "eq":
-                        parts.push(`("${columnName}" = ${value})`);
-                        break;
-                    case "gt":
-                        parts.push(`("${columnName}" > ${value})`);
-                        break;
-                    case "lt":
-                        parts.push(`("${columnName}" < ${value})`);
-                        break;
-                    default:
-                        throw new Error(`Unhandled condition type ${conditionType}`);
-                }
+                parts.push(this.buildWhereStatement(part));
             }
             blocks.push(parts.join(" AND "));
         } else {
             // implicit single clause
-            const columnName = Object.keys(where)[0];
-            const condition = where[columnName];
-
-            const conditionType = Object.keys(condition)[0];
-            const value = this.newVariable(condition[conditionType]);
-            switch (conditionType) {
-                case "eq":
-                    blocks.push(`"${columnName}" = ${value}`);
-                    break;
-                case "gt":
-                    blocks.push(`"${columnName}" > ${value}`);
-                    break;
-                default:
-                    throw new Error(`Unhandled condition type ${conditionType}`);
-            }
+            blocks.push(this.buildWhereStatement(where, "", ""));
         }
 
         return blocks;
+    }
+
+    buildWhereStatement(defn, startGrouping = "(", endGrouping = ")") {
+        const columnName = Object.keys(defn)[0];
+        const condition = defn[columnName];
+
+        const conditionType = Object.keys(condition)[0];
+        const value = this.newVariable(condition[conditionType]);
+        switch (conditionType) {
+            case "eq":
+                return `${startGrouping}"${columnName}" = ${value}${endGrouping}`;
+            case "ne":
+                return `${startGrouping}"${columnName}" != ${value}${endGrouping}`;
+            case "gt":
+                return `${startGrouping}"${columnName}" > ${value}${endGrouping}`;
+            case "lt":
+                return `${startGrouping}"${columnName}" < ${value}${endGrouping}`;
+            case "ge":
+                return `${startGrouping}"${columnName}" >= ${value}${endGrouping}`;
+            case "le":
+                return `${startGrouping}"${columnName}" <= ${value}${endGrouping}`;
+            case "contains":
+                return `${startGrouping}"${columnName}" LIKE ${value}${endGrouping}`;
+            case "notContains":
+                return `${startGrouping}"${columnName}" NOT LIKE ${value}${endGrouping}`;
+            default:
+                throw new Error(`Unhandled condition type ${conditionType}`);
+        }
     }
 }
 
@@ -211,13 +190,36 @@ export function createPgStatement(...statements) {
 }
 
 export const typeHint = {
+    DECIMAL: function(value) {
+        return {
+            type: "DECIMAL",
+            value,
+        };
+    },
+    JSON: function(value) {
+        return {
+            type: "JSON",
+            value,
+        };
+    },
+    TIME: function(value) {
+        return {
+            type: "TIME",
+            value,
+        };
+    },
+    DATE: function(value) {
+        return {
+            type: "DATE",
+            value,
+        };
+    },
     UUID: function(value) {
         return {
             type: "UUID",
             value,
         };
     },
-
     TIMESTAMP: function(value) {
         return {
             type: "TIMESTAMP",
