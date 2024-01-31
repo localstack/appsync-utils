@@ -130,22 +130,22 @@ export const update = (payload) => {
 
 export const operations = {
   add: (value) => {
-    return {type: OPERATION_ADD, value: value};
+    return { type: OPERATION_ADD, value: value };
   },
   append: (value) => {
-    return {type: OPERATION_APPEND, items: value};
+    return { type: OPERATION_APPEND, items: value };
   },
   decrement: (value) => {
-    return {type: OPERATION_DECREMENT, by: value};
+    return { type: OPERATION_DECREMENT, by: value };
   },
   increment: (value) => {
-    return {type: OPERATION_INCREMENT, by: value};
+    return { type: OPERATION_INCREMENT, by: value };
   },
   prepend: (value) => {
-    return {type: OPERATION_PREPEND, items: value};
+    return { type: OPERATION_PREPEND, items: value };
   },
   replace: (value) => {
-    return {type: OPERATION_REPLACE, value: value};
+    return { type: OPERATION_REPLACE, value: value };
   },
   // updateListItem: (value) => {
   //   return {type: OPERATION_UPDATE_LIST_ITEM, value: value};

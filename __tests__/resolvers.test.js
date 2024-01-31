@@ -7,8 +7,8 @@ import { checkResolverValid } from "./helpers";
 import { util } from "..";
 
 describe("dynamodb resolvers", () => {
-    test("something", async () => {
-        const code = `
+  test("something", async () => {
+    const code = `
     export function request(ctx) {
         return {
             operation: "Query",
@@ -40,33 +40,33 @@ describe("dynamodb resolvers", () => {
     }
     `;
 
-        const requestContext = {
-            arguments: {
-                filter: {
-                    line: "test",
-                    shift: 10,
-                },
-            },
-        };
+    const requestContext = {
+      arguments: {
+        filter: {
+          line: "test",
+          shift: 10,
+        },
+      },
+    };
 
-        await checkResolverValid(code, requestContext, "request");
+    await checkResolverValid(code, requestContext, "request");
 
-        const responseContext = {
-            result: {
-                items: [
-                    { a: 10 },
-                ],
-            },
-        };
+    const responseContext = {
+      result: {
+        items: [
+          { a: 10 },
+        ],
+      },
+    };
 
-        await checkResolverValid(code, responseContext, "response");
-    });
+    await checkResolverValid(code, responseContext, "response");
+  });
 });
 
 describe("rds resolvers", () => {
-    describe("typehints", () => {
-        test("UUID", async () => {
-            const code = `
+  describe("typehints", () => {
+    test("UUID", async () => {
+      const code = `
             export function request(ctx) {
                 return rds.typeHint.UUID(ctx.args.id);
             }
@@ -75,17 +75,17 @@ describe("rds resolvers", () => {
             }
             `;
 
-            const context = {
-                arguments: {
-                    id: "abc123",
-                },
-            };
+      const context = {
+        arguments: {
+          id: "abc123",
+        },
+      };
 
-            await checkResolverValid(code, context, "request");
-        });
+      await checkResolverValid(code, context, "request");
+    });
 
-        test("TIMESTAMP", async () => {
-            const code = `
+    test("TIMESTAMP", async () => {
+      const code = `
             export function request(ctx) {
                 return rds.typeHint.TIMESTAMP(ctx.args.id);
             }
@@ -94,103 +94,103 @@ describe("rds resolvers", () => {
             }
             `;
 
-            const context = {
-                arguments: {
-                    id: new Date(2023, 1, 1),
-                },
-            };
+      const context = {
+        arguments: {
+          id: new Date(2023, 1, 1),
+        },
+      };
 
-            await checkResolverValid(code, context, "request");
-        });
+      await checkResolverValid(code, context, "request");
     });
+  });
 
-    // https://docs.aws.amazon.com/appsync/latest/devguide/resolver-reference-rds-js.html
-    test("toJsonObject", async () => {
-        const responseContext = {
-            "result": JSON.stringify({
-                "sqlStatementResults": [
-                    {
-                        "numberOfRecordsUpdated": 0,
-                        "records": [
-                            [
-                                {
-                                    "stringValue": "Mark Twain"
-                                },
-                                {
-                                    "stringValue": "Adventures of Huckleberry Finn"
-                                },
-                                {
-                                    "stringValue": "978-1948132817"
-                                }
-                            ],
-                            [
-                                {
-                                    "stringValue": "Jack London"
-                                },
-                                {
-                                    "stringValue": "The Call of the Wild"
-                                },
-                                {
-                                    "stringValue": "978-1948132275"
-                                }
-                            ]
-                        ],
-                        "columnMetadata": [
-                            {
-                                "isSigned": false,
-                                "isCurrency": false,
-                                "label": "author",
-                                "precision": 200,
-                                "typeName": "VARCHAR",
-                                "scale": 0,
-                                "isAutoIncrement": false,
-                                "isCaseSensitive": false,
-                                "schemaName": "",
-                                "tableName": "Books",
-                                "type": 12,
-                                "nullable": 0,
-                                "arrayBaseColumnType": 0,
-                                "name": "author"
-                            },
-                            {
-                                "isSigned": false,
-                                "isCurrency": false,
-                                "label": "title",
-                                "precision": 200,
-                                "typeName": "VARCHAR",
-                                "scale": 0,
-                                "isAutoIncrement": false,
-                                "isCaseSensitive": false,
-                                "schemaName": "",
-                                "tableName": "Books",
-                                "type": 12,
-                                "nullable": 0,
-                                "arrayBaseColumnType": 0,
-                                "name": "title"
-                            },
-                            {
-                                "isSigned": false,
-                                "isCurrency": false,
-                                "label": "ISBN-13",
-                                "precision": 15,
-                                "typeName": "VARCHAR",
-                                "scale": 0,
-                                "isAutoIncrement": false,
-                                "isCaseSensitive": false,
-                                "schemaName": "",
-                                "tableName": "Books",
-                                "type": 12,
-                                "nullable": 0,
-                                "arrayBaseColumnType": 0,
-                                "name": "ISBN-13"
-                            }
-                        ]
-                    }
-                ]
-            }),
-        };
+  // https://docs.aws.amazon.com/appsync/latest/devguide/resolver-reference-rds-js.html
+  test("toJsonObject", async () => {
+    const responseContext = {
+      "result": JSON.stringify({
+        "sqlStatementResults": [
+          {
+            "numberOfRecordsUpdated": 0,
+            "records": [
+              [
+                {
+                  "stringValue": "Mark Twain"
+                },
+                {
+                  "stringValue": "Adventures of Huckleberry Finn"
+                },
+                {
+                  "stringValue": "978-1948132817"
+                }
+              ],
+              [
+                {
+                  "stringValue": "Jack London"
+                },
+                {
+                  "stringValue": "The Call of the Wild"
+                },
+                {
+                  "stringValue": "978-1948132275"
+                }
+              ]
+            ],
+            "columnMetadata": [
+              {
+                "isSigned": false,
+                "isCurrency": false,
+                "label": "author",
+                "precision": 200,
+                "typeName": "VARCHAR",
+                "scale": 0,
+                "isAutoIncrement": false,
+                "isCaseSensitive": false,
+                "schemaName": "",
+                "tableName": "Books",
+                "type": 12,
+                "nullable": 0,
+                "arrayBaseColumnType": 0,
+                "name": "author"
+              },
+              {
+                "isSigned": false,
+                "isCurrency": false,
+                "label": "title",
+                "precision": 200,
+                "typeName": "VARCHAR",
+                "scale": 0,
+                "isAutoIncrement": false,
+                "isCaseSensitive": false,
+                "schemaName": "",
+                "tableName": "Books",
+                "type": 12,
+                "nullable": 0,
+                "arrayBaseColumnType": 0,
+                "name": "title"
+              },
+              {
+                "isSigned": false,
+                "isCurrency": false,
+                "label": "ISBN-13",
+                "precision": 15,
+                "typeName": "VARCHAR",
+                "scale": 0,
+                "isAutoIncrement": false,
+                "isCaseSensitive": false,
+                "schemaName": "",
+                "tableName": "Books",
+                "type": 12,
+                "nullable": 0,
+                "arrayBaseColumnType": 0,
+                "name": "ISBN-13"
+              }
+            ]
+          }
+        ]
+      }),
+    };
 
-        const code = `
+    const code = `
         export function request(ctx) {}
 
         export function response(ctx) {
@@ -198,11 +198,11 @@ describe("rds resolvers", () => {
         }
         `;
 
-        await checkResolverValid(code, responseContext, "response");
-    });
+    await checkResolverValid(code, responseContext, "response");
+  });
 
-    test("createPgStatement-typeHint", async () => {
-        const code = `
+  test("createPgStatement-typeHint", async () => {
+    const code = `
       export function request(ctx) {
         const whereClause = { and:[
           { id: { eq: rds.typeHint.UUID(ctx.args.id) } },
@@ -216,20 +216,20 @@ describe("rds resolvers", () => {
 
       export function response(ctx) {}
       `
-        const requestContext = {
-            arguments: {
-                id: "1232",
-                name: "hello",
-                started: new Date(2022, 2, 2),
-            }
-        };
+    const requestContext = {
+      arguments: {
+        id: "1232",
+        name: "hello",
+        started: new Date(2022, 2, 2),
+      }
+    };
 
-        await checkResolverValid(code, requestContext, "request");
+    await checkResolverValid(code, requestContext, "request");
 
-    });
+  });
 
-    test("createPgStatement-select", async () => {
-        const code = `
+  test("createPgStatement-select", async () => {
+    const code = `
     export function request(ctx) {
         const whereClause = { or: [
           { name: { eq: 'Stephane'} },
@@ -248,14 +248,14 @@ describe("rds resolvers", () => {
     export function response(ctx) {}
     `;
 
-        const requestContext = {};
+    const requestContext = {};
 
-        await checkResolverValid(code, requestContext, "request");
+    await checkResolverValid(code, requestContext, "request");
 
-    });
+  });
 
-    test("createPgStatement-remove", async () => {
-        const code = `
+  test("createPgStatement-remove", async () => {
+    const code = `
       export function request(ctx) {
           const id = ctx.args.id;
           const where = { id: { eq: id } };
@@ -270,14 +270,14 @@ describe("rds resolvers", () => {
       export function response(ctx) {}
   `;
 
-        const requestContext = {
-            arguments: {
-                id: "1232"
-            }
-        };
+    const requestContext = {
+      arguments: {
+        id: "1232"
+      }
+    };
 
-        await checkResolverValid(code, requestContext, "request");
+    await checkResolverValid(code, requestContext, "request");
 
-    });
+  });
 });
 
