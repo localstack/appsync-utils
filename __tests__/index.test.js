@@ -8,6 +8,7 @@ import { checkValid } from "./helpers.js";
 
 import { util } from "..";
 
+
 describe("general utilities", () => {
     test("autoId", async () => {
         // cannot test on AWS due to random nature
@@ -19,10 +20,11 @@ describe("time utilities", () => {
     test("nowFormatted", async () => {
         // patch date utilities to ensure consistency
         const newDate = new Date(2021, 1, 1);
-        jest.spyOn(global, 'Date').mockImplementation(() => newDate);
+        const spied = jest.spyOn(global, 'Date').mockImplementation(() => newDate);
 
         // TODO: not strictly correct, but close
         expect(util.time.nowFormatted('YYYY-MM-dd HH:mm:ss')).toEqual("2021-02-01T00:00:00.000Z");
+        spied.mockRestore();
     });
 });
 
