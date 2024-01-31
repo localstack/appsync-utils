@@ -34,6 +34,10 @@ export function select(s) {
     return { type: "SELECT", properties: s };
 }
 
+export function remove(s) {
+    return { type: "REMOVE", properties: s };
+}
+
 export function createPgStatement(...statements) {
     let result = {
         statements: [],
@@ -50,9 +54,54 @@ export function createPgStatement(...statements) {
         return name;
     }
 
+    const buildWhereClause = (where) => {
+        let blocks = [];
+        if (where.or) {
+            const parts = [];
+            for (const part of where.or) {
+                const columnName = Object.keys(part)[0];
+                const condition = part[columnName];
+
+                const conditionType = Object.keys(condition)[0];
+                const value = newVariable(condition[conditionType]);
+                switch (conditionType) {
+                    case "eq":
+                        parts.push(`("${columnName}" = ${value})`);
+                        break;
+                    case "gt":
+                        parts.push(`("${columnName}" > ${value})`);
+                        break;
+                    default:
+                        throw new Error(`Unhandled condition type ${conditionType}`);
+                }
+            }
+            blocks.push(parts.join(" OR "));
+        } else if (where.and) {
+        } else {
+            // implicit single clause
+            const columnName = Object.keys(where)[0];
+            const condition = where[columnName];
+
+            const conditionType = Object.keys(condition)[0];
+            const value = newVariable(condition[conditionType]);
+            switch (conditionType) {
+                case "eq":
+                    blocks.push(`"${columnName}" = ${value}`);
+                    break;
+                case "gt":
+                    blocks.push(`"${columnName}" > ${value}`);
+                    break;
+                default:
+                    throw new Error(`Unhandled condition type ${conditionType}`);
+            }
+        }
+
+        return blocks;
+    }
+
     for (const { type, properties } of statements) {
         switch (type) {
-            case "SELECT":
+            case "SELECT": {
                 const { table, columns, where, orderBy, limit, offset } = properties;
                 const columnNames = columns.map(name => `"${name}"`).join(', ');
                 const tableName = `"${table}"`;
@@ -60,30 +109,8 @@ export function createPgStatement(...statements) {
                 let query = `SELECT ${columnNames} FROM ${tableName}`;
 
                 if (where) {
-                    if (where.or) {
-                        const parts = [];
-                        for (const part of where.or) {
-                            const columnName = Object.keys(part)[0];
-                            const condition = part[columnName];
-
-                            const conditionType = Object.keys(condition)[0];
-                            const value = newVariable(condition[conditionType]);
-                            switch (conditionType) {
-                                case "eq":
-                                    parts.push(`("${columnName}" = ${value})`);
-                                    break;
-                                case "gt":
-                                    parts.push(`("${columnName}" > ${value})`);
-                                    break;
-                                default:
-                                    throw new Error(`Unhandled condition type ${conditionType}`);
-                            }
-                        }
-                        query = `${query} WHERE ${parts.join(" OR ")}`;
-                    } else if (where.and) {
-                    } else {
-                        throw new Error(`Unknown where clause type: ${where}`);
-                    }
+                    const parts = buildWhereClause(where);
+                    query = `${query} WHERE ${parts}`;
                 }
 
 
@@ -110,6 +137,26 @@ export function createPgStatement(...statements) {
 
                 result.statements.push(query);
                 break;
+            }
+            case "REMOVE": {
+                const { table, where, returning, } = properties;
+                const tableName = `"${table}"`;
+
+                let query = `DELETE FROM ${tableName}`;
+
+                if (where) {
+                    const parts = buildWhereClause(where);
+                    query = `${query} WHERE ${parts}`;
+                }
+
+                if (returning) {
+                    const columnNames = returning.map(name => `"${name}"`).join(', ');
+                    query = `${query} RETURNING ${columnNames}`;
+                }
+
+                result.statements.push(query);
+                break;
+            }
             default:
                 throw new Error(`TODO: "${type}" query unsupported`);
         }

@@ -254,7 +254,7 @@ describe("rds resolvers", () => {
 
     });
 
-    test.skip("createPgStatement-remove", async () => {
+    test("createPgStatement-remove", async () => {
         const code = `
       export function request(ctx) {
           const id = ctx.args.id;
