@@ -53,11 +53,13 @@ exports[`rds resolvers createPgStatement-remove 1`] = `
 exports[`rds resolvers createPgStatement-select 1`] = `
 {
   "statements": [
-    "SELECT "id", "name" FROM "UserGroup" WHERE ("name" = :P0) OR ("id" > :P1) ORDER BY "name" ASC, "id" DESC",
+    "SELECT "id", "name" FROM "UserGroup" WHERE ("name" = :P0) OR ("id" > :P1) ORDER BY "name" ASC, "id" DESC LIMIT :P2 OFFSET :P3",
   ],
   "variableMap": {
     ":P0": "Stephane",
     ":P1": 10,
+    ":P2": 10,
+    ":P3": 1,
   },
   "variableTypeHintMap": {},
 }
@@ -70,7 +72,7 @@ exports[`rds resolvers createPgStatement-typeHint 1`] = `
   ],
   "variableMap": {
     ":P0": "1232",
-    ":P1": "2024-01-31 11:54:36",
+    ":P1": "2022-03-02T00:00:00.000Z",
   },
   "variableTypeHintMap": {
     ":P0": "UUID",

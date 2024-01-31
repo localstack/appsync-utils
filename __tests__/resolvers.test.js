@@ -204,10 +204,9 @@ describe("rds resolvers", () => {
     test.skip("createPgStatement-typeHint", async () => {
         const code = `
       export function request(ctx) {
-        const now = util.time.nowFormatted('YYYY-MM-dd HH:mm:ss');
         const whereClause = { and:[
           { id: { eq: rds.typeHint.UUID(ctx.args.id) } },
-          { started: { lt: rds.typeHint.TIMESTAMP(now) } } 
+          { started: { lt: rds.typeHint.TIMESTAMP(ctx.args.started) } } 
         ] }; 
         return rds.createPgStatement(rds.select({
           table: "UserGroup",
@@ -221,7 +220,7 @@ describe("rds resolvers", () => {
             arguments: {
                 id: "1232",
                 name: "hello",
-
+                started: new Date(2022, 2, 2),
             }
         };
 
@@ -229,7 +228,7 @@ describe("rds resolvers", () => {
 
     });
 
-    test.skip("createPgStatement-select", async () => {
+    test("createPgStatement-select", async () => {
         const code = `
     export function request(ctx) {
         const whereClause = { or: [
@@ -239,6 +238,8 @@ describe("rds resolvers", () => {
         return rds.createPgStatement(rds.select({
             table: "UserGroup",
             where: whereClause,
+            limit: 10,
+            offset: 1,
             columns: ['id', 'name'],
             orderBy: [{column: 'name'}, {column: 'id', dir: 'DESC'}]
         }));
@@ -247,11 +248,7 @@ describe("rds resolvers", () => {
     export function response(ctx) {}
     `;
 
-        const requestContext = {
-            arguments: {
-                id: "1232"
-            }
-        };
+        const requestContext = {};
 
         await checkResolverValid(code, requestContext, "request");
 
