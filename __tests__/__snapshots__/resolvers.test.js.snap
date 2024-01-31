@@ -38,7 +38,50 @@ exports[`dynamodb resolvers something 2`] = `
 ]
 `;
 
-exports[`rds resolvers createPgStatement-remove 1`] = `
+exports[`rds resolvers mysql remove 1`] = `
+{
+  "statements": [
+    "DELETE FROM \`persons\` WHERE \`id\` = :P0",
+  ],
+  "variableMap": {
+    ":P0": "1232",
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`rds resolvers mysql select 1`] = `
+{
+  "statements": [
+    "SELECT \`id\`, \`name\` FROM \`UserGroup\` WHERE (\`name\` = :P0) OR (\`id\` > :P1) ORDER BY \`name\` ASC, \`id\` DESC LIMIT :P2 OFFSET :P3",
+  ],
+  "variableMap": {
+    ":P0": "Stephane",
+    ":P1": 10,
+    ":P2": 10,
+    ":P3": 1,
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`rds resolvers mysql type hints 1`] = `
+{
+  "statements": [
+    "SELECT * FROM \`UserGroup\` WHERE (\`id\` = :P0) AND (\`started\` < :P1)",
+  ],
+  "variableMap": {
+    ":P0": "1232",
+    ":P1": "2022-03-02T00:00:00.000Z",
+  },
+  "variableTypeHintMap": {
+    ":P0": "UUID",
+    ":P1": "TIMESTAMP",
+  },
+}
+`;
+
+exports[`rds resolvers postgresql remove 1`] = `
 {
   "statements": [
     "DELETE FROM "persons" WHERE "id" = :P0 RETURNING "id", "name"",
@@ -50,7 +93,7 @@ exports[`rds resolvers createPgStatement-remove 1`] = `
 }
 `;
 
-exports[`rds resolvers createPgStatement-select 1`] = `
+exports[`rds resolvers postgresql select 1`] = `
 {
   "statements": [
     "SELECT "id", "name" FROM "UserGroup" WHERE ("name" = :P0) OR ("id" > :P1) ORDER BY "name" ASC, "id" DESC LIMIT :P2 OFFSET :P3",
@@ -65,7 +108,7 @@ exports[`rds resolvers createPgStatement-select 1`] = `
 }
 `;
 
-exports[`rds resolvers createPgStatement-typeHint 1`] = `
+exports[`rds resolvers postgresql type hints 1`] = `
 {
   "statements": [
     "SELECT * FROM "UserGroup" WHERE ("id" = :P0) AND ("started" < :P1)",

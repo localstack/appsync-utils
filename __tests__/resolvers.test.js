@@ -201,8 +201,89 @@ describe("rds resolvers", () => {
     await checkResolverValid(code, responseContext, "response");
   });
 
-  test("createPgStatement-typeHint", async () => {
-    const code = `
+  describe("mysql", () => {
+    test("type hints", async () => {
+      const code = `
+      export function request(ctx) {
+        const whereClause = { and:[
+          { id: { eq: rds.typeHint.UUID(ctx.args.id) } },
+          { started: { lt: rds.typeHint.TIMESTAMP(ctx.args.started) } } 
+        ] }; 
+        return rds.createMySQLStatement(rds.select({
+          table: "UserGroup",
+          where: whereClause,
+          }));
+      }
+
+      export function response(ctx) {}
+      `
+      const requestContext = {
+        arguments: {
+          id: "1232",
+          name: "hello",
+          started: new Date(2022, 2, 2),
+        }
+      };
+
+      await checkResolverValid(code, requestContext, "request");
+
+    });
+
+    test("select", async () => {
+      const code = `
+    export function request(ctx) {
+        const whereClause = { or: [
+          { name: { eq: 'Stephane'} },
+          { id: { gt: 10 } }
+      ]}
+        return rds.createMySQLStatement(rds.select({
+            table: "UserGroup",
+            where: whereClause,
+            limit: 10,
+            offset: 1,
+            columns: ['id', 'name'],
+            orderBy: [{column: 'name'}, {column: 'id', dir: 'DESC'}]
+        }));
+    }
+
+    export function response(ctx) {}
+    `;
+
+      const requestContext = {};
+
+      await checkResolverValid(code, requestContext, "request");
+
+    });
+
+    test("remove", async () => {
+      const code = `
+      export function request(ctx) {
+          const id = ctx.args.id;
+          const where = { id: { eq: id } };
+          const deleteStatement = rds.remove({
+              table: 'persons',
+              where: where,
+          });
+      
+          return rds.createMySQLStatement(deleteStatement);
+        }
+      export function response(ctx) {}
+  `;
+
+      const requestContext = {
+        arguments: {
+          id: "1232"
+        }
+      };
+
+      await checkResolverValid(code, requestContext, "request");
+
+    });
+  });
+
+  describe("postgresql", () => {
+    test("type hints", async () => {
+      const code = `
       export function request(ctx) {
         const whereClause = { and:[
           { id: { eq: rds.typeHint.UUID(ctx.args.id) } },
@@ -216,20 +297,20 @@ describe("rds resolvers", () => {
 
       export function response(ctx) {}
       `
-    const requestContext = {
-      arguments: {
-        id: "1232",
-        name: "hello",
-        started: new Date(2022, 2, 2),
-      }
-    };
+      const requestContext = {
+        arguments: {
+          id: "1232",
+          name: "hello",
+          started: new Date(2022, 2, 2),
+        }
+      };
 
-    await checkResolverValid(code, requestContext, "request");
+      await checkResolverValid(code, requestContext, "request");
 
-  });
+    });
 
-  test("createPgStatement-select", async () => {
-    const code = `
+    test("select", async () => {
+      const code = `
     export function request(ctx) {
         const whereClause = { or: [
           { name: { eq: 'Stephane'} },
@@ -248,14 +329,14 @@ describe("rds resolvers", () => {
     export function response(ctx) {}
     `;
 
-    const requestContext = {};
+      const requestContext = {};
 
-    await checkResolverValid(code, requestContext, "request");
+      await checkResolverValid(code, requestContext, "request");
 
-  });
+    });
 
-  test("createPgStatement-remove", async () => {
-    const code = `
+    test("remove", async () => {
+      const code = `
       export function request(ctx) {
           const id = ctx.args.id;
           const where = { id: { eq: id } };
@@ -270,14 +351,15 @@ describe("rds resolvers", () => {
       export function response(ctx) {}
   `;
 
-    const requestContext = {
-      arguments: {
-        id: "1232"
-      }
-    };
+      const requestContext = {
+        arguments: {
+          id: "1232"
+        }
+      };
 
-    await checkResolverValid(code, requestContext, "request");
+      await checkResolverValid(code, requestContext, "request");
 
+    });
   });
 });
 

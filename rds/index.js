@@ -38,8 +38,9 @@ export function remove(s) {
   return { type: "REMOVE", properties: s };
 }
 
-class PgStatementBuilder {
-  constructor() {
+class StatementBuilder {
+  constructor({ quoteChar }) {
+    this.quoteChar = quoteChar;
     this.result = {
       statements: [],
       variableMap: {},
@@ -54,11 +55,11 @@ class PgStatementBuilder {
       switch (type) {
         case "SELECT": {
           const { table, columns, where, orderBy, limit, offset } = properties;
-          const tableName = `"${table}"`;
+          const tableName = `${this.quoteChar}${table}${this.quoteChar}`;
           let query;
 
           if (columns) {
-            const columnNames = columns.map(name => `"${name}"`).join(', ');
+            const columnNames = columns.map(name => `${this.quoteChar}${name}${this.quoteChar}`).join(', ');
             query = `SELECT ${columnNames} FROM ${tableName}`;
           } else {
             query = `SELECT * FROM ${tableName}`;
@@ -74,7 +75,7 @@ class PgStatementBuilder {
             let orderByParts = [];
             for (let { column, dir } of orderBy) {
               dir = dir || "ASC";
-              orderByParts.push(`"${column}" ${dir}`);
+              orderByParts.push(`${this.quoteChar}${column}${this.quoteChar} ${dir}`);
             }
 
             query = `${query} ORDER BY ${orderByParts.join(', ')}`;
@@ -96,7 +97,7 @@ class PgStatementBuilder {
         }
         case "REMOVE": {
           const { table, where, returning, } = properties;
-          const tableName = `"${table}"`;
+          const tableName = `${this.quoteChar}${table}${this.quoteChar}`;
 
           let query = `DELETE FROM ${tableName}`;
 
@@ -106,7 +107,7 @@ class PgStatementBuilder {
           }
 
           if (returning) {
-            const columnNames = returning.map(name => `"${name}"`).join(', ');
+            const columnNames = returning.map(name => `${this.quoteChar}${name}${this.quoteChar}`).join(', ');
             query = `${query} RETURNING ${columnNames}`;
           }
 
@@ -163,21 +164,21 @@ class PgStatementBuilder {
     const value = this.newVariable(condition[conditionType]);
     switch (conditionType) {
       case "eq":
-        return `${startGrouping}"${columnName}" = ${value}${endGrouping}`;
+        return `${startGrouping}${this.quoteChar}${columnName}${this.quoteChar} = ${value}${endGrouping}`;
       case "ne":
-        return `${startGrouping}"${columnName}" != ${value}${endGrouping}`;
+        return `${startGrouping}${this.quoteChar}${columnName}${this.quoteChar} != ${value}${endGrouping}`;
       case "gt":
-        return `${startGrouping}"${columnName}" > ${value}${endGrouping}`;
+        return `${startGrouping}${this.quoteChar}${columnName}${this.quoteChar} > ${value}${endGrouping}`;
       case "lt":
-        return `${startGrouping}"${columnName}" < ${value}${endGrouping}`;
+        return `${startGrouping}${this.quoteChar}${columnName}${this.quoteChar} < ${value}${endGrouping}`;
       case "ge":
-        return `${startGrouping}"${columnName}" >= ${value}${endGrouping}`;
+        return `${startGrouping}${this.quoteChar}${columnName}${this.quoteChar} >= ${value}${endGrouping}`;
       case "le":
-        return `${startGrouping}"${columnName}" <= ${value}${endGrouping}`;
+        return `${startGrouping}${this.quoteChar}${columnName}${this.quoteChar} <= ${value}${endGrouping}`;
       case "contains":
-        return `${startGrouping}"${columnName}" LIKE ${value}${endGrouping}`;
+        return `${startGrouping}${this.quoteChar}${columnName}${this.quoteChar} LIKE ${value}${endGrouping}`;
       case "notContains":
-        return `${startGrouping}"${columnName}" NOT LIKE ${value}${endGrouping}`;
+        return `${startGrouping}${this.quoteChar}${columnName}${this.quoteChar} NOT LIKE ${value}${endGrouping}`;
       default:
         throw new Error(`Unhandled condition type ${conditionType}`);
     }
@@ -185,9 +186,19 @@ class PgStatementBuilder {
 }
 
 export function createPgStatement(...statements) {
-  let builder = new PgStatementBuilder();
+  let builder = new StatementBuilder({
+    quoteChar: '"',
+  });
   return builder.render(statements);
 }
+
+export function createMySQLStatement(...statements) {
+  let builder = new StatementBuilder({
+    quoteChar: '`',
+  });
+  return builder.render(statements);
+}
+
 
 export const typeHint = {
   DECIMAL: function(value) {
