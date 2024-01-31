@@ -1,5 +1,8 @@
 import { v4 as uuidv4 } from 'uuid';
 
+// to collect the errors that are created by the user
+export const __errors = [];
+
 export const dynamodbUtils = {
   toDynamoDB: function(value) {
     if (typeof (value) === "number") {
@@ -118,6 +121,9 @@ const FILTER_CONTAINS = "contains";
 export const util = {
   autoId: function() {
     return uuidv4();
+  },
+  appendError: function(message, errorType, data, errorInfo) {
+      __errors.push({ message, errorType, data, errorInfo });
   },
   time: {
     nowFormatted: function(pattern) {
