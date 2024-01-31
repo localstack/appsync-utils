@@ -105,7 +105,7 @@ describe("rds resolvers", () => {
     });
 
     // https://docs.aws.amazon.com/appsync/latest/devguide/resolver-reference-rds-js.html
-    test.skip("toJsonObject", async () => {
+    test("toJsonObject", async () => {
         const responseContext = {
             "result": JSON.stringify({
                 "sqlStatementResults": [
@@ -201,7 +201,7 @@ describe("rds resolvers", () => {
         await checkResolverValid(code, responseContext, "response");
     });
 
-    test.skip("createPgStatement-typeHint", async () => {
+    test("createPgStatement-typeHint", async () => {
         const code = `
       export function request(ctx) {
         const whereClause = { and:[

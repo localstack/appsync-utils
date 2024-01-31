@@ -49,7 +49,12 @@ export function createPgStatement(...statements) {
     let variableIndex = 0;
     const newVariable = (value) => {
         const name = `:P${variableIndex}`;
-        result.variableMap[name] = value;
+        if (value.type) {
+            result.variableMap[name] = value.value;
+            result.variableTypeHintMap[name] = value.type;
+        } else {
+            result.variableMap[name] = value;
+        }
         variableIndex++;
         return name;
     }
@@ -71,12 +76,37 @@ export function createPgStatement(...statements) {
                     case "gt":
                         parts.push(`("${columnName}" > ${value})`);
                         break;
+                    case "lt":
+                        parts.push(`("${columnName}" < ${value})`);
+                        break;
                     default:
                         throw new Error(`Unhandled condition type ${conditionType}`);
                 }
             }
             blocks.push(parts.join(" OR "));
         } else if (where.and) {
+            const parts = [];
+            for (const part of where.and) {
+                const columnName = Object.keys(part)[0];
+                const condition = part[columnName];
+
+                const conditionType = Object.keys(condition)[0];
+                const value = newVariable(condition[conditionType]);
+                switch (conditionType) {
+                    case "eq":
+                        parts.push(`("${columnName}" = ${value})`);
+                        break;
+                    case "gt":
+                        parts.push(`("${columnName}" > ${value})`);
+                        break;
+                    case "lt":
+                        parts.push(`("${columnName}" < ${value})`);
+                        break;
+                    default:
+                        throw new Error(`Unhandled condition type ${conditionType}`);
+                }
+            }
+            blocks.push(parts.join(" AND "));
         } else {
             // implicit single clause
             const columnName = Object.keys(where)[0];
@@ -103,10 +133,16 @@ export function createPgStatement(...statements) {
         switch (type) {
             case "SELECT": {
                 const { table, columns, where, orderBy, limit, offset } = properties;
-                const columnNames = columns.map(name => `"${name}"`).join(', ');
                 const tableName = `"${table}"`;
+                let query;
+                if (columns) {
+                    const columnNames = columns.map(name => `"${name}"`).join(', ');
 
-                let query = `SELECT ${columnNames} FROM ${tableName}`;
+
+                    query = `SELECT ${columnNames} FROM ${tableName}`;
+                } else {
+                    query = `SELECT * FROM ${tableName}`;
+                }
 
                 if (where) {
                     const parts = buildWhereClause(where);
