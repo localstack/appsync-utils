@@ -38,28 +38,103 @@ export function remove(s) {
     return { type: "REMOVE", properties: s };
 }
 
-export function createPgStatement(...statements) {
-    let result = {
-        statements: [],
-        variableMap: {},
-        variableTypeHintMap: {},
-    };
+class PgStatementBuilder {
+    constructor() {
+        this.result = {
+            statements: [],
+            variableMap: {},
+            variableTypeHintMap: {},
+        };
+
+        this.variableIndex = 0;
+    }
+
+    render(statements) {
+        for (const { type, properties } of statements) {
+            switch (type) {
+                case "SELECT": {
+                    const { table, columns, where, orderBy, limit, offset } = properties;
+                    const tableName = `"${table}"`;
+                    let query;
+                    if (columns) {
+                        const columnNames = columns.map(name => `"${name}"`).join(', ');
 
 
-    let variableIndex = 0;
-    const newVariable = (value) => {
-        const name = `:P${variableIndex}`;
-        if (value.type) {
-            result.variableMap[name] = value.value;
-            result.variableTypeHintMap[name] = value.type;
-        } else {
-            result.variableMap[name] = value;
+                        query = `SELECT ${columnNames} FROM ${tableName}`;
+                    } else {
+                        query = `SELECT * FROM ${tableName}`;
+                    }
+
+                    if (where) {
+                        const parts = this.buildWhereClause(where);
+                        query = `${query} WHERE ${parts}`;
+                    }
+
+
+                    if (orderBy) {
+                        let orderByParts = [];
+                        for (let { column, dir } of orderBy) {
+                            dir = dir || "ASC";
+                            orderByParts.push(`"${column}" ${dir}`);
+                        }
+
+                        query = `${query} ORDER BY ${orderByParts.join(', ')}`;
+
+                    };
+
+                    if (limit) {
+                        const limitValue = this.newVariable(limit);
+                        query = `${query} LIMIT ${limitValue}`;
+                    }
+
+                    if (offset) {
+                        const offsetValue = this.newVariable(offset);
+                        query = `${query} OFFSET ${offsetValue}`;
+                    }
+
+                    this.result.statements.push(query);
+                    break;
+                }
+                case "REMOVE": {
+                    const { table, where, returning, } = properties;
+                    const tableName = `"${table}"`;
+
+                    let query = `DELETE FROM ${tableName}`;
+
+                    if (where) {
+                        const parts = this.buildWhereClause(where);
+                        query = `${query} WHERE ${parts}`;
+                    }
+
+                    if (returning) {
+                        const columnNames = returning.map(name => `"${name}"`).join(', ');
+                        query = `${query} RETURNING ${columnNames}`;
+                    }
+
+                    this.result.statements.push(query);
+                    break;
+                }
+                default:
+                    throw new Error(`TODO: "${type}" query unsupported`);
+            }
         }
-        variableIndex++;
+
+        return this.result;
+    }
+
+    newVariable(value) {
+        const name = `:P${this.variableIndex}`;
+        if (value.type) {
+            this.result.variableMap[name] = value.value;
+            this.result.variableTypeHintMap[name] = value.type;
+        } else {
+            this.result.variableMap[name] = value;
+        }
+        this.variableIndex++;
         return name;
     }
 
-    const buildWhereClause = (where) => {
+    buildWhereClause(where) {
         let blocks = [];
         if (where.or) {
             const parts = [];
@@ -68,7 +143,7 @@ export function createPgStatement(...statements) {
                 const condition = part[columnName];
 
                 const conditionType = Object.keys(condition)[0];
-                const value = newVariable(condition[conditionType]);
+                const value = this.newVariable(condition[conditionType]);
                 switch (conditionType) {
                     case "eq":
                         parts.push(`("${columnName}" = ${value})`);
@@ -91,7 +166,7 @@ export function createPgStatement(...statements) {
                 const condition = part[columnName];
 
                 const conditionType = Object.keys(condition)[0];
-                const value = newVariable(condition[conditionType]);
+                const value = this.newVariable(condition[conditionType]);
                 switch (conditionType) {
                     case "eq":
                         parts.push(`("${columnName}" = ${value})`);
@@ -113,7 +188,7 @@ export function createPgStatement(...statements) {
             const condition = where[columnName];
 
             const conditionType = Object.keys(condition)[0];
-            const value = newVariable(condition[conditionType]);
+            const value = this.newVariable(condition[conditionType]);
             switch (conditionType) {
                 case "eq":
                     blocks.push(`"${columnName}" = ${value}`);
@@ -128,77 +203,11 @@ export function createPgStatement(...statements) {
 
         return blocks;
     }
+}
 
-    for (const { type, properties } of statements) {
-        switch (type) {
-            case "SELECT": {
-                const { table, columns, where, orderBy, limit, offset } = properties;
-                const tableName = `"${table}"`;
-                let query;
-                if (columns) {
-                    const columnNames = columns.map(name => `"${name}"`).join(', ');
-
-
-                    query = `SELECT ${columnNames} FROM ${tableName}`;
-                } else {
-                    query = `SELECT * FROM ${tableName}`;
-                }
-
-                if (where) {
-                    const parts = buildWhereClause(where);
-                    query = `${query} WHERE ${parts}`;
-                }
-
-
-                if (orderBy) {
-                    let orderByParts = [];
-                    for (let { column, dir } of orderBy) {
-                        dir = dir || "ASC";
-                        orderByParts.push(`"${column}" ${dir}`);
-                    }
-
-                    query = `${query} ORDER BY ${orderByParts.join(', ')}`;
-
-                };
-
-                if (limit) {
-                    const limitValue = newVariable(limit);
-                    query = `${query} LIMIT ${limitValue}`;
-                }
-
-                if (offset) {
-                    const offsetValue = newVariable(offset);
-                    query = `${query} OFFSET ${offsetValue}`;
-                }
-
-                result.statements.push(query);
-                break;
-            }
-            case "REMOVE": {
-                const { table, where, returning, } = properties;
-                const tableName = `"${table}"`;
-
-                let query = `DELETE FROM ${tableName}`;
-
-                if (where) {
-                    const parts = buildWhereClause(where);
-                    query = `${query} WHERE ${parts}`;
-                }
-
-                if (returning) {
-                    const columnNames = returning.map(name => `"${name}"`).join(', ');
-                    query = `${query} RETURNING ${columnNames}`;
-                }
-
-                result.statements.push(query);
-                break;
-            }
-            default:
-                throw new Error(`TODO: "${type}" query unsupported`);
-        }
-    }
-
-    return result;
+export function createPgStatement(...statements) {
+    let builder = new PgStatementBuilder();
+    return builder.render(statements);
 }
 
 export const typeHint = {
