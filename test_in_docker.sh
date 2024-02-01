@@ -28,7 +28,11 @@ else
     echo "import { util } from '@aws-appsync/utils';" > main.mjs
     echo "console.log('id: ', util.autoId());" >> main.mjs
     echo "console.log('toDynamoDB: ', util.dynamodb.toDynamoDB('test'));" >> main.mjs
+    echo "import { get } from '@aws-appsync/utils/dynamodb';" >> main.mjs
+    echo "console.log({ get: get({ key: 10 }) });" >> main.mjs
+    echo "import { select } from '@aws-appsync/utils/rds';" >> main.mjs
+    echo "console.log({ value: select(10) });" >> main.mjs
 
     echo "Checking package:"
-    node main.mjs
+    node --experimental-specifier-resolution=node main.mjs
 fi

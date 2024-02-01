@@ -3,8 +3,8 @@ import * as ddb from '@aws-appsync/utils/dynamodb';
 
 export function request(ctx) {
   return util.transform.toDynamoDBFilterExpression({
-    "title":{
-      "contains":"Hello World"
+    "title": {
+      "contains": "Hello World"
     }
   });
 }

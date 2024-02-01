@@ -119,6 +119,16 @@ export const util = {
   autoId: function() {
     return uuidv4();
   },
+  appendError: function(message, errorType, data, errorInfo) {
+    // This will be handled in LocalStack in a side channel by printing to stderr
+    console.error({ message, errorType, data, errorInfo });
+  },
+  time: {
+    nowFormatted: function(pattern) {
+      // TODO: not completely correct, but close enough probably
+      return new Date().toISOString();
+    },
+  },
   transform: {
     toDynamoDBFilterExpression: function(value) {
       const items = Object.entries(value);
