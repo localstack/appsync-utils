@@ -1,5 +1,11 @@
 export function toJsonObject(inputStr) {
-  const input = JSON.parse(inputStr);
+  // on AWS inputStr is always a string, but on LocalStack the input may be an object.
+  let input;
+  try {
+    input = JSON.parse(inputStr);
+  } catch (SyntaxError) {
+    input = inputStr;
+  }
   let perStatement = [];
   for (const { records, columnMetadata } of input.sqlStatementResults) {
     const statement = [];
