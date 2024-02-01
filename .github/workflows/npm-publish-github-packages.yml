@@ -10,6 +10,7 @@ on:
       - main
 
 env:
+  LOCALSTACK_API_KEY: ${{ secrets.LOCALSTACK_API_KEY }}
   TEST_IMAGE_NAME: public.ecr.aws/lambda/nodejs:16
 
 jobs:
@@ -39,3 +40,36 @@ jobs:
 
       - name: Integration test with LocalStack invoke method
         run: bash ./test_in_docker.sh
+
+  localstack-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Start LocalStack
+        uses: LocalStack/setup-localstack@v0.1.2
+        with:
+          image-tag: 'latest'
+        env:
+          LOCALSTACK_API_KEY: ${{ secrets.LOCALSTACK_API_KEY }}
+          APPSYNC_JS_LIBS_VERSION: ${{ github.sha }}
+      - uses: actions/setup-node@v4
+      - name: Install cdk project
+        working-directory: cdk
+        run: npm install
+      - name: CDK bootstrap
+        working-directory: cdk
+        run: npm run cdklocal -- bootstrap
+      - name: CDK deploy
+        working-directory: cdk
+        run: npm run cdklocal -- deploy --require-approval never --outputs-file outputs.json
+      - name: Fetch output variables for test step
+        working-directory: cdk
+        run: |
+          jq -r '"TEST_URL=\(.CdkStack.GraphQLURL)"' outputs.json >> $GITHUB_ENV
+          jq -r '"TEST_API_KEY=\(.CdkStack.ApiKey)"' outputs.json >> $GITHUB_ENV
+      - name: Invoke the URL
+        run: |
+          set -x
+          curl -X POST -H "x-api-key:$TEST_API_KEY" -H "Accept:application/json" -H "Content-Type:application/json" $TEST_URL -d '{"query": "query { foo }"}'
+
+
