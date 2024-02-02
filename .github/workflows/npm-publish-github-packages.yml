@@ -71,5 +71,13 @@ jobs:
         run: |
           set -x
           curl -X POST -H "x-api-key:$TEST_API_KEY" -H "Accept:application/json" -H "Content-Type:application/json" $TEST_URL -d '{"query": "query { foo }"}'
-
-
+      - name: Get the LocalStack logs
+        run: |
+          localstack logs | gzip > logs.txt.gz
+      - name: Upload the logs as an artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: ls-logs-${{ github.run_number }}
+          path: |
+            logs.txt.gz
+          retention-days: 7
