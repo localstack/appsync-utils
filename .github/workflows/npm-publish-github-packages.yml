@@ -71,7 +71,7 @@ jobs:
       - name: Invoke the URL
         run: |
           set -x
-          curl -X POST -H "x-api-key:$TEST_API_KEY" -H "Accept:application/json" -H "Content-Type:application/json" $TEST_URL -d '{"query": "query { foo }"}'
+          curl --connect-timeout 30 --retry 10 --retry-delay 6 -X POST -H "x-api-key:$TEST_API_KEY" -H "Accept:application/json" -H "Content-Type:application/json" $TEST_URL -d '{"query": "query { foo }"}'
       - name: Get the LocalStack logs
         run: |
           localstack logs | gzip > logs.txt.gz
