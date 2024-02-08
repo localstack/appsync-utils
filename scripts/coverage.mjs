@@ -14,7 +14,7 @@ function evaluateNamespace(ns) {
   for (const [key, value] of Object.entries(ns.obj)) {
     switch (typeof value) {
       case 'function': {
-        console.log(`* ${ns.name}.${key}`);
+        console.log(`* \`${ns.name}.${key}\``);
         break;
       };
       case "object": {
