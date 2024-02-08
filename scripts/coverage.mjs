@@ -9,12 +9,25 @@ class Namespace {
   }
 };
 
+const partialImplementations = {
+  'util.appendError': {
+    message: "the function exists but errors are not yet captured",
+  },
+};
+
 // ns must be a Namespace type
 function evaluateNamespace(ns) {
   for (const [key, value] of Object.entries(ns.obj)) {
     switch (typeof value) {
       case 'function': {
-        console.log(`* \`${ns.name}.${key}\``);
+        const qualifiedName = `${ns.name}.${key}`;
+        let message = `* \`${qualifiedName}\``;
+        if (partialImplementations[qualifiedName] !== undefined) {
+          const partialDescription = partialImplementations[qualifiedName].message;
+          message = `${message} _(partial, ${partialDescription})_`;
+        } else {
+        };
+        console.log(message);
         break;
       };
       case "object": {
