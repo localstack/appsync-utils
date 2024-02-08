@@ -1,4 +1,4 @@
-import { util } from '..';
+import { util } from '../index.js';
 
 // TODO: consistentRead
 // TODO: projection
