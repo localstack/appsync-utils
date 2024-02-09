@@ -255,6 +255,61 @@ describe("rds resolvers", () => {
 
     });
 
+    test("update", async () => {
+      const code = `
+        export function request(ctx) {
+            const { input: { id, ...values }, condition } = ctx.args;
+            const where = {
+                ...condition,
+                id: { eq: id },
+            };
+            const updateStatement = rds.update({
+                table: 'persons',
+                values,
+                where,
+            });
+
+            return rds.createMySQLStatement(updateStatement)
+        }
+        export function response(ctx) {}
+    `;
+      const requestContext = {
+        arguments: {
+          input: {
+            id: "abc123",
+            name: "name",
+            birthday: "today",
+            country: "home",
+          },
+        },
+      };
+
+      await checkResolverValid(code, requestContext, "request");
+    });
+
+    test("insert", async () => {
+      const code = `
+        export function request(ctx) {
+        const { input: values } = ctx.args;
+        const insertStatement = rds.insert({ table: 'persons', values });
+        
+        return rds.createMySQLStatement(insertStatement)
+        }
+
+        export function response(ctx) {}
+        `;
+
+      const requestContext = {
+        arguments: {
+          input: {
+            name: "test",
+          },
+        }
+      };
+
+      await checkResolverValid(code, requestContext, "request");
+    });
+
     test("remove", async () => {
       const code = `
       export function request(ctx) {
@@ -333,6 +388,62 @@ describe("rds resolvers", () => {
 
       await checkResolverValid(code, requestContext, "request");
 
+    });
+
+    test("update", async () => {
+      const code = `
+        export function request(ctx) {
+            const { input: { id, ...values }, condition } = ctx.args;
+            const where = {
+                ...condition,
+                id: { eq: id },
+            };
+            const updateStatement = rds.update({
+                table: 'persons',
+                values,
+                where,
+            });
+
+            return rds.createPgStatement(updateStatement)
+        }
+        export function response(ctx) {}
+    `;
+      const requestContext = {
+        arguments: {
+          input: {
+            id: "abc123",
+            name: "name",
+            birthday: "today",
+            country: "home",
+          },
+        },
+      };
+
+      await checkResolverValid(code, requestContext, "request");
+    });
+
+
+    test("insert", async () => {
+      const code = `
+        export function request(ctx) {
+        const { input: values } = ctx.args;
+        const insertStatement = rds.insert({ table: 'persons', values });
+        
+        return rds.createPgStatement(insertStatement)
+        }
+
+        export function response(ctx) {}
+        `;
+
+      const requestContext = {
+        arguments: {
+          input: {
+            name: "test",
+          },
+        }
+      };
+
+      await checkResolverValid(code, requestContext, "request");
     });
 
     test("remove", async () => {
