@@ -38,6 +38,18 @@ exports[`dynamodb resolvers something 2`] = `
 ]
 `;
 
+exports[`rds resolvers mysql insert 1`] = `
+{
+  "statements": [
+    "INSERT INTO \`persons\` (\`name\`) VALUES (:P0)",
+  ],
+  "variableMap": {
+    ":P0": "test",
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
 exports[`rds resolvers mysql remove 1`] = `
 {
   "statements": [
@@ -78,6 +90,18 @@ exports[`rds resolvers mysql type hints 1`] = `
     ":P0": "UUID",
     ":P1": "TIMESTAMP",
   },
+}
+`;
+
+exports[`rds resolvers postgresql insert 1`] = `
+{
+  "statements": [
+    "INSERT INTO "persons" ("name") VALUES (:P0)",
+  ],
+  "variableMap": {
+    ":P0": "test",
+  },
+  "variableTypeHintMap": {},
 }
 `;
 

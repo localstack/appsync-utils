@@ -255,6 +255,32 @@ describe("rds resolvers", () => {
 
     });
 
+    test.skip("update", async () => {
+    });
+
+    test("insert", async () => {
+      const code = `
+        export function request(ctx) {
+        const { input: values } = ctx.args;
+        const insertStatement = rds.insert({ table: 'persons', values });
+        
+        return rds.createMySQLStatement(insertStatement)
+        }
+
+        export function response(ctx) {}
+        `;
+
+      const requestContext = {
+        arguments: {
+          input: {
+            name: "test",
+          },
+        }
+      };
+
+      await checkResolverValid(code, requestContext, "request");
+    });
+
     test("remove", async () => {
       const code = `
       export function request(ctx) {
@@ -333,6 +359,29 @@ describe("rds resolvers", () => {
 
       await checkResolverValid(code, requestContext, "request");
 
+    });
+
+    test("insert", async () => {
+      const code = `
+        export function request(ctx) {
+        const { input: values } = ctx.args;
+        const insertStatement = rds.insert({ table: 'persons', values });
+        
+        return rds.createPgStatement(insertStatement)
+        }
+
+        export function response(ctx) {}
+        `;
+
+      const requestContext = {
+        arguments: {
+          input: {
+            name: "test",
+          },
+        }
+      };
+
+      await checkResolverValid(code, requestContext, "request");
     });
 
     test("remove", async () => {

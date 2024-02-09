@@ -40,6 +40,10 @@ export function select(s) {
   return { type: "SELECT", properties: s };
 }
 
+export function insert(s) {
+  return { type: "INSERT", properties: s };
+}
+
 export function remove(s) {
   return { type: "REMOVE", properties: s };
 }
@@ -61,7 +65,7 @@ class StatementBuilder {
       switch (type) {
         case "SELECT": {
           const { table, columns, where, orderBy, limit, offset } = properties;
-          const tableName = `${this.quoteChar}${table}${this.quoteChar}`;
+          const tableName = this.getTableName(table);
           let query;
 
           if (columns) {
@@ -103,7 +107,7 @@ class StatementBuilder {
         }
         case "REMOVE": {
           const { table, where, returning, } = properties;
-          const tableName = `${this.quoteChar}${table}${this.quoteChar}`;
+          const tableName = this.getTableName(table);
 
           let query = `DELETE FROM ${tableName}`;
 
@@ -116,6 +120,24 @@ class StatementBuilder {
             const columnNames = returning.map(name => `${this.quoteChar}${name}${this.quoteChar}`).join(', ');
             query = `${query} RETURNING ${columnNames}`;
           }
+
+          this.result.statements.push(query);
+          break;
+        }
+        case "INSERT": {
+          const { table, values } = properties;
+          const tableName = this.getTableName(table);
+
+          let query = `INSERT INTO ${tableName}`;
+
+          let columnTextItems = [];
+          let valuesTextItems = [];
+          for (const [columnName, value] of Object.entries(values)) {
+            columnTextItems.push(`${this.quoteChar}${columnName}${this.quoteChar}`);
+            const placeholder = this.newVariable(value);
+            valuesTextItems.push(placeholder);
+          }
+          query = `${query} (${columnTextItems.join(', ')}) VALUES (${valuesTextItems.join(', ')})`;
 
           this.result.statements.push(query);
           break;
@@ -188,6 +210,10 @@ class StatementBuilder {
       default:
         throw new Error(`Unhandled condition type ${conditionType}`);
     }
+  }
+
+  getTableName(rawName) {
+    return `${this.quoteChar}${rawName}${this.quoteChar}`;
   }
 }
 
