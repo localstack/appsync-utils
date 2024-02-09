@@ -255,7 +255,36 @@ describe("rds resolvers", () => {
 
     });
 
-    test.skip("update", async () => {
+    test("update", async () => {
+      const code = `
+        export function request(ctx) {
+            const { input: { id, ...values }, condition } = ctx.args;
+            const where = {
+                ...condition,
+                id: { eq: id },
+            };
+            const updateStatement = rds.update({
+                table: 'persons',
+                values,
+                where,
+            });
+
+            return rds.createMySQLStatement(updateStatement)
+        }
+        export function response(ctx) {}
+    `;
+      const requestContext = {
+        arguments: {
+          input: {
+            id: "abc123",
+            name: "name",
+            birthday: "today",
+            country: "home",
+          },
+        },
+      };
+
+      await checkResolverValid(code, requestContext, "request");
     });
 
     test("insert", async () => {
@@ -360,6 +389,39 @@ describe("rds resolvers", () => {
       await checkResolverValid(code, requestContext, "request");
 
     });
+
+    test("update", async () => {
+      const code = `
+        export function request(ctx) {
+            const { input: { id, ...values }, condition } = ctx.args;
+            const where = {
+                ...condition,
+                id: { eq: id },
+            };
+            const updateStatement = rds.update({
+                table: 'persons',
+                values,
+                where,
+            });
+
+            return rds.createPgStatement(updateStatement)
+        }
+        export function response(ctx) {}
+    `;
+      const requestContext = {
+        arguments: {
+          input: {
+            id: "abc123",
+            name: "name",
+            birthday: "today",
+            country: "home",
+          },
+        },
+      };
+
+      await checkResolverValid(code, requestContext, "request");
+    });
+
 
     test("insert", async () => {
       const code = `

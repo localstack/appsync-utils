@@ -93,6 +93,21 @@ exports[`rds resolvers mysql type hints 1`] = `
 }
 `;
 
+exports[`rds resolvers mysql update 1`] = `
+{
+  "statements": [
+    "UPDATE \`persons\` SET \`name\` = :P0, \`birthday\` = :P1, \`country\` = :P2 WHERE \`id\` = :P3",
+  ],
+  "variableMap": {
+    ":P0": "name",
+    ":P1": "today",
+    ":P2": "home",
+    ":P3": "abc123",
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
 exports[`rds resolvers postgresql insert 1`] = `
 {
   "statements": [
@@ -145,6 +160,21 @@ exports[`rds resolvers postgresql type hints 1`] = `
     ":P0": "UUID",
     ":P1": "TIMESTAMP",
   },
+}
+`;
+
+exports[`rds resolvers postgresql update 1`] = `
+{
+  "statements": [
+    "UPDATE "persons" SET "name" = :P0, "birthday" = :P1, "country" = :P2 WHERE "id" = :P3",
+  ],
+  "variableMap": {
+    ":P0": "name",
+    ":P1": "today",
+    ":P2": "home",
+    ":P3": "abc123",
+  },
+  "variableTypeHintMap": {},
 }
 `;
 

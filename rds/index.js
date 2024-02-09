@@ -44,6 +44,10 @@ export function insert(s) {
   return { type: "INSERT", properties: s };
 }
 
+export function update(s) {
+  return { type: "UPDATE", properties: s };
+}
+
 export function remove(s) {
   return { type: "REMOVE", properties: s };
 }
@@ -140,6 +144,29 @@ class StatementBuilder {
           query = `${query} (${columnTextItems.join(', ')}) VALUES (${valuesTextItems.join(', ')})`;
 
           this.result.statements.push(query);
+          break;
+        }
+        case "UPDATE": {
+          const { table, values, where } = properties;
+          const tableName = this.getTableName(table);
+
+          let query = `UPDATE ${tableName} SET`;
+
+          let columnDefinitionItems = [];
+          for (const [columnName, value] of Object.entries(values)) {
+            const placeholder = this.newVariable(value);
+            columnDefinitionItems.push(`${this.quoteChar}${columnName}${this.quoteChar} = ${placeholder}`);
+
+          }
+          query = `${query} ${columnDefinitionItems.join(', ')}`;
+
+          if (where) {
+            const parts = this.buildWhereClause(where);
+            query = `${query} WHERE ${parts}`;
+          }
+
+          this.result.statements.push(query);
+
           break;
         }
         default:
