@@ -427,7 +427,7 @@ describe("rds resolvers", () => {
       const code = `
         export function request(ctx) {
         const { input: values } = ctx.args;
-        const insertStatement = rds.insert({ table: 'persons', values });
+        const insertStatement = rds.insert({ table: 'persons', values, returning: "*" });
         
         return rds.createPgStatement(insertStatement)
         }
