@@ -64,6 +64,26 @@ describe("dynamodb resolvers", () => {
 });
 
 describe("rds resolvers", () => {
+  test("raw string", async () => {
+    const code = `
+      export function request(ctx) {
+        const { id } = ctx.args;
+        const updateQuery = \`UPDATE "document" set "data" = 10 WHERE id = \${id}\`;
+        return rds.createMySQLStatement(updateQuery);
+      }
+
+      export function response(ctx) {}
+    `;
+
+    const context = {
+      arguments: {
+        id: "adb626eb-4ce5-452a-a917-3943a37f202b",
+      },
+    };
+
+    await checkResolverValid(code, context, "request");
+  });
+
   test("sql tagged template", async () => {
     const code = `
       export function request(ctx) {

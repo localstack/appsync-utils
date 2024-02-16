@@ -76,17 +76,26 @@ class StatementBuilder {
       // handle raw sql strings
       if (stmt.strings !== undefined) {
         const { strings, keys } = stmt;
-        this.renderRawStringStatement(strings, keys);
+        this.renderTaggedTemplateStatement(strings, keys);
       } else {
         const { type, properties } = stmt;
-        this.renderStructuredStatement(type, properties);
+        if ((type === undefined) && (properties === undefined)) {
+          // we have a raw string
+          this.renderRawTemplateStatement(stmt);
+        } else {
+          this.renderStructuredStatement(type, properties);
+        }
       }
     }
 
     return this.result;
   }
 
-  renderRawStringStatement(strings, keys) {
+  renderRawTemplateStatement(query) {
+    this.result.statements.push(query);
+  }
+
+  renderTaggedTemplateStatement(strings, keys) {
     let stmt = strings[0];
 
     if (strings.length !== (keys.length + 1)) {

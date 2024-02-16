@@ -178,6 +178,16 @@ exports[`rds resolvers postgresql update 1`] = `
 }
 `;
 
+exports[`rds resolvers raw string 1`] = `
+{
+  "statements": [
+    "UPDATE "document" set "data" = 10 WHERE id = adb626eb-4ce5-452a-a917-3943a37f202b",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
 exports[`rds resolvers sql tagged template 1`] = `
 {
   "statements": [
