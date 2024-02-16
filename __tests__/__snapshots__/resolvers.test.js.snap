@@ -120,6 +120,16 @@ exports[`rds resolvers postgresql insert 1`] = `
 }
 `;
 
+exports[`rds resolvers postgresql raw string 1`] = `
+{
+  "statements": [
+    "UPDATE "document" set "data" = 10 WHERE id = adb626eb-4ce5-452a-a917-3943a37f202b",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
 exports[`rds resolvers postgresql remove 1`] = `
 {
   "statements": [
@@ -144,6 +154,23 @@ exports[`rds resolvers postgresql select 1`] = `
     ":P3": 1,
   },
   "variableTypeHintMap": {},
+}
+`;
+
+exports[`rds resolvers postgresql sql tagged template 1`] = `
+{
+  "statements": [
+    "insert into Post(id, text) values(:P0, :P1)",
+    "select * from Post where id = :P2",
+  ],
+  "variableMap": {
+    ":P0": "adb626eb-4ce5-452a-a917-3943a37f202b",
+    ":P1": "hello world",
+    ":P2": "adb626eb-4ce5-452a-a917-3943a37f202b",
+  },
+  "variableTypeHintMap": {
+    ":P0": "UUID",
+  },
 }
 `;
 
