@@ -64,6 +64,28 @@ describe("dynamodb resolvers", () => {
 });
 
 describe("rds resolvers", () => {
+  test("sql tagged template", async () => {
+    const code = `
+      export function request(ctx) {
+        const { id, text } = ctx.args;
+        const s1 = rds.sql\`insert into Post(id, text) values(\${rds.typeHint.UUID(id)}, \${text})\`;
+        const s2 = rds.sql\`select * from Post where id = \${id}\`;
+        return rds.createMySQLStatement(s1, s2);
+      }
+
+      export function response(ctx) {}
+    `;
+
+    const context = {
+      arguments: {
+        id: "adb626eb-4ce5-452a-a917-3943a37f202b",
+        text: "hello world",
+      },
+    };
+
+    await checkResolverValid(code, context, "request");
+  });
+
   describe("typehints", () => {
     test("UUID", async () => {
       const code = `
