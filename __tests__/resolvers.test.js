@@ -5,6 +5,15 @@ Within the request it can be resolved to both, e.g. `ctx.arguments` and `ctx.arg
 
 import { checkResolverValid } from "./helpers";
 import { util } from "..";
+import * as fs from 'fs/promises';
+import * as path from 'path';
+import { fileURLToPath } from 'url';
+
+async function importCodeFromFile(stub) {
+  const root = path.dirname(fileURLToPath(import.meta.url));
+  const fullPath = path.join(path.resolve(root), stub);
+  return await fs.readFile(fullPath, { encoding: "utf8" });
+}
 
 describe("dynamodb resolvers", () => {
   test("something", async () => {
@@ -393,6 +402,20 @@ describe("rds resolvers", () => {
       const context = {
         arguments: {
           id: "adb626eb-4ce5-452a-a917-3943a37f202b",
+        },
+      };
+
+      await checkResolverValid(code, context, "request");
+    });
+
+    test("json functions in raw string", async () => {
+      const code = await importCodeFromFile("./functions/pgRawQueryJson.js");
+
+      const context = {
+        arguments: {
+          id: "adb626eb-4ce5-452a-a917-3943a37f202b",
+          key: "key",
+          value: "value",
         },
       };
 
