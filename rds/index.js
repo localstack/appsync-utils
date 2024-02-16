@@ -34,6 +34,13 @@ export function toJsonObject(inputStr) {
   return perStatement;
 }
 
+export function sql(strings, ...keys) {
+  if (strings.length !== (keys.length + 1)) {
+    throw new Exception(`unhandled format for sql tagged template: ${{ strings, keys }}`);
+  }
+
+  return { strings, keys };
+}
 
 
 export function select(s) {
@@ -65,127 +72,167 @@ class StatementBuilder {
   }
 
   render(statements) {
-    for (const { type, properties } of statements) {
-      switch (type) {
-        case "SELECT": {
-          const { table, columns, where, orderBy, limit, offset } = properties;
-          const tableName = this.getTableName(table);
-          let query;
-
-          if (columns) {
-            const columnNames = columns.map(name => `${this.quoteChar}${name}${this.quoteChar}`).join(', ');
-            query = `SELECT ${columnNames} FROM ${tableName}`;
-          } else {
-            query = `SELECT * FROM ${tableName}`;
-          }
-
-          if (where) {
-            const parts = this.buildWhereClause(where);
-            query = `${query} WHERE ${parts}`;
-          }
-
-
-          if (orderBy) {
-            let orderByParts = [];
-            for (let { column, dir } of orderBy) {
-              dir = dir || "ASC";
-              orderByParts.push(`${this.quoteChar}${column}${this.quoteChar} ${dir}`);
-            }
-
-            query = `${query} ORDER BY ${orderByParts.join(', ')}`;
-
-          };
-
-          if (limit) {
-            const limitValue = this.newVariable(limit);
-            query = `${query} LIMIT ${limitValue}`;
-          }
-
-          if (offset) {
-            const offsetValue = this.newVariable(offset);
-            query = `${query} OFFSET ${offsetValue}`;
-          }
-
-          this.result.statements.push(query);
-          break;
+    for (const stmt of statements) {
+      // handle raw sql strings
+      if (stmt.strings !== undefined) {
+        const { strings, keys } = stmt;
+        this.renderTaggedTemplateStatement(strings, keys);
+      } else {
+        const { type, properties } = stmt;
+        if ((type === undefined) && (properties === undefined)) {
+          // we have a raw string
+          this.renderRawTemplateStatement(stmt);
+        } else {
+          this.renderStructuredStatement(type, properties);
         }
-        case "REMOVE": {
-          const { table, where, returning, } = properties;
-          const tableName = this.getTableName(table);
-
-          let query = `DELETE FROM ${tableName}`;
-
-          if (where) {
-            const parts = this.buildWhereClause(where);
-            query = `${query} WHERE ${parts}`;
-          }
-
-          if (returning) {
-            const columnNames = returning.map(name => `${this.quoteChar}${name}${this.quoteChar}`).join(', ');
-            query = `${query} RETURNING ${columnNames}`;
-          }
-
-          this.result.statements.push(query);
-          break;
-        }
-        case "INSERT": {
-          const { table, values, returning } = properties;
-          const tableName = this.getTableName(table);
-
-          let query = `INSERT INTO ${tableName}`;
-
-          let columnTextItems = [];
-          let valuesTextItems = [];
-          for (const [columnName, value] of Object.entries(values)) {
-            columnTextItems.push(`${this.quoteChar}${columnName}${this.quoteChar}`);
-            const placeholder = this.newVariable(value);
-            valuesTextItems.push(placeholder);
-          }
-          query = `${query} (${columnTextItems.join(', ')}) VALUES (${valuesTextItems.join(', ')})`;
-
-          if (returning) {
-            query = `${query} RETURNING ${returning}`;
-          }
-
-          this.result.statements.push(query);
-          break;
-        }
-        case "UPDATE": {
-          const { table, values, where } = properties;
-          const tableName = this.getTableName(table);
-
-          let query = `UPDATE ${tableName} SET`;
-
-          let columnDefinitionItems = [];
-          for (const [columnName, value] of Object.entries(values)) {
-            const placeholder = this.newVariable(value);
-            columnDefinitionItems.push(`${this.quoteChar}${columnName}${this.quoteChar} = ${placeholder}`);
-
-          }
-          query = `${query} ${columnDefinitionItems.join(', ')}`;
-
-          if (where) {
-            const parts = this.buildWhereClause(where);
-            query = `${query} WHERE ${parts}`;
-          }
-
-          this.result.statements.push(query);
-
-          break;
-        }
-        default:
-          throw new Error(`TODO: "${type}" query unsupported`);
       }
     }
 
     return this.result;
   }
 
-  newVariable(value) {
+  renderRawTemplateStatement(query) {
+    this.result.statements.push(query);
+  }
+
+  renderTaggedTemplateStatement(strings, keys) {
+    let stmt = strings[0];
+
+    if (strings.length !== (keys.length + 1)) {
+      throw new Error(`Invalid raw string statement: ${{ strings, keys }}`);
+    }
+
+    for (let i = 0; i < keys.length; i++) {
+      const nextString = strings[i + 1];
+      const nextKey = keys[i];
+
+      const newVar = this.newVariable(nextKey);
+      stmt = `${stmt}${newVar}${nextString}`;
+    }
+
+    this.result.statements.push(stmt);
+  }
+
+  renderStructuredStatement(type, properties) {
+    switch (type) {
+      case "SELECT": {
+        const { table, columns, where, orderBy, limit, offset } = properties;
+        const tableName = this.getTableName(table);
+        let query;
+
+        if (columns) {
+          const columnNames = columns.map(name => `${this.quoteChar}${name}${this.quoteChar}`).join(', ');
+          query = `SELECT ${columnNames} FROM ${tableName}`;
+        } else {
+          query = `SELECT * FROM ${tableName}`;
+        }
+
+        if (where) {
+          const parts = this.buildWhereClause(where);
+          query = `${query} WHERE ${parts}`;
+        }
+
+
+        if (orderBy) {
+          let orderByParts = [];
+          for (let { column, dir } of orderBy) {
+            dir = dir || "ASC";
+            orderByParts.push(`${this.quoteChar}${column}${this.quoteChar} ${dir}`);
+          }
+
+          query = `${query} ORDER BY ${orderByParts.join(', ')}`;
+
+        };
+
+        if (limit) {
+          const limitValue = this.newVariable(limit);
+          query = `${query} LIMIT ${limitValue}`;
+        }
+
+        if (offset) {
+          const offsetValue = this.newVariable(offset);
+          query = `${query} OFFSET ${offsetValue}`;
+        }
+
+        this.result.statements.push(query);
+        break;
+      }
+      case "REMOVE": {
+        const { table, where, returning, } = properties;
+        const tableName = this.getTableName(table);
+
+        let query = `DELETE FROM ${tableName}`;
+
+        if (where) {
+          const parts = this.buildWhereClause(where);
+          query = `${query} WHERE ${parts}`;
+        }
+
+        if (returning) {
+          const columnNames = returning.map(name => `${this.quoteChar}${name}${this.quoteChar}`).join(', ');
+          query = `${query} RETURNING ${columnNames}`;
+        }
+
+        this.result.statements.push(query);
+        break;
+      }
+      case "INSERT": {
+        const { table, values, returning } = properties;
+        const tableName = this.getTableName(table);
+
+        let query = `INSERT INTO ${tableName}`;
+
+        let columnTextItems = [];
+        let valuesTextItems = [];
+        for (const [columnName, value] of Object.entries(values)) {
+          columnTextItems.push(`${this.quoteChar}${columnName}${this.quoteChar}`);
+          const placeholder = this.newVariable(value);
+          valuesTextItems.push(placeholder);
+        }
+        query = `${query} (${columnTextItems.join(', ')}) VALUES (${valuesTextItems.join(', ')})`;
+
+        if (returning) {
+          query = `${query} RETURNING ${returning}`;
+        }
+
+        this.result.statements.push(query);
+        break;
+      }
+      case "UPDATE": {
+        const { table, values, where } = properties;
+        const tableName = this.getTableName(table);
+
+        let query = `UPDATE ${tableName} SET`;
+
+        let columnDefinitionItems = [];
+        for (const [columnName, value] of Object.entries(values)) {
+          const placeholder = this.newVariable(value);
+          columnDefinitionItems.push(`${this.quoteChar}${columnName}${this.quoteChar} = ${placeholder}`);
+
+        }
+        query = `${query} ${columnDefinitionItems.join(', ')}`;
+
+        if (where) {
+          const parts = this.buildWhereClause(where);
+          query = `${query} WHERE ${parts}`;
+        }
+
+        this.result.statements.push(query);
+
+        break;
+      }
+      default:
+        throw new Error(`TODO: "${type}" query unsupported`);
+    }
+  }
+
+  newVariable(value, addTypeHint = true) {
     const name = `:P${this.variableIndex}`;
     if (value.type) {
       this.result.variableMap[name] = value.value;
-      this.result.variableTypeHintMap[name] = value.type;
+      if (addTypeHint) {
+        this.result.variableTypeHintMap[name] = value.type;
+      }
     } else {
       this.result.variableMap[name] = value;
     }
