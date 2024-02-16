@@ -147,6 +147,16 @@ exports[`rds resolvers postgresql insert 1`] = `
 }
 `;
 
+exports[`rds resolvers postgresql json functions in raw string 1`] = `
+{
+  "statements": [
+    "UPDATE "document" set "data" = jsonb_set("data", '{key}', '"value" WHERE id = adb626eb-4ce5-452a-a917-3943a37f202b",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
 exports[`rds resolvers postgresql raw string 1`] = `
 {
   "statements": [
