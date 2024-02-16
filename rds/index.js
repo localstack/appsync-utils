@@ -129,7 +129,7 @@ class StatementBuilder {
           break;
         }
         case "INSERT": {
-          const { table, values } = properties;
+          const { table, values, returning } = properties;
           const tableName = this.getTableName(table);
 
           let query = `INSERT INTO ${tableName}`;
@@ -142,6 +142,10 @@ class StatementBuilder {
             valuesTextItems.push(placeholder);
           }
           query = `${query} (${columnTextItems.join(', ')}) VALUES (${valuesTextItems.join(', ')})`;
+
+          if (returning) {
+            query = `${query} RETURNING ${returning}`;
+          }
 
           this.result.statements.push(query);
           break;

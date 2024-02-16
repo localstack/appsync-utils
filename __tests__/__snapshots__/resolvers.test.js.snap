@@ -111,7 +111,7 @@ exports[`rds resolvers mysql update 1`] = `
 exports[`rds resolvers postgresql insert 1`] = `
 {
   "statements": [
-    "INSERT INTO "persons" ("name") VALUES (:P0)",
+    "INSERT INTO "persons" ("name") VALUES (:P0) RETURNING *",
   ],
   "variableMap": {
     ":P0": "test",
