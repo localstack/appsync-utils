@@ -1,5 +1,5 @@
 
-name: Node.js Package
+name: Test AppSync utils
 
 on:
   push:
@@ -44,7 +44,7 @@ jobs:
   localstack-test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Start LocalStack
         uses: LocalStack/setup-localstack@v0.1.2
         with:
@@ -73,9 +73,11 @@ jobs:
           set -x
           curl --connect-timeout 30 --retry 10 --retry-delay 6 -X POST -H "x-api-key:$TEST_API_KEY" -H "Accept:application/json" -H "Content-Type:application/json" $TEST_URL -d '{"query": "query { foo }"}'
       - name: Get the LocalStack logs
+        if: success() || failure()
         run: |
           localstack logs | gzip > logs.txt.gz
       - name: Upload the logs as an artifact
+        if: success() || failure()
         uses: actions/upload-artifact@v3
         with:
           name: ls-logs-${{ github.run_number }}
