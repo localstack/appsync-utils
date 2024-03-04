@@ -85,3 +85,7 @@ jobs:
           path: |
             logs.txt.gz
           retention-days: 7
+      - name: Print the LocalStack logs
+        if: success() || failure()
+        run: |
+          gunzip -c logs.txt.gz
