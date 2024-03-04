@@ -49,6 +49,7 @@ jobs:
         uses: LocalStack/setup-localstack@v0.1.2
         with:
           image-tag: 'latest'
+          use-pro: 'true'
         env:
           LOCALSTACK_API_KEY: ${{ secrets.LOCALSTACK_API_KEY }}
           APPSYNC_JS_LIBS_VERSION: ${{ github.sha }}
