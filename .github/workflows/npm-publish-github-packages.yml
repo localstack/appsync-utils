@@ -55,6 +55,8 @@ jobs:
           APPSYNC_JS_LIBS_VERSION: ${{ github.sha }}
           DEBUG: "1"
           DISABLE_EVENTS: "1"
+      - name: Ensure pro image is used
+        run: curl -s http://localhost:4566/_localstack/health | grep appsync
       - uses: actions/setup-node@v4
       - name: Install cdk project
         working-directory: cdk
