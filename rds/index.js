@@ -9,7 +9,10 @@ export function toJsonObject(inputStr) {
   let perStatement = [];
   for (const { records, columnMetadata } of input.sqlStatementResults) {
     const statement = [];
-
+    if(typeof records === 'undefined' ){
+      perStatement.push({});
+      continue;
+    }
     for (const record of records) {
       const row = {};
       if (record.length !== columnMetadata.length) {
