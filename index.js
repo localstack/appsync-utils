@@ -128,6 +128,9 @@ export const util = {
       // TODO: not completely correct, but close enough probably
       return new Date().toISOString();
     },
+    nowISO8601: function() {
+      return new Date().toISOString();
+    },
   },
   transform: {
     toDynamoDBFilterExpression: function(value) {

@@ -26,6 +26,14 @@ describe("time utilities", () => {
     expect(util.time.nowFormatted('YYYY-MM-dd HH:mm:ss')).toEqual("2021-02-01T00:00:00.000Z");
     spied.mockRestore();
   });
+  test("nowISO8601", async () => {
+    // patch date utilities to ensure consistency
+    const newDate = new Date(Date.UTC(2021, 1, 1));
+    const spied = jest.spyOn(global, 'Date').mockImplementation(() => newDate);
+
+    expect(util.time.nowISO8601()).toEqual("2021-02-01T00:00:00.000Z");
+    spied.mockRestore();
+  });
 });
 
 describe("dynamodb helpers", () => {
