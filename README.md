@@ -2,6 +2,17 @@
 
 This package provides an implementation for the `@aws-appsync/utils` package that is available on AWS.
 
+> [!TIP]
+> To ensure you are using the latest version of this package with LocalStack, start LocalStack with the environment variable
+>
+> ```
+> APPSYNC_JS_LIBS_VERSION=latest localstack start
+> ```
+>
+> This will fetch the latest version the first time a JavaScript resolver is executed. On next startup this flag is not needed unless the package needs to be updated.
+>
+> Alternatively the library can be pinned to a specific Git tag or commit by setting:  `APPSYNC_JS_LIBS_VERSION=<commit or tag>`
+
 ## Requesting functions to be implemented
 
 We do not yet cover all functionality as provided by AWS AppSync.
