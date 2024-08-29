@@ -6,7 +6,7 @@ This package provides an implementation for the `@aws-appsync/utils` package tha
 > To ensure you are using the latest version of this package with LocalStack, start LocalStack with the environment variable
 >
 > ```
-> APPSYNC_JS_LIBS_VERSION=latest localstack start
+> APPSYNC_JS_LIBS_VERSION=refresh localstack start
 > ```
 >
 > This will fetch the latest version the first time a JavaScript resolver is executed. On next startup this flag is not needed unless the package needs to be updated.
