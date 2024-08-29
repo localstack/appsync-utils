@@ -209,6 +209,126 @@ describe("rds resolvers", () => {
 
     await checkResolverValid(code, responseContext, "response");
   });
+  test("toJsonObject insert or update", async () => {
+    const responseContext = {
+      "result": JSON.stringify({
+        "sqlStatementResults": [{
+          "numberOfRecordsUpdated": 1,
+          "generatedFields": []
+        }]
+      })
+    };
+
+    const code = `
+        export function request(ctx) {}
+
+        export function response(ctx) {
+            return rds.toJsonObject(ctx.result);
+        }
+        `;
+
+    await checkResolverValid(code, responseContext, "response");
+  })
+
+  test("toJsonObject update and select", async () => {
+    const responseContext = {
+      "result": JSON.stringify({
+        "sqlStatementResults": [{
+          "numberOfRecordsUpdated": 1,
+          "generatedFields": []
+        },
+        {
+          "numberOfRecordsUpdated": 0,
+          "records": [
+            [
+              {
+                "stringValue": "Mark Twain"
+              },
+              {
+                "stringValue": "Adventures of Huckleberry Finn"
+              },
+              {
+                "stringValue": "978-1948132817"
+              }
+            ],
+            [
+              {
+                "stringValue": "Jack London"
+              },
+              {
+                "stringValue": "The Call of the Wild"
+              },
+              {
+                "stringValue": "978-1948132275"
+              }
+            ]
+          ],
+          "columnMetadata": [
+            {
+              "isSigned": false,
+              "isCurrency": false,
+              "label": "author",
+              "precision": 200,
+              "typeName": "VARCHAR",
+              "scale": 0,
+              "isAutoIncrement": false,
+              "isCaseSensitive": false,
+              "schemaName": "",
+              "tableName": "Books",
+              "type": 12,
+              "nullable": 0,
+              "arrayBaseColumnType": 0,
+              "name": "author"
+            },
+            {
+              "isSigned": false,
+              "isCurrency": false,
+              "label": "title",
+              "precision": 200,
+              "typeName": "VARCHAR",
+              "scale": 0,
+              "isAutoIncrement": false,
+              "isCaseSensitive": false,
+              "schemaName": "",
+              "tableName": "Books",
+              "type": 12,
+              "nullable": 0,
+              "arrayBaseColumnType": 0,
+              "name": "title"
+            },
+            {
+              "isSigned": false,
+              "isCurrency": false,
+              "label": "ISBN-13",
+              "precision": 15,
+              "typeName": "VARCHAR",
+              "scale": 0,
+              "isAutoIncrement": false,
+              "isCaseSensitive": false,
+              "schemaName": "",
+              "tableName": "Books",
+              "type": 12,
+              "nullable": 0,
+              "arrayBaseColumnType": 0,
+              "name": "ISBN-13"
+            }
+          ]
+        }
+        ]
+      })
+    };
+
+    const code = `
+        export function request(ctx) {}
+
+        export function response(ctx) {
+            return rds.toJsonObject(ctx.result);
+        }
+        `;
+
+    await checkResolverValid(code, responseContext, "response");
+  })
+
 
   describe("mysql", () => {
     test("raw string", async () => {

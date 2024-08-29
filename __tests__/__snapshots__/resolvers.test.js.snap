@@ -259,6 +259,34 @@ exports[`rds resolvers toJsonObject 1`] = `
 ]
 `;
 
+exports[`rds resolvers toJsonObject insert or update 1`] = `
+[
+  [
+    {},
+  ],
+]
+`;
+
+exports[`rds resolvers toJsonObject update and select 1`] = `
+[
+  [
+    {},
+  ],
+  [
+    {
+      "ISBN-13": "978-1948132817",
+      "author": "Mark Twain",
+      "title": "Adventures of Huckleberry Finn",
+    },
+    {
+      "ISBN-13": "978-1948132275",
+      "author": "Jack London",
+      "title": "The Call of the Wild",
+    },
+  ],
+]
+`;
+
 exports[`rds resolvers typehints TIMESTAMP 1`] = `
 {
   "type": "TIMESTAMP",
