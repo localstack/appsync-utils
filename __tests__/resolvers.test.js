@@ -73,6 +73,126 @@ describe("dynamodb resolvers", () => {
 });
 
 describe("rds resolvers", () => {
+  describe("toJsonObject import paths", () => {
+    const context = {
+      result: JSON.stringify({
+        sqlStatementResults: [
+          {
+            numberOfRecordsUpdated: 0,
+            records: [
+              [
+                {
+                  stringValue: "Mark Twain",
+                },
+                {
+                  stringValue: "Adventures of Huckleberry Finn",
+                },
+                {
+                  stringValue: "978-1948132817",
+                },
+              ],
+              [
+                {
+                  stringValue: "Jack London",
+                },
+                {
+                  stringValue: "The Call of the Wild",
+                },
+                {
+                  stringValue: "978-1948132275",
+                },
+              ],
+            ],
+            columnMetadata: [
+              {
+                isSigned: false,
+                isCurrency: false,
+                label: "author",
+                precision: 200,
+                typeName: "VARCHAR",
+                scale: 0,
+                isAutoIncrement: false,
+                isCaseSensitive: false,
+                schemaName: "",
+                tableName: "Books",
+                type: 12,
+                nullable: 0,
+                arrayBaseColumnType: 0,
+                name: "author",
+              },
+              {
+                isSigned: false,
+                isCurrency: false,
+                label: "title",
+                precision: 200,
+                typeName: "VARCHAR",
+                scale: 0,
+                isAutoIncrement: false,
+                isCaseSensitive: false,
+                schemaName: "",
+                tableName: "Books",
+                type: 12,
+                nullable: 0,
+                arrayBaseColumnType: 0,
+                name: "title",
+              },
+              {
+                isSigned: false,
+                isCurrency: false,
+                label: "ISBN-13",
+                precision: 15,
+                typeName: "VARCHAR",
+                scale: 0,
+                isAutoIncrement: false,
+                isCaseSensitive: false,
+                schemaName: "",
+                tableName: "Books",
+                type: 12,
+                nullable: 0,
+                arrayBaseColumnType: 0,
+                name: "ISBN-13",
+              },
+            ],
+          },
+        ],
+      }),
+    };
+
+    test("default", async () => {
+      let importStatement;
+      if (process.env.TEST_TARGET === "AWS_CLOUD") {
+        importStatement =
+          "import { toJsonObject } from '@aws-appsync/utils/rds';";
+      } else {
+        importStatement = "import { toJsonObject } from '../rds';";
+      }
+      const code =
+        importStatement +
+        "\n" +
+        `
+      export function request(ctx) {
+          return toJsonObject(ctx.result);
+      }
+
+      export function response(ctx) {
+      }
+    `;
+      await checkResolverValid(code, context, "request");
+    });
+
+    test("fully qualified", async () => {
+      const code = `
+      export function request(ctx) {
+          return util.rds.toJsonObject(ctx.result);
+      }
+
+      export function response(ctx) {
+      }
+    `;
+      await checkResolverValid(code, context, "request");
+    });
+  });
+
   describe("typehints", () => {
     test("UUID", async () => {
       const code = `
