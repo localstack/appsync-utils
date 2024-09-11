@@ -1,4 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
+import { toJsonObject } from './rds'
 
 export const dynamodbUtils = {
   toDynamoDB: function(value) {
@@ -179,6 +180,7 @@ export const util = {
     },
   },
   dynamodb: dynamodbUtils,
+  rds: { toJsonObject },
 };
 
 // embedded here because imports don't yet work
