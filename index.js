@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { toJsonObject } from './rds'
+import { toJsonObject } from './rds/index.js'
 
 export const dynamodbUtils = {
   toDynamoDB: function(value) {
