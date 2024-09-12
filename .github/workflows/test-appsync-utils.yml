@@ -1,4 +1,3 @@
-
 name: Test AppSync utils
 
 on:
@@ -49,8 +48,8 @@ jobs:
       - name: Start LocalStack
         uses: LocalStack/setup-localstack@v0.2.3
         with:
-          image-tag: 'latest'
-          use-pro: 'true'
+          image-tag: "latest"
+          use-pro: "true"
         env:
           LOCALSTACK_API_KEY: ${{ secrets.LOCALSTACK_API_KEY }}
           APPSYNC_JS_LIBS_VERSION: ${{ github.sha }}
@@ -59,24 +58,8 @@ jobs:
       - name: Ensure pro image is used
         run: curl -s http://localhost:4566/_localstack/health | grep appsync
       - uses: actions/setup-node@v4
-      - name: Install cdk project
-        working-directory: cdk
-        run: npm install
-      - name: CDK bootstrap
-        working-directory: cdk
-        run: npm run cdklocal -- bootstrap
-      - name: CDK deploy
-        working-directory: cdk
-        run: npm run cdklocal -- deploy --require-approval never --outputs-file outputs.json
-      - name: Fetch output variables for test step
-        working-directory: cdk
-        run: |
-          jq -r '"TEST_URL=\(.CdkStack.GraphQLURL)"' outputs.json >> $GITHUB_ENV
-          jq -r '"TEST_API_KEY=\(.CdkStack.ApiKey)"' outputs.json >> $GITHUB_ENV
-      - name: Invoke the URL
-        run: |
-          set -x
-          curl --connect-timeout 30 --retry 10 --retry-delay 6 -X POST -H "x-api-key:$TEST_API_KEY" -H "Accept:application/json" -H "Content-Type:application/json" $TEST_URL -d '{"query": "query { foo }"}'
+      - name: Execute test script
+        run: bash .github/execute-localstack-test.sh
       - name: Get the LocalStack logs
         if: success() || failure()
         run: |
