@@ -20,12 +20,11 @@ export function toJsonObject(inputStr) {
         }
 
         for (const colNo in record) {
-
-          // TODO: what if the column is not a string?
-          const { stringValue } = record[colNo];
           const { label } = columnMetadata[colNo];
 
-          row[label] = stringValue;
+          // We assume that the record is a simple object with a single key-value pair.
+          // For example, `{ longValue: 1 }` or `{ stringValue: "Acme Corp" }`.
+          row[label] = Object.values(record[colNo])[0];
         }
 
         statement.push(row);

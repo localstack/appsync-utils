@@ -243,6 +243,9 @@ describe("rds resolvers", () => {
             "records": [
               [
                 {
+                  "longValue": 12345
+                },
+                {
                   "stringValue": "Mark Twain"
                 },
                 {
@@ -253,6 +256,9 @@ describe("rds resolvers", () => {
                 }
               ],
               [
+                {
+                  "longValue": 67890
+                },
                 {
                   "stringValue": "Jack London"
                 },
@@ -265,6 +271,21 @@ describe("rds resolvers", () => {
               ]
             ],
             "columnMetadata": [
+              {
+                "type": 4,
+                "typeName": "serial",
+                "label": "id",
+                "schemaName": "",
+                "tableName": "Books",
+                "isAutoIncrement": true,
+                "isSigned": true,
+                "isCurrency": false,
+                "isCaseSensitive": false,
+                "nullable": 0,
+                "precision": 10,
+                "scale": 0,
+                "arrayBaseColumnType": 0
+              },
               {
                 "isSigned": false,
                 "isCurrency": false,
