@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
 
 env:
-  LOCALSTACK_API_KEY: ${{ secrets.LOCALSTACK_API_KEY }}
+  LOCALSTACK_AUTH_TOKEN: ${{ secrets.LOCALSTACK_API_KEY }}
   TEST_IMAGE_NAME: public.ecr.aws/lambda/nodejs:16
 
 jobs:
@@ -51,7 +51,7 @@ jobs:
           image-tag: "latest"
           use-pro: "true"
         env:
-          LOCALSTACK_API_KEY: ${{ secrets.LOCALSTACK_API_KEY }}
+          LOCALSTACK_AUTH_TOKEN: ${{ secrets.LOCALSTACK_AUTH_TOKEN }}
           APPSYNC_JS_LIBS_VERSION: ${{ github.sha }}
           DEBUG: "1"
           DISABLE_EVENTS: "1"
