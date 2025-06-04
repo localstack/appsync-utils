@@ -243,6 +243,9 @@ describe("rds resolvers", () => {
             "records": [
               [
                 {
+                  "longValue": 12345
+                },
+                {
                   "stringValue": "Mark Twain"
                 },
                 {
@@ -250,9 +253,18 @@ describe("rds resolvers", () => {
                 },
                 {
                   "stringValue": "978-1948132817"
-                }
+                },
+                {
+                  "isNull": true
+                },
+                { "arrayValue": { "stringValues": ["a", "b"] } },
+                { "booleanValue": true },
+                { "blobValue": Buffer.from("hello").toString("base64") }
               ],
               [
+                {
+                  "longValue": 67890
+                },
                 {
                   "stringValue": "Jack London"
                 },
@@ -261,10 +273,39 @@ describe("rds resolvers", () => {
                 },
                 {
                   "stringValue": "978-1948132275"
-                }
+                },
+                {
+                  "doubleValue": 12.34,
+                },
+                { "arrayValue": {
+                    "arrayValues": [
+                      { "booleanValues": [true, false] },
+                      { "doubleValues": [1.234] },
+                      { "longValues": [1, 2] },
+                      { "stringValues": ["a", "b"] },
+                    ],
+                  },
+                },
+                { "booleanValue": false },
+                { "blobValue": Buffer.from("world").toString("base64") },
               ]
             ],
             "columnMetadata": [
+              {
+                "type": 4,
+                "typeName": "serial",
+                "label": "id",
+                "schemaName": "",
+                "tableName": "Books",
+                "isAutoIncrement": true,
+                "isSigned": true,
+                "isCurrency": false,
+                "isCaseSensitive": false,
+                "nullable": 0,
+                "precision": 10,
+                "scale": 0,
+                "arrayBaseColumnType": 0
+              },
               {
                 "isSigned": false,
                 "isCurrency": false,
@@ -312,7 +353,20 @@ describe("rds resolvers", () => {
                 "nullable": 0,
                 "arrayBaseColumnType": 0,
                 "name": "ISBN-13"
-              }
+              },
+              {
+                "name": "optional_double",
+              },
+              {
+                "name": "tags",
+              },
+              {
+                "name": "is_active",
+                "label": "IS ACTIVE",
+              },
+              {
+                "name": "blob_value",
+              },
             ]
           }
         ]

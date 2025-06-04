@@ -246,13 +246,41 @@ exports[`rds resolvers toJsonObject 1`] = `
 [
   [
     {
+      "IS ACTIVE": true,
       "ISBN-13": "978-1948132817",
       "author": "Mark Twain",
+      "blob_value": "aGVsbG8=",
+      "id": 12345,
+      "tags": [
+        "a",
+        "b",
+      ],
       "title": "Adventures of Huckleberry Finn",
     },
     {
+      "IS ACTIVE": false,
       "ISBN-13": "978-1948132275",
       "author": "Jack London",
+      "blob_value": "d29ybGQ=",
+      "id": 67890,
+      "optional_double": 12.34,
+      "tags": [
+        [
+          true,
+          false,
+        ],
+        [
+          1.234,
+        ],
+        [
+          1,
+          2,
+        ],
+        [
+          "a",
+          "b",
+        ],
+      ],
       "title": "The Call of the Wild",
     },
   ],
