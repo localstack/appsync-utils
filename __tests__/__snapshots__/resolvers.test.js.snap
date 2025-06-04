@@ -248,11 +248,13 @@ exports[`rds resolvers toJsonObject 1`] = `
     {
       "ISBN-13": "978-1948132817",
       "author": "Mark Twain",
+      "id": 12345,
       "title": "Adventures of Huckleberry Finn",
     },
     {
       "ISBN-13": "978-1948132275",
       "author": "Jack London",
+      "id": 67890,
       "title": "The Call of the Wild",
     },
   ],
