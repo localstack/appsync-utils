@@ -1,3 +1,31 @@
+/**
+ * Extract the value from the field given a row from sqlStatementResults.
+ * 
+ * See https://docs.aws.amazon.com/rdsdataservice/latest/APIReference/API_Field.html.
+ */
+function extractFieldValue(field) {
+  // Handle isNull.
+  if (field.isNull === true) {
+    return null;
+  }
+
+  // Handle arrayValue.
+  if ('arrayValue' in field) {
+    const { arrayValue } = field;
+
+    // Handle arrayValues.
+    if (arrayValue.arrayValues) {
+      return arrayValue.arrayValues.map(field => extractFieldValue(field));
+    }
+    
+    // Handle stringValues, doubleValues, longValues and booleanValues.
+    return Object.values(arrayValue)[0] ?? [];
+  }
+
+  // Handle stringValue, doubleValue, longValue, booleanValue and blobValue.
+  return Object.values(field)[0];
+}
+
 export function toJsonObject(inputStr) {
   // on AWS inputStr is always a string, but on LocalStack the input may be an object.
   let input;
@@ -20,11 +48,15 @@ export function toJsonObject(inputStr) {
         }
 
         for (const colNo in record) {
-          const { label } = columnMetadata[colNo];
+          // Use label if available, otherwise use name.
+          const metadata = columnMetadata[colNo];
+          const colName = metadata.label ?? metadata.name;
 
-          // We assume that the record is a simple object with a single key-value pair.
-          // For example, `{ longValue: 1 }` or `{ stringValue: "Acme Corp" }`.
-          row[label] = Object.values(record[colNo])[0];
+          // Extract the value from the field.
+          const value = extractFieldValue(record[colNo]);
+          if (value !== null) {
+            row[colName] = value;
+          }
         }
 
         statement.push(row);

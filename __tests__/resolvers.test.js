@@ -253,7 +253,13 @@ describe("rds resolvers", () => {
                 },
                 {
                   "stringValue": "978-1948132817"
-                }
+                },
+                {
+                  "isNull": true
+                },
+                { "arrayValue": { "stringValues": ["a", "b"] } },
+                { "booleanValue": true },
+                { "blobValue": Buffer.from("hello").toString("base64") }
               ],
               [
                 {
@@ -267,7 +273,21 @@ describe("rds resolvers", () => {
                 },
                 {
                   "stringValue": "978-1948132275"
-                }
+                },
+                {
+                  "doubleValue": 12.34,
+                },
+                { "arrayValue": {
+                    "arrayValues": [
+                      { "booleanValues": [true, false] },
+                      { "doubleValues": [1.234] },
+                      { "longValues": [1, 2] },
+                      { "stringValues": ["a", "b"] },
+                    ],
+                  },
+                },
+                { "booleanValue": false },
+                { "blobValue": Buffer.from("world").toString("base64") },
               ]
             ],
             "columnMetadata": [
@@ -333,7 +353,20 @@ describe("rds resolvers", () => {
                 "nullable": 0,
                 "arrayBaseColumnType": 0,
                 "name": "ISBN-13"
-              }
+              },
+              {
+                "name": "optional_double",
+              },
+              {
+                "name": "tags",
+              },
+              {
+                "name": "is_active",
+                "label": "IS ACTIVE",
+              },
+              {
+                "name": "blob_value",
+              },
             ]
           }
         ]
