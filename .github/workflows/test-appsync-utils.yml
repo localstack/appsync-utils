@@ -51,7 +51,7 @@ jobs:
           image-tag: "latest"
           use-pro: "true"
         env:
-          LOCALSTACK_AUTH_TOKEN: ${{ secrets.LOCALSTACK_AUTH_TOKEN }}
+          LOCALSTACK_AUTH_TOKEN: ${{ secrets.LOCALSTACK_API_KEY }}
           APPSYNC_JS_LIBS_VERSION: ${{ github.sha }}
           DEBUG: "1"
           DISABLE_EVENTS: "1"
