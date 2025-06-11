@@ -38,6 +38,19 @@ exports[`dynamodb resolvers something 2`] = `
 ]
 `;
 
+exports[`rds resolvers attributeExists 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "supplier" WHERE "id" = :P0 AND (("deleted" = :P1) OR ("deleted" IS NULL))",
+  ],
+  "variableMap": {
+    ":P0": "123456",
+    ":P1": false,
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
 exports[`rds resolvers mysql insert 1`] = `
 {
   "statements": [

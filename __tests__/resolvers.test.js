@@ -503,6 +503,31 @@ describe("rds resolvers", () => {
     await checkResolverValid(code, responseContext, "response");
   })
 
+  test("attributeExists", async () => {
+    const code = `
+      export function request(ctx) {
+          const query = rds.select({
+              table: 'supplier',
+              where: {
+                  id: {
+                      eq: "123456"
+                  },
+                  and: [{
+                      or: [
+                          { deleted: { eq: false } },
+                          { deleted: { attributeExists: false } }
+                      ]
+                  }
+                  ]
+              }
+          });
+          return rds.createPgStatement(query);
+      }
+      export function response(ctx) {}
+  `;
+  await checkResolverValid(code, {}, "request");
+  })
+
 
   describe("mysql", () => {
     test("raw string", async () => {
