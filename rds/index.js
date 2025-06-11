@@ -318,6 +318,8 @@ class StatementBuilder {
         return `${startGrouping}${this.quoteChar}${columnName}${this.quoteChar} LIKE ${value}${endGrouping}`;
       case "notContains":
         return `${startGrouping}${this.quoteChar}${columnName}${this.quoteChar} NOT LIKE ${value}${endGrouping}`;
+      case "attributeExists":
+        return `${startGrouping}${this.quoteChar}${columnName}${this.quoteChar} ${value? "IS" : "NOT"} NULL${endGrouping}`;
       default:
         throw new Error(`Unhandled condition type ${conditionType}`);
     }
