@@ -282,10 +282,9 @@ class StatementBuilder {
           // TODO properly handle errors to return a more useful message
           throw new Error(`'${key}' expects conditions to be an array`);
         }
-        const parts = [];
-        for (const part of where[key]) {
-          parts.push(this.buildWhereClause(part, "(", ")", ops));
-        }
+        const parts = where[key].map(
+          part => this.buildWhereClause(part, "(", ")", ops)
+        );
         blocks.push(`${startGrouping}${parts.join(` ${ops} `)}${endGrouping}`);
       } else {
         // implicit single clause
