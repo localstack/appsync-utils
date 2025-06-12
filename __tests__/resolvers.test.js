@@ -225,7 +225,7 @@ describe("rds resolvers", () => {
 
       const context = {
         arguments: {
-          id: new Date(2023, 1, 1),
+          id: new Date(Date.UTC(2023, 1, 1)),
         },
       };
 
@@ -707,7 +707,7 @@ describe("rds resolvers", () => {
         arguments: {
           id: "1232",
           name: "hello",
-          started: new Date(2022, 2, 2),
+          started: new Date(Date.UTC(2022, 2, 2)),
         }
       };
 
@@ -898,7 +898,7 @@ describe("rds resolvers", () => {
         arguments: {
           id: "1232",
           name: "hello",
-          started: new Date(2022, 2, 2),
+          started: new Date(Date.UTC(2022, 2, 2)),
         }
       };
 
