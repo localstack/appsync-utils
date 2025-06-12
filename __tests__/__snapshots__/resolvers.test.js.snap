@@ -38,7 +38,7 @@ exports[`dynamodb resolvers something 2`] = `
 ]
 `;
 
-exports[`rds resolvers attributeExists 1`] = `
+exports[`rds resolvers attributeExists nested or 1`] = `
 {
   "statements": [
     "SELECT * FROM "supplier" WHERE "id" = :P0 AND (("deleted" = :P1) OR ("deleted" IS NULL))",
@@ -47,6 +47,16 @@ exports[`rds resolvers attributeExists 1`] = `
     ":P0": "123456",
     ":P1": false,
   },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`rds resolvers attributeExists true false 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "supplier" WHERE "created" IS NOT NULL AND "deleted" IS NULL",
+  ],
+  "variableMap": {},
   "variableTypeHintMap": {},
 }
 `;
@@ -373,5 +383,75 @@ exports[`rds resolvers typehints UUID 1`] = `
 {
   "type": "UUID",
   "value": "abc123",
+}
+`;
+
+exports[`rds resolvers where mixed inline and 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "supplier" WHERE "count" <= :P0 AND ("id" = :P1) AND "deleted" IS NULL",
+  ],
+  "variableMap": {
+    ":P0": 10,
+    ":P1": 123456,
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`rds resolvers where mixed or/and 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "supplier" WHERE ("id" = :P0) AND ("id" = :P1) AND "id" = :P2",
+  ],
+  "variableMap": {
+    ":P0": "and eq",
+    ":P1": "or eq 2",
+    ":P2": "id eq",
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`rds resolvers where mixed or/and multiple or 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "supplier" WHERE ("id" = :P0) AND ("id" = :P1) OR ("id" = :P2) AND "id" = :P3",
+  ],
+  "variableMap": {
+    ":P0": "and eq",
+    ":P1": "or eq 1",
+    ":P2": "or eq 2",
+    ":P3": "id eq",
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`rds resolvers where nested ors with ands 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "supplier" WHERE "id" = :P0 AND ("id" = :P1) OR (("id" = :P2) OR ("id" = :P3)) OR ("id" = :P4)",
+  ],
+  "variableMap": {
+    ":P0": "id eq",
+    ":P1": "or 1",
+    ":P2": "or nested 1",
+    ":P3": "or nested 2",
+    ":P4": "final or",
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`rds resolvers where single value in and 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "supplier" WHERE ("id" = :P0)",
+  ],
+  "variableMap": {
+    ":P0": 123456,
+  },
+  "variableTypeHintMap": {},
 }
 `;
