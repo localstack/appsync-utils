@@ -273,23 +273,33 @@ class StatementBuilder {
     return name;
   }
 
-  buildWhereClause(where) {
+  buildWhereClause(where, startGrouping = "", endGrouping = "") {
     let blocks = [];
-    if (where.or) {
-      const parts = [];
-      for (const part of where.or) {
-        parts.push(this.buildWhereStatement(part));
+    for (const key in where) {
+      if ( ["or", "and"].includes(key)) {
+        const ops = key.toUpperCase();
+        // .and [ {cond_1}, {cond_1} ]
+        if ( where[key].length > 1) {
+          const parts = [];
+          for (const part of where[key]) {
+            parts.push(this.buildWhereClause(part, "(", ")"));
+          }
+          blocks.push(`${startGrouping}${parts.join(` ${ops} `)}${endGrouping}`);
+        } else if (blocks) {
+          // cond_1.and[ { cond2 } ]
+          const lastIndex = blocks.length - 1;
+          blocks[lastIndex] = `${startGrouping}${blocks[lastIndex]} ${ops} ${this.buildWhereClause(where[key][0], "(",")")}${endGrouping}`;
+        } else {
+          // .and[{cond_1}]
+          // Is it possible to have only one condition?
+          throw new Error(" TODO find the error");
+        }
+      } else {
+        // implicit single clause
+        const block = {};
+        block[key] = where[key];
+        blocks.push(this.buildWhereStatement(block, startGrouping, endGrouping));
       }
-      blocks.push(parts.join(" OR "));
-    } else if (where.and) {
-      const parts = [];
-      for (const part of where.and) {
-        parts.push(this.buildWhereStatement(part));
-      }
-      blocks.push(parts.join(" AND "));
-    } else {
-      // implicit single clause
-      blocks.push(this.buildWhereStatement(where, "", ""));
     }
 
     return blocks;
@@ -300,7 +310,12 @@ class StatementBuilder {
     const condition = defn[columnName];
 
     const conditionType = Object.keys(condition)[0];
-    const value = this.newVariable(condition[conditionType]);
+    let value;
+    if (conditionType !== "attributeExists") {
+      value = this.newVariable(condition[conditionType]);
+    } else {
+      value = condition[conditionType];
+    }
     switch (conditionType) {
       case "eq":
         return `${startGrouping}${this.quoteChar}${columnName}${this.quoteChar} = ${value}${endGrouping}`;
@@ -319,7 +334,7 @@ class StatementBuilder {
       case "notContains":
         return `${startGrouping}${this.quoteChar}${columnName}${this.quoteChar} NOT LIKE ${value}${endGrouping}`;
       case "attributeExists":
-        return `${startGrouping}${this.quoteChar}${columnName}${this.quoteChar} ${value? "IS" : "NOT"} NULL${endGrouping}`;
+        return `${startGrouping}${this.quoteChar}${columnName}${this.quoteChar} ${value? "NOT" : "IS"} NULL${endGrouping}`;
       default:
         throw new Error(`Unhandled condition type ${conditionType}`);
     }
