@@ -18,7 +18,7 @@ if [ -z ${TEST_IN_DOCKER_ENTRYPOINT:-} ]; then
         --workdir /test \
         --entrypoint bash \
         -e TEST_IN_DOCKER_ENTRYPOINT=1 \
-        ${TEST_IMAGE_NAME:-public.ecr.aws/lambda/nodejs:16} /test_in_docker.sh
+        ${TEST_IMAGE_NAME:-public.ecr.aws/lambda/nodejs:18} /test_in_docker.sh
 else
     # entrypoint
     echo Entrypoint

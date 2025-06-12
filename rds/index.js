@@ -273,26 +273,28 @@ class StatementBuilder {
     return name;
   }
 
-  buildWhereClause(where) {
+  buildWhereClause(where, startGrouping = "", endGrouping = "", default_operator="AND") {
     let blocks = [];
-    if (where.or) {
-      const parts = [];
-      for (const part of where.or) {
-        parts.push(this.buildWhereStatement(part));
+    for (const key in where) {
+      if ( ["or", "and"].includes(key)) {
+        const ops = key.toUpperCase();
+        if (!Array.isArray(where[key])) {
+          // TODO properly handle errors to return a more useful message
+          throw new Error(`'${key}' expects conditions to be an array`);
+        }
+        const parts = where[key].map(
+          part => this.buildWhereClause(part, "(", ")", ops)
+        );
+        blocks.push(`${startGrouping}${parts.join(` ${ops} `)}${endGrouping}`);
+      } else {
+        // implicit single clause
+        const block = {};
+        block[key] = where[key];
+        blocks.push(this.buildWhereStatement(block, startGrouping, endGrouping));
       }
-      blocks.push(parts.join(" OR "));
-    } else if (where.and) {
-      const parts = [];
-      for (const part of where.and) {
-        parts.push(this.buildWhereStatement(part));
-      }
-      blocks.push(parts.join(" AND "));
-    } else {
-      // implicit single clause
-      blocks.push(this.buildWhereStatement(where, "", ""));
     }
 
-    return blocks;
+    return blocks.join(` ${default_operator} `);
   }
 
   buildWhereStatement(defn, startGrouping = "(", endGrouping = ")") {
@@ -300,7 +302,12 @@ class StatementBuilder {
     const condition = defn[columnName];
 
     const conditionType = Object.keys(condition)[0];
-    const value = this.newVariable(condition[conditionType]);
+    let value;
+    if (conditionType !== "attributeExists") {
+      value = this.newVariable(condition[conditionType]);
+    } else {
+      value = condition[conditionType];
+    }
     switch (conditionType) {
       case "eq":
         return `${startGrouping}${this.quoteChar}${columnName}${this.quoteChar} = ${value}${endGrouping}`;
@@ -318,6 +325,8 @@ class StatementBuilder {
         return `${startGrouping}${this.quoteChar}${columnName}${this.quoteChar} LIKE ${value}${endGrouping}`;
       case "notContains":
         return `${startGrouping}${this.quoteChar}${columnName}${this.quoteChar} NOT LIKE ${value}${endGrouping}`;
+      case "attributeExists":
+        return `${startGrouping}${this.quoteChar}${columnName}${this.quoteChar} IS ${value? "NOT " : ""}NULL${endGrouping}`;
       default:
         throw new Error(`Unhandled condition type ${conditionType}`);
     }

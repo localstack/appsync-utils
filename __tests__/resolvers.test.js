@@ -225,7 +225,7 @@ describe("rds resolvers", () => {
 
       const context = {
         arguments: {
-          id: new Date(2023, 1, 1),
+          id: new Date(Date.UTC(2023, 1, 1)),
         },
       };
 
@@ -503,6 +503,147 @@ describe("rds resolvers", () => {
     await checkResolverValid(code, responseContext, "response");
   })
 
+  test("where mixed inline and", async () => {
+    const code = `
+      export function request(ctx) {
+          const query = rds.select({
+              table: 'supplier',
+              where: {
+                count: { le: 10 },
+                and: [{ id: { eq: 123456 } }],
+                deleted: { attributeExists: false }
+              }
+          });
+          return rds.createPgStatement(query);
+      }
+      export function response(ctx) {}
+  `;
+    await checkResolverValid(code, {}, "request");
+  })
+
+  test("where single value in and", async () => {
+    const code = `
+      export function request(ctx) {
+          const query = rds.select({
+              table: 'supplier',
+              where: {
+                and: [{ id: { eq: 123456 } }],
+              }
+          });
+          return rds.createPgStatement(query);
+      }
+      export function response(ctx) {}
+  `;
+    await checkResolverValid(code, {}, "request");
+  })
+
+  test("where mixed or/and", async () => {
+    const code = `
+      export function request(ctx) {
+          const query = rds.select({
+              table: 'supplier',
+              where: {
+                and: [{ id: { eq: "and eq" } }],
+                or: [{ id: { eq: "or eq 2" } }],
+                id: { eq: "id eq" },
+              }
+          });
+          return rds.createPgStatement(query);
+      }
+      export function response(ctx) {}
+  `;
+    await checkResolverValid(code, {}, "request");
+  })
+
+  test("where mixed or/and multiple or", async () => {
+    const code = `
+      export function request(ctx) {
+          const query = rds.select({
+              table: 'supplier',
+              where: {
+                and: [{ id: { eq: "and eq" } }],
+                or: [
+                  { id: { eq: "or eq 1" } },
+                  { id: { eq: "or eq 2" } }
+                ],
+                id: { eq: "id eq" },
+              }
+          });
+          return rds.createPgStatement(query);
+      }
+      export function response(ctx) {}
+  `;
+    await checkResolverValid(code, {}, "request");
+  })
+
+  test("where nested ors with ands", async () => {
+    const code = `
+      export function request(ctx) {
+          const query = rds.select({
+              table: 'supplier',
+              where: {
+                id: { eq: "id eq" },
+                or: [
+                  { id: { eq: "or 1" } },
+                  {
+                    or: [
+                      { id: { eq: "or nested 1" } },
+                      { id: { eq: "or nested 2" } }
+                    ]
+                  },
+                  { id: { eq: "final or" } }
+                ]
+              }
+          });
+          return rds.createPgStatement(query);
+      }
+      export function response(ctx) {}
+  `;
+    await checkResolverValid(code, {}, "request");
+  })
+
+  test("attributeExists true false", async () => {
+    const code = `
+      export function request(ctx) {
+          const query = rds.select({
+              table: 'supplier',
+              where: {
+                created: { attributeExists: true },
+                deleted: { attributeExists: false }
+              }
+          });
+          return rds.createPgStatement(query);
+      }
+      export function response(ctx) {}
+  `;
+    await checkResolverValid(code, {}, "request");
+  })
+
+  test("attributeExists nested or", async () => {
+    const code = `
+      export function request(ctx) {
+          const query = rds.select({
+              table: 'supplier',
+              where: {
+                  id: {
+                      eq: "123456"
+                  },
+                  and: [{
+                      or: [
+                          { deleted: { eq: false } },
+                          { deleted: { attributeExists: false } }
+                      ]
+                  }
+                  ]
+              }
+          });
+          return rds.createPgStatement(query);
+      }
+      export function response(ctx) {}
+  `;
+  await checkResolverValid(code, {}, "request");
+  })
+
 
   describe("mysql", () => {
     test("raw string", async () => {
@@ -566,7 +707,7 @@ describe("rds resolvers", () => {
         arguments: {
           id: "1232",
           name: "hello",
-          started: new Date(2022, 2, 2),
+          started: new Date(Date.UTC(2022, 2, 2)),
         }
       };
 
@@ -757,7 +898,7 @@ describe("rds resolvers", () => {
         arguments: {
           id: "1232",
           name: "hello",
-          started: new Date(2022, 2, 2),
+          started: new Date(Date.UTC(2022, 2, 2)),
         }
       };
 
