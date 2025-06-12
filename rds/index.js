@@ -273,27 +273,20 @@ class StatementBuilder {
     return name;
   }
 
-  buildWhereClause(where, startGrouping = "", endGrouping = "") {
+  buildWhereClause(where, startGrouping = "", endGrouping = "", default_operator="AND") {
     let blocks = [];
     for (const key in where) {
       if ( ["or", "and"].includes(key)) {
         const ops = key.toUpperCase();
-        // .and [ {cond_1}, {cond_1} ]
-        if ( where[key].length > 1) {
-          const parts = [];
-          for (const part of where[key]) {
-            parts.push(this.buildWhereClause(part, "(", ")"));
-          }
-          blocks.push(`${startGrouping}${parts.join(` ${ops} `)}${endGrouping}`);
-        } else if (blocks) {
-          // cond_1.and[ { cond2 } ]
-          const lastIndex = blocks.length - 1;
-          blocks[lastIndex] = `${startGrouping}${blocks[lastIndex]} ${ops} ${this.buildWhereClause(where[key][0], "(",")")}${endGrouping}`;
-        } else {
-          // .and[{cond_1}]
-          // Is it possible to have only one condition?
-          throw new Error(" TODO find the error");
+        if (!Array.isArray(where[key])) {
+          // TODO properly handle errors to return a more useful message
+          throw new Error(`'${key}' expects conditions to be an array`);
         }
+        const parts = [];
+        for (const part of where[key]) {
+          parts.push(this.buildWhereClause(part, "(", ")", ops));
+        }
+        blocks.push(`${startGrouping}${parts.join(` ${ops} `)}${endGrouping}`);
       } else {
         // implicit single clause
         const block = {};
@@ -302,7 +295,7 @@ class StatementBuilder {
       }
     }
 
-    return blocks;
+    return blocks.join(` ${default_operator} `);
   }
 
   buildWhereStatement(defn, startGrouping = "(", endGrouping = ")") {
@@ -334,7 +327,7 @@ class StatementBuilder {
       case "notContains":
         return `${startGrouping}${this.quoteChar}${columnName}${this.quoteChar} NOT LIKE ${value}${endGrouping}`;
       case "attributeExists":
-        return `${startGrouping}${this.quoteChar}${columnName}${this.quoteChar} ${value? "NOT" : "IS"} NULL${endGrouping}`;
+        return `${startGrouping}${this.quoteChar}${columnName}${this.quoteChar} IS ${value? "NOT " : ""}NULL${endGrouping}`;
       default:
         throw new Error(`Unhandled condition type ${conditionType}`);
     }
