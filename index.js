@@ -133,20 +133,19 @@ export const util = {
   appendError: function(message, errorType, data, errorInfo) {
     const error = { message, errorType, data, errorInfo }
     if( console.appendError ) {
-      // LocalStack is adding `appendError` to console to allow adding to context.outErrors
+      // LocalStack is adding `appendError` to console, allowing to push errors to context.outErrors
       console.appendError(error)
     } else {
+      // TODO: remove this legacy implementation. We are still supporting it for backward compatibility and prevent
+      //  breaking user's code calling appendError.
       // This will be handled in LocalStack in a side channel by printing to stderr
       console.error({ message, errorType, data, errorInfo });
     }
   },
   error: function(message, errorType, data, errorInfo) {
-    // This will be handled in LocalStack in a side channel by printing to stderr
-    console.error({ message, errorType, data, errorInfo });
     throw new AppSyncUserError(message, errorType, data, errorInfo)
   },
   unauthorized: function() {
-    // This will be handled in LocalStack in a side channel by printing to stderr
     throw new AppSyncUserError("Unauthorized", "UnauthorizedException")
   },
   time: {
