@@ -1,6 +1,16 @@
 import { v4 as uuidv4 } from 'uuid';
 import { toJsonObject } from './rds/index.js'
 
+class AppSyncUserError extends Error {
+  constructor(message, errorType, data, errorInfo) {
+    super(message);
+    this.name = "AppSyncUserError";
+    this.errorType = errorType;
+    this.data = data;
+    this.errorInfo = errorInfo;
+  }
+}
+
 export const dynamodbUtils = {
   toDynamoDB: function(value) {
     if (typeof (value) === "number") {
@@ -121,8 +131,20 @@ export const util = {
     return uuidv4();
   },
   appendError: function(message, errorType, data, errorInfo) {
-    // This will be handled in LocalStack in a side channel by printing to stderr
-    console.error({ message, errorType, data, errorInfo });
+    const error = { message, errorType, data, errorInfo }
+    if( console.appendError ) {
+      // LocalStack is adding `appendError` to console, allowing to push errors to `context.outErrors`
+      console.appendError(error)
+    } else {
+      // To avoid breaking code where `appendError` is not implemented, we instead print to stderr
+      console.error({ message, errorType, data, errorInfo });
+    }
+  },
+  error: function(message, errorType, data, errorInfo) {
+    throw new AppSyncUserError(message, errorType, data, errorInfo)
+  },
+  unauthorized: function() {
+    throw new AppSyncUserError("Unauthorized", "UnauthorizedException")
   },
   time: {
     nowFormatted: function(pattern) {

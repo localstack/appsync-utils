@@ -38,6 +38,18 @@ exports[`dynamodb resolvers something 2`] = `
 ]
 `;
 
+exports[`error handling error 1`] = `
+{
+  "message": "foo",
+}
+`;
+
+exports[`error handling unauthorized 1`] = `
+{
+  "message": "Unauthorized",
+}
+`;
+
 exports[`rds resolvers attributeExists nested or 1`] = `
 {
   "statements": [

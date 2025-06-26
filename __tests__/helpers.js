@@ -27,6 +27,9 @@ const runResolverFunctionOnAWS = async (code, context, functionName) => {
   });
 
   const result = await client.send(command);
+  if (result.error) {
+    return result.error;
+  }
   try {
     return JSON.parse(result.evaluationResult);
   } catch (e) {
@@ -72,7 +75,14 @@ export const checkResolverValid = async (code, context, functionName) => {
     const fn = module[functionName];
 
     transformContextForAppSync(context);
-    result = fn(context);
+    try {
+      result = fn(context);
+    } catch (e) {
+      if (e.name !== "AppSyncUserError") {
+        throw e;
+      }
+      result = {"message": e.message}
+    }
   }
   expect(result).toMatchSnapshot();
 };

@@ -1016,3 +1016,23 @@ describe("rds resolvers", () => {
   });
 });
 
+describe("error handling", () => {
+  test("error", async () => {
+    const code = `
+      export function request(ctx) {
+          util.error("foo")
+        }
+      export function response(ctx) {}
+  `;
+    await checkResolverValid(code, {}, "request");
+  })
+  test("unauthorized", async () => {
+    const code = `
+      export function request(ctx) {
+          util.unauthorized()
+        }
+      export function response(ctx) {}
+  `;
+    await checkResolverValid(code, {}, "request");
+  })
+})
