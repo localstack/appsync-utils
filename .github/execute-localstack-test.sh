@@ -23,7 +23,7 @@ export TEST_URL=$(jq -r .CdkStack.GraphQLURL outputs.json)
 export TEST_API_KEY=$(jq -r .CdkStack.ApiKey outputs.json)
 
 log "Accessing URL ${TEST_URL} with api key ${TEST_API_KEY}"
-REQUEST=$(curl \
+RESULT=$(curl \
     --connect-timeout 30 \
     --retry 10 \
     --retry-delay 6 \
