@@ -23,7 +23,7 @@ export TEST_URL=$(jq -r .CdkStack.GraphQLURL outputs.json)
 export TEST_API_KEY=$(jq -r .CdkStack.ApiKey outputs.json)
 
 log "Accessing URL ${TEST_URL} with api key ${TEST_API_KEY}"
-curl \
+RESULT=$(curl \
     --connect-timeout 30 \
     --retry 10 \
     --retry-delay 6 \
@@ -33,5 +33,10 @@ curl \
     -H "Content-Type:application/json" \
     $TEST_URL \
     -d '{"query": "query { foo }"}'
-
+)
+foo=$(jq .data.foo <<< "$RESULT")
+errors=$(jq .errors <<< "$RESULT")
+if [[ "$errors" != "null" || "$foo" != '"my-string"' ]]; then
+  exit 1
+fi
 )

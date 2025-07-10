@@ -4,6 +4,11 @@
     "description": "Implementation of the AppSync utils helpers",
     "type": "module",
     "main": "index.js",
+    "exports": {
+        ".": "./index.js",
+        "./rds": "./rds/index.js",
+        "./dynamodb": "./dynamodb/index.js"
+    },
     "scripts": {
         "test:aws": "NODE_OPTIONS=\"--experimental-vm-modules\" TEST_TARGET=AWS_CLOUD jest -u",
         "test": "NODE_OPTIONS=\"--experimental-vm-modules\" jest --ci",

@@ -2,6 +2,10 @@
 
 This package provides an implementation for the `@aws-appsync/utils` package that is available on AWS.
 
+## Changelog:
+
+- v0.1.0: first pinned version of the library
+
 > [!TIP]
 > To ensure you are using the latest version of this package with LocalStack, start LocalStack with the environment variable
 >
