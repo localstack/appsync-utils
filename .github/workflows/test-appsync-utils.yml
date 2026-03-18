@@ -10,8 +10,9 @@ on:
   workflow_dispatch:
 
 env:
-  LOCALSTACK_AUTH_TOKEN: ${{ secrets.LOCALSTACK_API_KEY }}
+  LOCALSTACK_AUTH_TOKEN: ${{ secrets.LOCALSTACK_AUTH_TOKEN }}
   TEST_IMAGE_NAME: public.ecr.aws/lambda/nodejs:22
+  NODE_VERSION: 22
 
 jobs:
   unit-test:
@@ -20,7 +21,7 @@ jobs:
       - uses: actions/checkout@v6
       - uses: actions/setup-node@v6
         with:
-          node-version: 22
+          node-version: ${{ env.NODE_VERSION }}
       - run: npm ci
       - run: npm test
 
@@ -30,7 +31,7 @@ jobs:
       - uses: actions/checkout@v6
       - uses: actions/setup-node@v6
         with:
-          node-version: 22
+          node-version: ${{ env.NODE_VERSION }}
 
       - name: Pull test docker image
         run: docker pull $TEST_IMAGE_NAME
@@ -51,13 +52,15 @@ jobs:
           image-tag: "latest"
           use-pro: "true"
         env:
-          LOCALSTACK_AUTH_TOKEN: ${{ secrets.LOCALSTACK_AUTH_TOKEN }}
+          LOCALSTACK_AUTH_TOKEN: ${{ env.LOCALSTACK_AUTH_TOKEN }}
           APPSYNC_JS_LIBS_VERSION: ${{ github.sha }}
           DEBUG: "1"
           DISABLE_EVENTS: "1"
       - name: Ensure pro image is used
         run: curl -s http://localhost:4566/_localstack/health | grep appsync
       - uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
       - name: Execute test script
         run: bash .github/execute-localstack-test.sh
       - name: Get the LocalStack logs
