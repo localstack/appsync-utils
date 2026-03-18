@@ -17,22 +17,21 @@ describe("general utilities", () => {
 });
 
 describe("time utilities", () => {
-  test("nowFormatted", async () => {
-    // patch date utilities to ensure consistency
-    const newDate = new Date(2021, 1, 1);
-    const spied = jest.spyOn(global, 'Date').mockImplementation(() => newDate);
+  afterEach(() => {
+    jest.useRealTimers();
+  });
 
-    // TODO: not strictly correct, but close
+  test("nowFormatted", async () => {
+    jest.useFakeTimers();
+    jest.setSystemTime(new Date(Date.UTC(2021, 1, 1)));
+
     expect(util.time.nowFormatted('YYYY-MM-dd HH:mm:ss')).toEqual("2021-02-01T00:00:00.000Z");
-    spied.mockRestore();
   });
   test("nowISO8601", async () => {
-    // patch date utilities to ensure consistency
-    const newDate = new Date(Date.UTC(2021, 1, 1));
-    const spied = jest.spyOn(global, 'Date').mockImplementation(() => newDate);
+    jest.useFakeTimers();
+    jest.setSystemTime(new Date(Date.UTC(2021, 1, 1)));
 
     expect(util.time.nowISO8601()).toEqual("2021-02-01T00:00:00.000Z");
-    spied.mockRestore();
   });
 });
 
