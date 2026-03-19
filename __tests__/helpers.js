@@ -1,9 +1,15 @@
 "use strict";
 
+import { fileURLToPath, pathToFileURL } from "url";
+import { dirname, resolve } from "path";
 import { AppSyncClient, EvaluateCodeCommand } from "@aws-sdk/client-appsync";
 import { util } from "..";
 import * as ddb from "../dynamodb";
 import * as rds from "../rds";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const projectRoot = resolve(__dirname, "..");
 
 let client = null;
 
@@ -65,8 +71,8 @@ export const checkResolverValid = async (code, context, functionName) => {
     result = await runResolverFunctionOnAWS(fullCode, context, functionName);
   } else {
     const fullCode = `
-        import { util } from '..';
-        import * as rds from '../rds';
+        import { util } from '${pathToFileURL(resolve(projectRoot, "index.js"))}';
+        import * as rds from '${pathToFileURL(resolve(projectRoot, "rds/index.js"))}';
         ` + code;
     const encodedJs = encodeURIComponent(fullCode);
     const dataUri = 'data:text/javascript;charset=utf-8,' + encodedJs;
