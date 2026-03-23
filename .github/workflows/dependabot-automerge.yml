@@ -15,8 +15,60 @@ jobs:
         uses: dependabot/fetch-metadata@v1
         with:
           github-token: "${{ secrets.GITHUB_TOKEN }}"
+
+      - name: Wait for tests to pass
+        uses: fountainhead/action-wait-for-check@v1.2.0
+        id: wait-for-tests
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          checkName: unit-test
+          ref: ${{ github.event.pull_request.head.sha }}
+          timeoutSeconds: 600
+          intervalSeconds: 30
+
+      - name: Wait for integration tests to pass
+        uses: fountainhead/action-wait-for-check@v1.2.0
+        id: wait-for-integration
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          checkName: integration-test
+          ref: ${{ github.event.pull_request.head.sha }}
+          timeoutSeconds: 600
+          intervalSeconds: 30
+
+      - name: Wait for LocalStack tests to pass
+        uses: fountainhead/action-wait-for-check@v1.2.0
+        id: wait-for-localstack
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          checkName: localstack-test
+          ref: ${{ github.event.pull_request.head.sha }}
+          timeoutSeconds: 600
+          intervalSeconds: 30
+
       - name: Enable auto-merge for Dependabot PRs
+        if: |
+          steps.wait-for-tests.outputs.conclusion == 'success' &&
+          steps.wait-for-integration.outputs.conclusion == 'success' &&
+          steps.wait-for-localstack.outputs.conclusion == 'success'
         run: gh pr merge --auto --squash "$PR_URL"
         env:
-          PR_URL: ${{github.event.pull_request.html_url}}
-          GH_TOKEN: ${{secrets.GITHUB_TOKEN}}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Comment on PR if tests failed
+        if: |
+          steps.wait-for-tests.outputs.conclusion != 'success' ||
+          steps.wait-for-integration.outputs.conclusion != 'success' ||
+          steps.wait-for-localstack.outputs.conclusion != 'success'
+        run: |
+          gh pr comment "$PR_URL" --body "🚫 Auto-merge skipped: one or more test jobs failed or timed out.
+
+          - unit-test: ${{ steps.wait-for-tests.outputs.conclusion }}
+          - integration-test: ${{ steps.wait-for-integration.outputs.conclusion }}
+          - localstack-test: ${{ steps.wait-for-localstack.outputs.conclusion }}
+
+          Please review the failing checks and resolve any issues."
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
