@@ -14,8 +14,3 @@ updates:
     directory: "/cdk"
     schedule:
       interval: "weekly"
-
-  - package-ecosystem: "github-actions"
-    directory: "/cdk"
-    schedule:
-      interval: "weekly"
