@@ -23,13 +23,13 @@ describe("time utilities", () => {
 
   test("nowFormatted", async () => {
     jest.useFakeTimers();
-    jest.setSystemTime(new Date(Date.UTC(2021, 1, 1)));
+    jest.setSystemTime(new Date(Date.UTC(2021, 1, 1)).getTime());
 
     expect(util.time.nowFormatted('YYYY-MM-dd HH:mm:ss')).toEqual("2021-02-01T00:00:00.000Z");
   });
   test("nowISO8601", async () => {
     jest.useFakeTimers();
-    jest.setSystemTime(new Date(Date.UTC(2021, 1, 1)));
+    jest.setSystemTime(new Date(Date.UTC(2021, 1, 1)).getTime());
 
     expect(util.time.nowISO8601()).toEqual("2021-02-01T00:00:00.000Z");
   });
