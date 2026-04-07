@@ -4,6 +4,7 @@ This package provides an implementation for the `@aws-appsync/utils` package tha
 
 ## Changelog:
 
+- v0.1.1: security updates
 - v0.1.0: first pinned version of the library
 
 > [!TIP]
