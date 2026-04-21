@@ -41,6 +41,8 @@ jobs:
 
       - name: Integration test with LocalStack invoke method
         run: bash ./test_in_docker.sh
+        env:
+          TEST_IMAGE_NAME: ${{ env.NODEJS_IMAGE_NAME }}:${{ env.NODE_VERSION }}
 
   localstack-test:
     runs-on: ubuntu-latest
