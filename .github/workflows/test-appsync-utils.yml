@@ -47,7 +47,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - name: Start LocalStack
-        uses: LocalStack/setup-localstack@v0.3.1
+        uses: LocalStack/setup-localstack@v0.3.2
         with:
           image-tag: "latest"
           use-pro: "true"
