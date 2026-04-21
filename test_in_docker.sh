@@ -7,6 +7,10 @@ set -euo pipefail
 # This script both runs the test, and acts as its own entrypoint
 
 if [ -z ${TEST_IN_DOCKER_ENTRYPOINT:-} ]; then
+    if [ -z "${TEST_IMAGE_NAME:-}" ]; then
+        echo "WARNING: TEST_IMAGE_NAME is not set. Set it to the docker image to use for testing. eg. public.ecr.aws/lambda/nodejs:22"
+        exit 1
+    fi
     # test script
     echo Test script $0
     script_path=$(readlink -f $0)
@@ -18,7 +22,7 @@ if [ -z ${TEST_IN_DOCKER_ENTRYPOINT:-} ]; then
         --workdir /test \
         --entrypoint bash \
         -e TEST_IN_DOCKER_ENTRYPOINT=1 \
-        ${TEST_IMAGE_NAME:-public.ecr.aws/lambda/nodejs:18} /test_in_docker.sh
+        ${TEST_IMAGE_NAME} /test_in_docker.sh
 else
     # entrypoint
     echo Entrypoint
