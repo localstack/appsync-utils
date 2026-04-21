@@ -27,7 +27,7 @@
     "homepage": "https://github.com/localstack/localstack-appsync-utils#readme",
     "devDependencies": {
         "@aws-appsync/utils": "^2.1.1",
-        "@aws-sdk/client-appsync": "^3.1030.0",
+        "@aws-sdk/client-appsync": "^3.1033.0",
         "jest": "^30.3.0"
     },
     "dependencies": {
