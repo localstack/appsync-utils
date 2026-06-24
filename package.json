@@ -1,6 +1,6 @@
 {
     "name": "@localstack/appsync-utils",
-    "version": "0.1.0",
+    "version": "0.1.2",
     "description": "Implementation of the AppSync utils helpers",
     "type": "module",
     "main": "index.js",
