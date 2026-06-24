@@ -1014,6 +1014,80 @@ describe("rds resolvers", () => {
 
     });
   });
+
+  // Schema/table-qualified identifiers (e.g. "schema.table" or "table.column") must be split on
+  // `.` and each segment quoted individually, matching AWS AppSync (e.g. `"schema"."table"`),
+  // rather than quoting the whole string as one literal identifier (`"schema.table"`).
+  describe("schema-qualified identifiers", () => {
+    test("postgresql select qualified table", async () => {
+      const code = `
+        export function request(ctx) {
+          return rds.createPgStatement(rds.select({ table: "domain.item" }));
+        }
+        export function response(ctx) {}
+      `;
+      await checkResolverValid(code, {}, "request");
+    });
+
+    test("postgresql select qualified columns", async () => {
+      const code = `
+        export function request(ctx) {
+          return rds.createPgStatement(rds.select({
+            table: "private.persons",
+            columns: ["id", "persons.name"],
+          }));
+        }
+        export function response(ctx) {}
+      `;
+      await checkResolverValid(code, {}, "request");
+    });
+
+    test("postgresql qualified column in where clause", async () => {
+      const code = `
+        export function request(ctx) {
+          return rds.createPgStatement(rds.select({
+            table: "private.persons",
+            where: { "persons.id": { eq: 123 } },
+          }));
+        }
+        export function response(ctx) {}
+      `;
+      await checkResolverValid(code, {}, "request");
+    });
+
+    test("postgresql insert into qualified table", async () => {
+      const code = `
+        export function request(ctx) {
+          return rds.createPgStatement(rds.insert({
+            table: "private.persons",
+            values: { name: "test" },
+          }));
+        }
+        export function response(ctx) {}
+      `;
+      await checkResolverValid(code, {}, "request");
+    });
+
+    test("mysql select qualified table", async () => {
+      const code = `
+        export function request(ctx) {
+          return rds.createMySQLStatement(rds.select({ table: "domain.item" }));
+        }
+        export function response(ctx) {}
+      `;
+      await checkResolverValid(code, {}, "request");
+    });
+
+    test("unqualified name is quoted as one segment", async () => {
+      const code = `
+        export function request(ctx) {
+          return rds.createPgStatement(rds.select({ table: "item" }));
+        }
+        export function response(ctx) {}
+      `;
+      await checkResolverValid(code, {}, "request");
+    });
+  });
 });
 
 describe("error handling", () => {

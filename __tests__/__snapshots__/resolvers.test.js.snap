@@ -277,6 +277,70 @@ exports[`rds resolvers postgresql update 1`] = `
 }
 `;
 
+exports[`rds resolvers schema-qualified identifiers mysql select qualified table 1`] = `
+{
+  "statements": [
+    "SELECT * FROM \`domain\`.\`item\`",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`rds resolvers schema-qualified identifiers postgresql insert into qualified table 1`] = `
+{
+  "statements": [
+    "INSERT INTO "private"."persons" ("name") VALUES (:P0)",
+  ],
+  "variableMap": {
+    ":P0": "test",
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`rds resolvers schema-qualified identifiers postgresql qualified column in where clause 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "private"."persons" WHERE "persons"."id" = :P0",
+  ],
+  "variableMap": {
+    ":P0": 123,
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`rds resolvers schema-qualified identifiers postgresql select qualified columns 1`] = `
+{
+  "statements": [
+    "SELECT "id", "persons"."name" FROM "private"."persons"",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`rds resolvers schema-qualified identifiers postgresql select qualified table 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "domain"."item"",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`rds resolvers schema-qualified identifiers unqualified name is quoted as one segment 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "item"",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
 exports[`rds resolvers toJsonObject 1`] = `
 [
   [

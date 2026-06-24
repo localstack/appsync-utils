@@ -154,7 +154,7 @@ class StatementBuilder {
         let query;
 
         if (columns) {
-          const columnNames = columns.map(name => `${this.quoteChar}${name}${this.quoteChar}`).join(', ');
+          const columnNames = columns.map(name => this.quoteIdentifier(name)).join(', ');
           query = `SELECT ${columnNames} FROM ${tableName}`;
         } else {
           query = `SELECT * FROM ${tableName}`;
@@ -170,7 +170,7 @@ class StatementBuilder {
           let orderByParts = [];
           for (let { column, dir } of orderBy) {
             dir = dir || "ASC";
-            orderByParts.push(`${this.quoteChar}${column}${this.quoteChar} ${dir}`);
+            orderByParts.push(`${this.quoteIdentifier(column)} ${dir}`);
           }
 
           query = `${query} ORDER BY ${orderByParts.join(', ')}`;
@@ -202,7 +202,7 @@ class StatementBuilder {
         }
 
         if (returning) {
-          const columnNames = returning.map(name => `${this.quoteChar}${name}${this.quoteChar}`).join(', ');
+          const columnNames = returning.map(name => this.quoteIdentifier(name)).join(', ');
           query = `${query} RETURNING ${columnNames}`;
         }
 
@@ -218,7 +218,7 @@ class StatementBuilder {
         let columnTextItems = [];
         let valuesTextItems = [];
         for (const [columnName, value] of Object.entries(values)) {
-          columnTextItems.push(`${this.quoteChar}${columnName}${this.quoteChar}`);
+          columnTextItems.push(this.quoteIdentifier(columnName));
           const placeholder = this.newVariable(value);
           valuesTextItems.push(placeholder);
         }
@@ -240,7 +240,7 @@ class StatementBuilder {
         let columnDefinitionItems = [];
         for (const [columnName, value] of Object.entries(values)) {
           const placeholder = this.newVariable(value);
-          columnDefinitionItems.push(`${this.quoteChar}${columnName}${this.quoteChar} = ${placeholder}`);
+          columnDefinitionItems.push(`${this.quoteIdentifier(columnName)} = ${placeholder}`);
 
         }
         query = `${query} ${columnDefinitionItems.join(', ')}`;
@@ -310,30 +310,37 @@ class StatementBuilder {
     }
     switch (conditionType) {
       case "eq":
-        return `${startGrouping}${this.quoteChar}${columnName}${this.quoteChar} = ${value}${endGrouping}`;
+        return `${startGrouping}${this.quoteIdentifier(columnName)} = ${value}${endGrouping}`;
       case "ne":
-        return `${startGrouping}${this.quoteChar}${columnName}${this.quoteChar} != ${value}${endGrouping}`;
+        return `${startGrouping}${this.quoteIdentifier(columnName)} != ${value}${endGrouping}`;
       case "gt":
-        return `${startGrouping}${this.quoteChar}${columnName}${this.quoteChar} > ${value}${endGrouping}`;
+        return `${startGrouping}${this.quoteIdentifier(columnName)} > ${value}${endGrouping}`;
       case "lt":
-        return `${startGrouping}${this.quoteChar}${columnName}${this.quoteChar} < ${value}${endGrouping}`;
+        return `${startGrouping}${this.quoteIdentifier(columnName)} < ${value}${endGrouping}`;
       case "ge":
-        return `${startGrouping}${this.quoteChar}${columnName}${this.quoteChar} >= ${value}${endGrouping}`;
+        return `${startGrouping}${this.quoteIdentifier(columnName)} >= ${value}${endGrouping}`;
       case "le":
-        return `${startGrouping}${this.quoteChar}${columnName}${this.quoteChar} <= ${value}${endGrouping}`;
+        return `${startGrouping}${this.quoteIdentifier(columnName)} <= ${value}${endGrouping}`;
       case "contains":
-        return `${startGrouping}${this.quoteChar}${columnName}${this.quoteChar} LIKE ${value}${endGrouping}`;
+        return `${startGrouping}${this.quoteIdentifier(columnName)} LIKE ${value}${endGrouping}`;
       case "notContains":
-        return `${startGrouping}${this.quoteChar}${columnName}${this.quoteChar} NOT LIKE ${value}${endGrouping}`;
+        return `${startGrouping}${this.quoteIdentifier(columnName)} NOT LIKE ${value}${endGrouping}`;
       case "attributeExists":
-        return `${startGrouping}${this.quoteChar}${columnName}${this.quoteChar} IS ${value? "NOT " : ""}NULL${endGrouping}`;
+        return `${startGrouping}${this.quoteIdentifier(columnName)} IS ${value? "NOT " : ""}NULL${endGrouping}`;
       default:
         throw new Error(`Unhandled condition type ${conditionType}`);
     }
   }
 
   getTableName(rawName) {
-    return `${this.quoteChar}${rawName}${this.quoteChar}`;
+    return this.quoteIdentifier(rawName);
+  }
+
+  quoteIdentifier(rawName) {
+    // Split schema/table-qualified identifiers (e.g. "schema.table" or "table.column") on `.`
+    // and quote each segment individually, matching AWS AppSync (e.g. `"schema"."table"`)
+    // rather than quoting the whole string as one literal identifier (`"schema.table"`).
+    return rawName.split('.').map(part => `${this.quoteChar}${part}${this.quoteChar}`).join('.');
   }
 }
 
