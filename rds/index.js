@@ -162,7 +162,9 @@ class StatementBuilder {
 
         if (where) {
           const parts = this.buildWhereClause(where);
-          query = `${query} WHERE ${parts}`;
+          if (parts) {
+            query = `${query} WHERE ${parts}`;
+          }
         }
 
 
@@ -177,12 +179,13 @@ class StatementBuilder {
 
         };
 
-        if (limit) {
+        // limit/offset are optional and may be passed as null; 0 is a valid value
+        if (limit != null) {
           const limitValue = this.newVariable(limit);
           query = `${query} LIMIT ${limitValue}`;
         }
 
-        if (offset) {
+        if (offset != null) {
           const offsetValue = this.newVariable(offset);
           query = `${query} OFFSET ${offsetValue}`;
         }
@@ -198,7 +201,9 @@ class StatementBuilder {
 
         if (where) {
           const parts = this.buildWhereClause(where);
-          query = `${query} WHERE ${parts}`;
+          if (parts) {
+            query = `${query} WHERE ${parts}`;
+          }
         }
 
         if (returning) {
@@ -247,7 +252,9 @@ class StatementBuilder {
 
         if (where) {
           const parts = this.buildWhereClause(where);
-          query = `${query} WHERE ${parts}`;
+          if (parts) {
+            query = `${query} WHERE ${parts}`;
+          }
         }
 
         this.result.statements.push(query);
@@ -337,6 +344,12 @@ class StatementBuilder {
   }
 
   quoteIdentifier(rawName) {
+    // A bare `*` stays unquoted (`SELECT *`), matching AWS AppSync. Note that AWS quotes the
+    // star in a qualified identifier (`persons.*` becomes `"persons"."*"`), so only the exact
+    // string `*` is special-cased.
+    if (rawName === '*') {
+      return rawName;
+    }
     // Split schema/table-qualified identifiers (e.g. "schema.table" or "table.column") on `.`
     // and quote each segment individually, matching AWS AppSync (e.g. `"schema"."table"`)
     // rather than quoting the whole string as one literal identifier (`"schema.table"`).

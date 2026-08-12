@@ -341,6 +341,117 @@ exports[`rds resolvers schema-qualified identifiers unqualified name is quoted a
 }
 `;
 
+exports[`rds resolvers select statement edge cases empty and condition in where 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "domain"."color" LIMIT :P0",
+  ],
+  "variableMap": {
+    ":P0": 3,
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`rds resolvers select statement edge cases empty where object 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "domain"."color" LIMIT :P0",
+  ],
+  "variableMap": {
+    ":P0": 3,
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`rds resolvers select statement edge cases empty where object in remove 1`] = `
+{
+  "statements": [
+    "DELETE FROM "persons"",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`rds resolvers select statement edge cases empty where object in update 1`] = `
+{
+  "statements": [
+    "UPDATE "persons" SET "name" = :P0",
+  ],
+  "variableMap": {
+    ":P0": "test",
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`rds resolvers select statement edge cases limit and offset absent from args 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "domain"."color"",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`rds resolvers select statement edge cases limit and offset zero 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "domain"."color" LIMIT :P0 OFFSET :P1",
+  ],
+  "variableMap": {
+    ":P0": 0,
+    ":P1": 0,
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`rds resolvers select statement edge cases limit provided in args 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "domain"."color" LIMIT :P0",
+  ],
+  "variableMap": {
+    ":P0": 3,
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`rds resolvers select statement edge cases mysql star column 1`] = `
+{
+  "statements": [
+    "SELECT * FROM \`domain\`.\`color\`",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`rds resolvers select statement edge cases postgresql star column 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "domain"."color"",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`rds resolvers select statement edge cases qualified star column 1`] = `
+{
+  "statements": [
+    "SELECT "id", "persons"."*" FROM "private"."persons"",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
 exports[`rds resolvers toJsonObject 1`] = `
 [
   [
