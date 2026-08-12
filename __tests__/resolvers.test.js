@@ -1088,6 +1088,134 @@ describe("rds resolvers", () => {
       await checkResolverValid(code, {}, "request");
     });
   });
+
+  // A `*` column must stay unquoted (`SELECT *`, not `SELECT "*"`), limit/offset are optional,
+  // and an empty `where` object must not emit a dangling `WHERE` keyword.
+  describe("select statement edge cases", () => {
+    // resolver shape taken from a customer: limit/offset forwarded straight from ctx.args
+    const optionalLimitOffsetCode = `
+      export function request(ctx) {
+        const { limit, offset = null } = ctx.args;
+        return rds.createPgStatement(rds.select({
+          table: 'domain.color',
+          columns: ['*'],
+          limit,
+          offset,
+        }));
+      }
+      export function response(ctx) {}
+    `;
+
+    test("limit and offset absent from args", async () => {
+      await checkResolverValid(optionalLimitOffsetCode, {}, "request");
+    });
+
+    test("limit provided in args", async () => {
+      await checkResolverValid(optionalLimitOffsetCode, { arguments: { limit: 3 } }, "request");
+    });
+
+    test("postgresql star column", async () => {
+      const code = `
+        export function request(ctx) {
+          return rds.createPgStatement(rds.select({ table: "domain.color", columns: ["*"] }));
+        }
+        export function response(ctx) {}
+      `;
+      await checkResolverValid(code, {}, "request");
+    });
+
+    test("mysql star column", async () => {
+      const code = `
+        export function request(ctx) {
+          return rds.createMySQLStatement(rds.select({ table: "domain.color", columns: ["*"] }));
+        }
+        export function response(ctx) {}
+      `;
+      await checkResolverValid(code, {}, "request");
+    });
+
+    test("qualified star column", async () => {
+      const code = `
+        export function request(ctx) {
+          return rds.createPgStatement(rds.select({
+            table: "private.persons",
+            columns: ["id", "persons.*"],
+          }));
+        }
+        export function response(ctx) {}
+      `;
+      await checkResolverValid(code, {}, "request");
+    });
+
+    test("empty where object", async () => {
+      const code = `
+        export function request(ctx) {
+          return rds.createPgStatement(rds.select({
+            table: "domain.color",
+            where: {},
+            limit: 3,
+          }));
+        }
+        export function response(ctx) {}
+      `;
+      await checkResolverValid(code, {}, "request");
+    });
+
+    test("empty and condition in where", async () => {
+      const code = `
+        export function request(ctx) {
+          return rds.createPgStatement(rds.select({
+            table: "domain.color",
+            where: { and: [] },
+            limit: 3,
+          }));
+        }
+        export function response(ctx) {}
+      `;
+      await checkResolverValid(code, {}, "request");
+    });
+
+    test("empty where object in update", async () => {
+      const code = `
+        export function request(ctx) {
+          return rds.createPgStatement(rds.update({
+            table: "persons",
+            values: { name: "test" },
+            where: {},
+          }));
+        }
+        export function response(ctx) {}
+      `;
+      await checkResolverValid(code, {}, "request");
+    });
+
+    test("empty where object in remove", async () => {
+      const code = `
+        export function request(ctx) {
+          return rds.createPgStatement(rds.remove({
+            table: "persons",
+            where: {},
+          }));
+        }
+        export function response(ctx) {}
+      `;
+      await checkResolverValid(code, {}, "request");
+    });
+
+    test("limit and offset zero", async () => {
+      const code = `
+        export function request(ctx) {
+          return rds.createPgStatement(rds.select({
+            table: "domain.color",
+            limit: 0,
+            offset: 0,
+          }));
+        }
+        export function response(ctx) {}
+      `;
+      await checkResolverValid(code, {}, "request");
+    });
+  });
 });
 
 describe("error handling", () => {

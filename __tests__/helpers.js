@@ -95,7 +95,8 @@ export const checkResolverValid = async (code, context, functionName) => {
 
 // manipulate the context object to behave like the AppSync equivalent
 function transformContextForAppSync(context) {
-  context.args = context.arguments;
+  // AWS always exposes `ctx.args`, even when the context carries no arguments at all
+  context.args = context.arguments ?? {};
 }
 
 // If TEST_TARGET is AWS_CLOUD then run the check against AWS. Otherwise, run locally.
