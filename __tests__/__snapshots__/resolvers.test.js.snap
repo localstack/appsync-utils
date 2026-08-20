@@ -50,6 +50,412 @@ exports[`error handling unauthorized 1`] = `
 }
 `;
 
+exports[`rds resolvers additional conditions and the from alias beginsWith, between and size beginsWith in a delete statement 1`] = `
+{
+  "statements": [
+    "DELETE FROM "persons" WHERE "name" LIKE :P0",
+  ],
+  "variableMap": {
+    ":P0": "te%",
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`rds resolvers additional conditions and the from alias beginsWith, between and size beginsWith in mysql 1`] = `
+{
+  "statements": [
+    "SELECT * FROM \`persons\` WHERE \`name\` LIKE :P0",
+  ],
+  "variableMap": {
+    ":P0": "te%",
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`rds resolvers additional conditions and the from alias beginsWith, between and size beginsWith keeps a wildcard already in the value 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "persons" WHERE "name" LIKE :P0",
+  ],
+  "variableMap": {
+    ":P0": "a%b%",
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`rds resolvers additional conditions and the from alias beginsWith, between and size beginsWith renders a trailing wildcard 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "persons" WHERE "name" LIKE :P0",
+  ],
+  "variableMap": {
+    ":P0": "te%",
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`rds resolvers additional conditions and the from alias beginsWith, between and size beginsWith with an empty string 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "persons" WHERE "name" LIKE :P0",
+  ],
+  "variableMap": {
+    ":P0": "%",
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`rds resolvers additional conditions and the from alias beginsWith, between and size between a null bound 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "persons" WHERE "age" BETWEEN NULL AND :P0",
+  ],
+  "variableMap": {
+    ":P0": 65,
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`rds resolvers additional conditions and the from alias beginsWith, between and size between and beginsWith in an or group 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "persons" WHERE ("age" BETWEEN :P0 AND :P1) OR ("name" LIKE :P2)",
+  ],
+  "variableMap": {
+    ":P0": 18,
+    ":P1": 65,
+    ":P2": "te%",
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`rds resolvers additional conditions and the from alias beginsWith, between and size between in an update statement 1`] = `
+{
+  "statements": [
+    "UPDATE "persons" SET "active" = :P0 WHERE "age" BETWEEN :P1 AND :P2",
+  ],
+  "variableMap": {
+    ":P0": false,
+    ":P1": 18,
+    ":P2": 65,
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`rds resolvers additional conditions and the from alias beginsWith, between and size between in mysql 1`] = `
+{
+  "statements": [
+    "SELECT * FROM \`persons\` WHERE \`age\` BETWEEN :P0 AND :P1",
+  ],
+  "variableMap": {
+    ":P0": 18,
+    ":P1": 65,
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`rds resolvers additional conditions and the from alias beginsWith, between and size between two numbers 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "persons" WHERE "age" BETWEEN :P0 AND :P1",
+  ],
+  "variableMap": {
+    ":P0": 18,
+    ":P1": 65,
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`rds resolvers additional conditions and the from alias beginsWith, between and size between two strings 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "persons" WHERE "name" BETWEEN :P0 AND :P1",
+  ],
+  "variableMap": {
+    ":P0": "a",
+    ":P1": "m",
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`rds resolvers additional conditions and the from alias beginsWith, between and size between two type hints 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "persons" WHERE "birthday" BETWEEN :P0 AND :P1",
+  ],
+  "variableMap": {
+    ":P0": "2020-01-01",
+    ":P1": "2020-12-31",
+  },
+  "variableTypeHintMap": {
+    ":P0": "DATE",
+    ":P1": "DATE",
+  },
+}
+`;
+
+exports[`rds resolvers additional conditions and the from alias beginsWith, between and size empty size object 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "persons"",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`rds resolvers additional conditions and the from alias beginsWith, between and size empty size object alongside a real condition in a group 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "persons" WHERE  AND ("id" = :P0)",
+  ],
+  "variableMap": {
+    ":P0": 1,
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`rds resolvers additional conditions and the from alias beginsWith, between and size empty size object alongside a real condition on one column 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "persons" WHERE  AND "name" = :P0",
+  ],
+  "variableMap": {
+    ":P0": "test",
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`rds resolvers additional conditions and the from alias beginsWith, between and size empty size object in a group 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "persons"",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`rds resolvers additional conditions and the from alias beginsWith, between and size size and beginsWith in a group 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "persons" WHERE (LENGTH ("name") = :P0) AND ("country" LIKE :P1)",
+  ],
+  "variableMap": {
+    ":P0": 3,
+    ":P1": "de%",
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`rds resolvers additional conditions and the from alias beginsWith, between and size size and beginsWith on one column 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "persons" WHERE LENGTH ("name") = :P0 AND "name" LIKE :P1",
+  ],
+  "variableMap": {
+    ":P0": 3,
+    ":P1": "te%",
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`rds resolvers additional conditions and the from alias beginsWith, between and size size compares the column length 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "persons" WHERE LENGTH ("name") = :P0",
+  ],
+  "variableMap": {
+    ":P0": 3,
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`rds resolvers additional conditions and the from alias beginsWith, between and size size in an update statement 1`] = `
+{
+  "statements": [
+    "UPDATE "persons" SET "active" = :P0 WHERE LENGTH ("name") = :P1",
+  ],
+  "variableMap": {
+    ":P0": false,
+    ":P1": 3,
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`rds resolvers additional conditions and the from alias beginsWith, between and size size in mysql 1`] = `
+{
+  "statements": [
+    "SELECT * FROM \`persons\` WHERE LENGTH (\`name\`) = :P0",
+  ],
+  "variableMap": {
+    ":P0": 3,
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`rds resolvers additional conditions and the from alias beginsWith, between and size size nested in an or of an and 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "persons" WHERE ((LENGTH ("name") = :P0))",
+  ],
+  "variableMap": {
+    ":P0": 3,
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`rds resolvers additional conditions and the from alias beginsWith, between and size size on a qualified column 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "private"."persons" WHERE LENGTH ("persons"."name") = :P0",
+  ],
+  "variableMap": {
+    ":P0": 3,
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`rds resolvers additional conditions and the from alias beginsWith, between and size size with a nested between 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "persons" WHERE LENGTH ("name") BETWEEN :P0 AND :P1",
+  ],
+  "variableMap": {
+    ":P0": 2,
+    ":P1": 8,
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`rds resolvers additional conditions and the from alias beginsWith, between and size size with a null value 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "persons" WHERE LENGTH ("name") = NULL",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`rds resolvers additional conditions and the from alias beginsWith, between and size size with each comparison operator 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "persons" WHERE LENGTH ("a") != :P0 AND LENGTH ("b") > :P1 AND LENGTH ("c") >= :P2 AND LENGTH ("d") < :P3 AND LENGTH ("e") <= :P4",
+  ],
+  "variableMap": {
+    ":P0": 1,
+    ":P1": 2,
+    ":P2": 3,
+    ":P3": 4,
+    ":P4": 5,
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`rds resolvers additional conditions and the from alias beginsWith, between and size size with order by and limit 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "persons" WHERE LENGTH ("name") > :P0 ORDER BY "name" DESC LIMIT :P1",
+  ],
+  "variableMap": {
+    ":P0": 2,
+    ":P1": 5,
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`rds resolvers additional conditions and the from alias beginsWith, between and size size with two comparisons on one column 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "persons" WHERE LENGTH ("name") = :P0 AND LENGTH ("name") > :P1",
+  ],
+  "variableMap": {
+    ":P0": 3,
+    ":P1": 1,
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`rds resolvers additional conditions and the from alias from as a table alias insert uses table and ignores from 1`] = `
+{
+  "statements": [
+    "INSERT INTO "persons" ("name") VALUES (:P0)",
+  ],
+  "variableMap": {
+    ":P0": "test",
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`rds resolvers additional conditions and the from alias from as a table alias select with a qualified from 1`] = `
+{
+  "statements": [
+    "SELECT "id" FROM "domain"."color"",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`rds resolvers additional conditions and the from alias from as a table alias select with from 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "persons"",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`rds resolvers additional conditions and the from alias from as a table alias select with from and the other clauses 1`] = `
+{
+  "statements": [
+    "SELECT "id" FROM "domain"."color" WHERE "id" = :P0 LIMIT :P1",
+  ],
+  "variableMap": {
+    ":P0": 1,
+    ":P1": 2,
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`rds resolvers additional conditions and the from alias from as a table alias select with from in mysql 1`] = `
+{
+  "statements": [
+    "SELECT * FROM \`persons\`",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
 exports[`rds resolvers attributeExists nested or 1`] = `
 {
   "statements": [

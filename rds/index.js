@@ -92,6 +92,17 @@ export function remove(s) {
   return { type: "REMOVE", properties: s };
 }
 
+// SQL operators for the simple comparison conditions, shared by the direct form (`{ eq: 1 }`) and
+// the `size` form (`{ size: { eq: 1 } }`)
+const COMPARISON_OPERATORS = {
+  eq: '=',
+  ne: '!=',
+  gt: '>',
+  lt: '<',
+  ge: '>=',
+  le: '<=',
+};
+
 class StatementBuilder {
   constructor({ quoteChar, supportsReturning = true }) {
     this.quoteChar = quoteChar;
@@ -161,7 +172,7 @@ class StatementBuilder {
   renderStructuredStatement(type, properties) {
     switch (type) {
       case "SELECT": {
-        const { table, columns, where, orderBy, limit, offset } = properties;
+        const { columns, where, orderBy, limit, offset } = properties;
         const parts = ["SELECT"];
 
         if (columns) {
@@ -170,7 +181,7 @@ class StatementBuilder {
           parts.push('*');
         }
 
-        parts.push(`FROM ${this.getTableName(table)}`);
+        parts.push(`FROM ${this.resolveTableName(properties, true)}`);
         parts.push(...this.buildWhereParts(where));
 
         // an empty sort list drops the whole clause, ORDER BY keyword included, like AWS
@@ -191,8 +202,8 @@ class StatementBuilder {
         break;
       }
       case "REMOVE": {
-        const { table, where, returning, } = properties;
-        const parts = [`DELETE FROM ${this.getTableName(table)}`];
+        const { where, returning, } = properties;
+        const parts = [`DELETE FROM ${this.resolveTableName(properties)}`];
 
         parts.push(...this.buildWhereParts(where));
 
@@ -204,8 +215,8 @@ class StatementBuilder {
         break;
       }
       case "INSERT": {
-        const { table, values, returning } = properties;
-        const parts = [`INSERT INTO ${this.getTableName(table)}`];
+        const { values, returning } = properties;
+        const parts = [`INSERT INTO ${this.resolveTableName(properties)}`];
 
         let columnTextItems = [];
         let valuesTextItems = [];
@@ -223,8 +234,8 @@ class StatementBuilder {
         break;
       }
       case "UPDATE": {
-        const { table, values, where } = properties;
-        const parts = [`UPDATE ${this.getTableName(table)}`, 'SET'];
+        const { values, where } = properties;
+        const parts = [`UPDATE ${this.resolveTableName(properties)}`, 'SET'];
 
         let columnDefinitionItems = [];
         for (const [columnName, value] of Object.entries(values)) {
@@ -341,55 +352,118 @@ class StatementBuilder {
     const columnName = Object.keys(defn)[0];
     const condition = defn[columnName];
 
-    const conditionTypes = Object.keys(condition);
-    // a column carrying no condition contributes nothing, e.g. an optional filter that the
-    // resolver left empty
-    if (conditionTypes.length === 0) {
-      return "";
-    }
-
     // several conditions on the same column are ANDed together
-    const statements = conditionTypes.map(
+    const statements = Object.keys(condition).map(
       conditionType => this.buildCondition(columnName, condition[conditionType], conditionType)
     );
 
-    return `${startGrouping}${statements.join(" AND ")}${endGrouping}`;
+    // a column that renders nothing - carrying no condition at all, e.g. an optional filter the
+    // resolver left empty, or only an empty `size` - contributes nothing, and must not pick up the
+    // grouping on its way out or it would produce `WHERE ()`
+    const joined = statements.join(" AND ");
+    return joined === "" ? "" : `${startGrouping}${joined}${endGrouping}`;
   }
 
   buildCondition(columnName, rawValue, conditionType) {
-    let value;
-    if (conditionType === "attributeExists") {
-      value = rawValue;
-    } else if (conditionType === "contains") {
-      // AWS binds the value wrapped in wildcards, so `contains` is a real substring match rather
-      // than an equality test. `notContains` is deliberately left unwrapped - AWS does not wrap it
-      // either.
-      value = this.newVariable(`%${rawValue}%`);
-    } else {
-      value = this.newVariable(rawValue);
-    }
+    const column = this.quoteIdentifier(columnName);
+    const path = `${columnName}.${conditionType}`;
+
     switch (conditionType) {
-      case "eq":
-        return `${this.quoteIdentifier(columnName)} = ${value}`;
-      case "ne":
-        return `${this.quoteIdentifier(columnName)} != ${value}`;
-      case "gt":
-        return `${this.quoteIdentifier(columnName)} > ${value}`;
-      case "lt":
-        return `${this.quoteIdentifier(columnName)} < ${value}`;
-      case "ge":
-        return `${this.quoteIdentifier(columnName)} >= ${value}`;
-      case "le":
-        return `${this.quoteIdentifier(columnName)} <= ${value}`;
-      case "contains":
-        return `${this.quoteIdentifier(columnName)} LIKE ${value}`;
-      case "notContains":
-        return `${this.quoteIdentifier(columnName)} NOT LIKE ${value}`;
+      case "size":
+        return this.buildSizeCondition(column, rawValue, path);
+      case "between":
+        return this.buildBetweenCondition(column, rawValue, path);
       case "attributeExists":
-        return `${this.quoteIdentifier(columnName)} IS ${value? "NOT " : ""}NULL`;
-      default:
-        throw new Error(`Unhandled condition type ${conditionType}`);
+        return `${column} IS ${rawValue? "NOT " : ""}NULL`;
+      case "contains":
+        // the wildcards make `contains` a substring match rather than an equality test
+        return `${column} LIKE ${this.newVariable(`%${this.requireString(rawValue, path)}%`)}`;
+      case "beginsWith":
+        return `${column} LIKE ${this.newVariable(`${this.requireString(rawValue, path)}%`)}`;
+      case "notContains":
+        // deliberately unwrapped - AWS adds no wildcards to notContains
+        return `${column} NOT LIKE ${this.newVariable(this.requireString(rawValue, path))}`;
+      default: {
+        const operator = COMPARISON_OPERATORS[conditionType];
+        if (!operator) {
+          throw new Error(`Unhandled condition type ${conditionType}`);
+        }
+
+        return `${column} ${operator} ${this.newVariable(rawValue)}`;
+      }
     }
+  }
+
+  buildBetweenCondition(target, rawValue, path) {
+    // AWS uses two distinct messages here: one for a value that is not an array at all, another
+    // for an array of the wrong length
+    if (!Array.isArray(rawValue)) {
+      throw new Error(`${path} condition expects an array with length of 2.`);
+    }
+
+    if (rawValue.length !== 2) {
+      throw new Error(`${path} condition expects an array with 2 values but received an array with length ${rawValue.length}.`);
+    }
+
+    // mapping in order keeps the bound variables numbered low-then-high
+    const [low, high] = rawValue.map(bound => this.renderValue(bound));
+    return `${target} BETWEEN ${low} AND ${high}`;
+  }
+
+  buildSizeCondition(column, rawValue, path) {
+    if ((typeof rawValue !== 'object') || (rawValue === null) || Array.isArray(rawValue)) {
+      throw new Error(`Expected ${path} to be an Object.`);
+    }
+
+    // the comparison runs against the column's length, with the target repeated for each operator.
+    // An empty object renders nothing, like any other empty condition.
+    const target = `LENGTH (${column})`;
+    const statements = Object.keys(rawValue).map(operator => {
+      if (operator === "between") {
+        // the path stays the outer `<column>.size` in the error message, matching AWS
+        return this.buildBetweenCondition(target, rawValue[operator], path);
+      }
+
+      const comparison = COMPARISON_OPERATORS[operator];
+      if (!comparison) {
+        throw new Error(`${path} has invalid size operator.`);
+      }
+
+      // unlike a direct comparison, a nullish value here is inlined rather than rejected
+      return `${target} ${comparison} ${this.renderValue(rawValue[operator])}`;
+    });
+
+    return statements.join(" AND ");
+  }
+
+  requireString(value, path) {
+    // AWS rejects a non-string for the wildcard conditions instead of coercing it
+    if (value == null) {
+      throw new Error(`Value for ${path} can't be null.`);
+    }
+
+    if (typeof value !== 'string') {
+      throw new Error(`${path} expects a string value to be passed.`);
+    }
+
+    return value;
+  }
+
+  resolveTableName(properties, allowFrom = false) {
+    const { table, from } = properties;
+
+    // `from` is an alias for `table`, but only in select(): insert/update/remove ignore the key
+    // entirely, and only select() rejects the two being passed together
+    if (allowFrom && (table != null) && (from != null)) {
+      throw new Error("'from' and 'table' keys cannot be used together");
+    }
+
+    const name = allowFrom ? (table ?? from) : table;
+    if (name == null) {
+      throw new Error("'table' or 'from' key is required.");
+    }
+
+    return this.getTableName(name);
   }
 
   getTableName(rawName) {

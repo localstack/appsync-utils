@@ -1366,8 +1366,11 @@ describe("rds resolvers", () => {
       await checkResolverValid(pg(`rds.select({ table: "persons", where: { name: { notContains: "test" } } })`), {}, "request");
     });
 
-    // These inputs are rejected outright. AWS reports the same messages prefixed with a source
-    // position we cannot reproduce locally, so they are asserted directly rather than snapshotted.
+    // These inputs are rejected outright. Note that these assertions never reach
+    // `checkResolverValid`, so they are NOT compared against AWS under either TEST_TARGET - they
+    // pin string literals that were checked against `EvaluateCode` by hand when written. They can
+    // become recorded snapshots once the harness captures a thrown error and strips the
+    // `code.js:<line>:<col>` prefix AWS puts in front of its message.
     test("rejects an orderBy dir that is neither ascending nor descending", () => {
       expect(() =>
         rds.createPgStatement(rds.select({ table: "persons", orderBy: [{ column: "id", dir: "; DROP TABLE persons" }] }))
@@ -1390,6 +1393,244 @@ describe("rds resolvers", () => {
       expect(() =>
         rds.createPgStatement(rds.insert({ table: "persons", values: { name: "test" }, returning: "id" }))
       ).toThrow("Expected column to be * or an array.");
+    });
+  });
+
+  describe("additional conditions and the from alias", () => {
+    const pg = (expr) => `
+      export function request(ctx) {
+        return rds.createPgStatement(${expr});
+      }
+      export function response(ctx) {}
+    `;
+
+    const mysql = (expr) => `
+      export function request(ctx) {
+        return rds.createMySQLStatement(${expr});
+      }
+      export function response(ctx) {}
+    `;
+
+    describe("beginsWith, between and size", () => {
+      // beginsWith is a prefix match: the bound value carries a trailing wildcard only
+      test("beginsWith renders a trailing wildcard", async () => {
+        await checkResolverValid(pg(`rds.select({ table: "persons", where: { name: { beginsWith: "te" } } })`), {}, "request");
+      });
+
+      test("beginsWith keeps a wildcard already in the value", async () => {
+        await checkResolverValid(pg(`rds.select({ table: "persons", where: { name: { beginsWith: "a%b" } } })`), {}, "request");
+      });
+
+      test("beginsWith with an empty string", async () => {
+        await checkResolverValid(pg(`rds.select({ table: "persons", where: { name: { beginsWith: "" } } })`), {}, "request");
+      });
+
+      test("beginsWith in a delete statement", async () => {
+        await checkResolverValid(pg(`rds.remove({ table: "persons", where: { name: { beginsWith: "te" } } })`), {}, "request");
+      });
+
+      test("beginsWith in mysql", async () => {
+        await checkResolverValid(mysql(`rds.select({ table: "persons", where: { name: { beginsWith: "te" } } })`), {}, "request");
+      });
+
+      test("between two numbers", async () => {
+        await checkResolverValid(pg(`rds.select({ table: "persons", where: { age: { between: [18, 65] } } })`), {}, "request");
+      });
+
+      test("between two strings", async () => {
+        await checkResolverValid(pg(`rds.select({ table: "persons", where: { name: { between: ["a", "m"] } } })`), {}, "request");
+      });
+
+      // each bound is bound separately, so type hints survive
+      test("between two type hints", async () => {
+        await checkResolverValid(pg(`rds.select({ table: "persons", where: { birthday: { between: [rds.typeHint.DATE("2020-01-01"), rds.typeHint.DATE("2020-12-31")] } } })`), {}, "request");
+      });
+
+      test("between a null bound", async () => {
+        await checkResolverValid(pg(`rds.select({ table: "persons", where: { age: { between: [null, 65] } } })`), {}, "request");
+      });
+
+      test("between in an update statement", async () => {
+        await checkResolverValid(pg(`rds.update({ table: "persons", values: { active: false }, where: { age: { between: [18, 65] } } })`), {}, "request");
+      });
+
+      test("between in mysql", async () => {
+        await checkResolverValid(mysql(`rds.select({ table: "persons", where: { age: { between: [18, 65] } } })`), {}, "request");
+      });
+
+      // size compares against the column length
+      test("size compares the column length", async () => {
+        await checkResolverValid(pg(`rds.select({ table: "persons", where: { name: { size: { eq: 3 } } } })`), {}, "request");
+      });
+
+      test("size with each comparison operator", async () => {
+        await checkResolverValid(pg(`rds.select({ table: "persons", where: { a: { size: { ne: 1 } }, b: { size: { gt: 2 } }, c: { size: { ge: 3 } }, d: { size: { lt: 4 } }, e: { size: { le: 5 } } } })`), {}, "request");
+      });
+
+      test("size with a nested between", async () => {
+        await checkResolverValid(pg(`rds.select({ table: "persons", where: { name: { size: { between: [2, 8] } } } })`), {}, "request");
+      });
+
+      // the length target is repeated for each operator
+      test("size with two comparisons on one column", async () => {
+        await checkResolverValid(pg(`rds.select({ table: "persons", where: { name: { size: { eq: 3, gt: 1 } } } })`), {}, "request");
+      });
+
+      // unlike a direct comparison, a nullish size value is inlined rather than rejected
+      test("size with a null value", async () => {
+        await checkResolverValid(pg(`rds.select({ table: "persons", where: { name: { size: { eq: null } } } })`), {}, "request");
+      });
+
+      test("size on a qualified column", async () => {
+        await checkResolverValid(pg(`rds.select({ table: "private.persons", where: { "persons.name": { size: { eq: 3 } } } })`), {}, "request");
+      });
+
+      test("size in an update statement", async () => {
+        await checkResolverValid(pg(`rds.update({ table: "persons", values: { active: false }, where: { name: { size: { eq: 3 } } } })`), {}, "request");
+      });
+
+      test("size in mysql", async () => {
+        await checkResolverValid(mysql(`rds.select({ table: "persons", where: { name: { size: { eq: 3 } } } })`), {}, "request");
+      });
+
+      // an empty size object renders nothing, and must not leave grouping parens behind
+      test("empty size object", async () => {
+        await checkResolverValid(pg(`rds.select({ table: "persons", where: { name: { size: {} } } })`), {}, "request");
+      });
+
+      test("empty size object in a group", async () => {
+        await checkResolverValid(pg(`rds.select({ table: "persons", where: { and: [{ name: { size: {} } }] } })`), {}, "request");
+      });
+
+      test("empty size object alongside a real condition in a group", async () => {
+        await checkResolverValid(pg(`rds.select({ table: "persons", where: { and: [{ name: { size: {} } }, { id: { eq: 1 } }] } })`), {}, "request");
+      });
+
+      test("empty size object alongside a real condition on one column", async () => {
+        await checkResolverValid(pg(`rds.select({ table: "persons", where: { name: { size: {}, eq: "test" } } })`), {}, "request");
+      });
+
+      test("size and beginsWith in a group", async () => {
+        await checkResolverValid(pg(`rds.select({ table: "persons", where: { and: [{ name: { size: { eq: 3 } } }, { country: { beginsWith: "de" } }] } })`), {}, "request");
+      });
+
+      test("size and beginsWith on one column", async () => {
+        await checkResolverValid(pg(`rds.select({ table: "persons", where: { name: { size: { eq: 3 }, beginsWith: "te" } } })`), {}, "request");
+      });
+
+      test("between and beginsWith in an or group", async () => {
+        await checkResolverValid(pg(`rds.select({ table: "persons", where: { or: [{ age: { between: [18, 65] } }, { name: { beginsWith: "te" } }] } })`), {}, "request");
+      });
+
+      test("size nested in an or of an and", async () => {
+        await checkResolverValid(pg(`rds.select({ table: "persons", where: { or: [{ and: [{ name: { size: { eq: 3 } } }] }] } })`), {}, "request");
+      });
+
+      test("size with order by and limit", async () => {
+        await checkResolverValid(pg(`rds.select({ table: "persons", where: { name: { size: { gt: 2 } } }, orderBy: [{ column: "name", dir: "desc" }], limit: 5 })`), {}, "request");
+      });
+
+      // The wildcard conditions all require a string. As above, these assertions never reach
+      // `checkResolverValid`, so they are NOT compared against AWS under either TEST_TARGET - they
+      // pin string literals checked against `EvaluateCode` by hand when written.
+      test("rejects a non-string for beginsWith", () => {
+        expect(() => rds.createPgStatement(rds.select({ table: "persons", where: { name: { beginsWith: 5 } } })))
+          .toThrow("name.beginsWith expects a string value to be passed.");
+      });
+
+      test("rejects null for beginsWith", () => {
+        expect(() => rds.createPgStatement(rds.select({ table: "persons", where: { name: { beginsWith: null } } })))
+          .toThrow("Value for name.beginsWith can't be null.");
+      });
+
+      test("rejects a non-string for contains", () => {
+        expect(() => rds.createPgStatement(rds.select({ table: "persons", where: { name: { contains: 5 } } })))
+          .toThrow("name.contains expects a string value to be passed.");
+      });
+
+      test("rejects a non-string for notContains", () => {
+        expect(() => rds.createPgStatement(rds.select({ table: "persons", where: { name: { notContains: 5 } } })))
+          .toThrow("name.notContains expects a string value to be passed.");
+      });
+
+      test("rejects between with the wrong number of values", () => {
+        expect(() => rds.createPgStatement(rds.select({ table: "persons", where: { age: { between: [1] } } })))
+          .toThrow("age.between condition expects an array with 2 values but received an array with length 1.");
+      });
+
+      test("rejects between with a value that is not an array", () => {
+        expect(() => rds.createPgStatement(rds.select({ table: "persons", where: { age: { between: 5 } } })))
+          .toThrow("age.between condition expects an array with length of 2.");
+      });
+
+      test("rejects a nested between with the wrong number of values", () => {
+        expect(() => rds.createPgStatement(rds.select({ table: "persons", where: { name: { size: { between: [1] } } } })))
+          .toThrow("name.size condition expects an array with 2 values but received an array with length 1.");
+      });
+
+      test("rejects an unsupported size operator", () => {
+        expect(() => rds.createPgStatement(rds.select({ table: "persons", where: { name: { size: { contains: "x" } } } })))
+          .toThrow("name.size has invalid size operator.");
+      });
+
+      test("rejects a size that is not an object", () => {
+        expect(() => rds.createPgStatement(rds.select({ table: "persons", where: { name: { size: 3 } } })))
+          .toThrow("Expected name.size to be an Object.");
+      });
+    });
+
+    describe("from as a table alias", () => {
+      test("select with from", async () => {
+        await checkResolverValid(pg(`rds.select({ from: "persons" })`), {}, "request");
+      });
+
+      test("select with a qualified from", async () => {
+        await checkResolverValid(pg(`rds.select({ from: "domain.color", columns: ["id"] })`), {}, "request");
+      });
+
+      test("select with from and the other clauses", async () => {
+        await checkResolverValid(pg(`rds.select({ from: "domain.color", columns: ["id"], where: { id: { eq: 1 } }, limit: 2 })`), {}, "request");
+      });
+
+      test("select with from in mysql", async () => {
+        await checkResolverValid(mysql(`rds.select({ from: "persons" })`), {}, "request");
+      });
+
+      // only select() knows the alias, so insert falls back to `table` without complaining
+      test("insert uses table and ignores from", async () => {
+        await checkResolverValid(pg(`rds.insert({ from: "ignored", table: "persons", values: { name: "test" } })`), {}, "request");
+      });
+
+      test("rejects from and table together in select", () => {
+        expect(() => rds.createPgStatement(rds.select({ from: "a", table: "b" })))
+          .toThrow("'from' and 'table' keys cannot be used together");
+      });
+
+      test("rejects a select with neither table nor from", () => {
+        expect(() => rds.createPgStatement(rds.select({ columns: ["id"] })))
+          .toThrow("'table' or 'from' key is required.");
+      });
+
+      test("rejects a null table", () => {
+        expect(() => rds.createPgStatement(rds.select({ table: null })))
+          .toThrow("'table' or 'from' key is required.");
+      });
+
+      // insert/update/remove do not accept the alias at all
+      test("rejects an insert given only from", () => {
+        expect(() => rds.createPgStatement(rds.insert({ from: "persons", values: { name: "test" } })))
+          .toThrow("'table' or 'from' key is required.");
+      });
+
+      test("rejects an update given only from", () => {
+        expect(() => rds.createPgStatement(rds.update({ from: "persons", values: { name: "test" }, where: { id: { eq: 1 } } })))
+          .toThrow("'table' or 'from' key is required.");
+      });
+
+      test("rejects a remove given only from", () => {
+        expect(() => rds.createPgStatement(rds.remove({ from: "persons", where: { id: { eq: 1 } } })))
+          .toThrow("'table' or 'from' key is required.");
+      });
     });
   });
 });
