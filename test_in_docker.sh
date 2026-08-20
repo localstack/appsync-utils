@@ -35,7 +35,7 @@ else
     echo "import { get } from '@aws-appsync/utils/dynamodb';" >> main.mjs
     echo "console.log({ get: get({ key: 10 }) });" >> main.mjs
     echo "import { select } from '@aws-appsync/utils/rds';" >> main.mjs
-    echo "console.log({ value: select(10) });" >> main.mjs
+    echo "console.log({ value: select({ table: 'persons' }) });" >> main.mjs
 
     echo "Checking package:"
     node --experimental-specifier-resolution=node main.mjs
