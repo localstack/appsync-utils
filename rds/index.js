@@ -1,4 +1,4 @@
-import { AppSyncUserError } from '../errors.js';
+import { codeError } from '../errors.js';
 
 // AWS leaks the exception its own implementation raises for a malformed tagged template. It is
 // reproduced verbatim, like the rest of these messages.
@@ -76,7 +76,7 @@ export function toJsonObject(inputStr) {
 export function sql(strings, ...keys) {
   // AWS validates the arity when the template is built, not when it is rendered
   if (strings.length !== (keys.length + 1)) {
-    throw new AppSyncUserError(TEMPLATE_ARITY_ERROR);
+    throw codeError(TEMPLATE_ARITY_ERROR);
   }
 
   return { strings, keys };
@@ -96,11 +96,11 @@ function isSqlTemplate(value) {
  */
 function statementPayload(properties, verb) {
   if (properties === undefined) {
-    throw new AppSyncUserError(`An argument is expected to be passed to ${verb}`);
+    throw codeError(`An argument is expected to be passed to ${verb}`);
   }
 
   if ((properties === null) || (typeof properties !== 'object') || Array.isArray(properties)) {
-    throw new AppSyncUserError("Expected payload to be an Object.");
+    throw codeError("Expected payload to be an Object.");
   }
 
   return properties;
@@ -150,7 +150,7 @@ class StatementBuilder {
 
   render(statements) {
     if (statements.length === 0) {
-      throw new AppSyncUserError(`An argument is expected to be passed to ${this.functionName}`);
+      throw codeError(`An argument is expected to be passed to ${this.functionName}`);
     }
 
     for (const stmt of statements) {
@@ -170,7 +170,7 @@ class StatementBuilder {
   }
 
   unsupportedStatement() {
-    throw new AppSyncUserError(`Unsupported type is passed as argument to ${this.functionName}`);
+    throw codeError(`Unsupported type is passed as argument to ${this.functionName}`);
   }
 
   renderRawTemplateStatement(query) {
@@ -188,7 +188,7 @@ class StatementBuilder {
    */
   renderTemplate(strings, keys) {
     if (strings.length !== (keys.length + 1)) {
-      throw new AppSyncUserError(TEMPLATE_ARITY_ERROR);
+      throw codeError(TEMPLATE_ARITY_ERROR);
     }
 
     let stmt = strings[0];
@@ -225,7 +225,7 @@ class StatementBuilder {
 
         if (orderBy != null) {
           if (!Array.isArray(orderBy)) {
-            throw new AppSyncUserError("orderBy expects an array.");
+            throw codeError("orderBy expects an array.");
           }
 
           // an empty sort list drops the whole clause, ORDER BY keyword included, like AWS
@@ -313,7 +313,7 @@ class StatementBuilder {
     }
 
     if ((typeof where !== 'object') || Array.isArray(where)) {
-      throw new AppSyncUserError("WHERE values are expected to be SQL templates or a condition object.");
+      throw codeError("WHERE values are expected to be SQL templates or a condition object.");
     }
 
     // a `where` that renders to nothing - `{}`, `{ and: [] }`, or a column with no condition -
@@ -324,12 +324,12 @@ class StatementBuilder {
 
   renderOrderByItem(item) {
     if ((item == null) || (typeof item !== 'object') || Array.isArray(item)) {
-      throw new AppSyncUserError("orderBy item expected to be an object.");
+      throw codeError("orderBy item expected to be an object.");
     }
 
     const { column, dir } = item;
     if (typeof column !== 'string') {
-      throw new AppSyncUserError("orderBy item expected to have property column.");
+      throw codeError("orderBy item expected to have property column.");
     }
 
     // AWS uppercases `dir` and accepts only ASC or DESC. Interpolating it raw would let a caller
@@ -337,7 +337,7 @@ class StatementBuilder {
     // value, null included, means ASC, while an empty string is rejected - matching AWS.
     const direction = typeof dir !== 'string' ? 'ASC' : dir.toUpperCase();
     if ((direction !== 'ASC') && (direction !== 'DESC')) {
-      throw new AppSyncUserError(`orderBy dir can have either ASC or DESC found ${dir}.`);
+      throw codeError(`orderBy dir can have either ASC or DESC found ${dir}.`);
     }
 
     return `${this.quoteIdentifier(column)} ${direction}`;
@@ -351,7 +351,7 @@ class StatementBuilder {
     // MySQL has no RETURNING clause and AWS refuses the key outright rather than emitting SQL the
     // engine would reject
     if (!this.supportsReturning) {
-      throw new AppSyncUserError("returning is not supported in MySQL.");
+      throw codeError("returning is not supported in MySQL.");
     }
 
     return columns;
@@ -368,12 +368,12 @@ class StatementBuilder {
     }
 
     if (!Array.isArray(columns)) {
-      throw new AppSyncUserError("Expected column to be * or an array.");
+      throw codeError("Expected column to be * or an array.");
     }
 
     return columns.map(name => {
       if (typeof name !== 'string') {
-        throw new AppSyncUserError("Invalid type in column array.");
+        throw codeError("Invalid type in column array.");
       }
 
       return this.quoteIdentifier(name);
@@ -383,12 +383,12 @@ class StatementBuilder {
   resolveValues(properties, verb) {
     const { values } = properties;
     if (values == null) {
-      throw new AppSyncUserError(`values are expected to be passed to ${verb}`);
+      throw codeError(`values are expected to be passed to ${verb}`);
     }
 
     if ((typeof values !== 'object') || Array.isArray(values)) {
       // AWS's wording, grammar included
-      throw new AppSyncUserError("Expected values to an Object.");
+      throw codeError("Expected values to an Object.");
     }
 
     return values;
@@ -401,7 +401,7 @@ class StatementBuilder {
   renderRowCount(value, keyword) {
     const count = value === '' ? NaN : Number(value);
     if (Number.isNaN(count)) {
-      throw new AppSyncUserError(`${keyword} expects a number.`);
+      throw codeError(`${keyword} expects a number.`);
     }
 
     return this.newVariable(count);
@@ -437,13 +437,13 @@ class StatementBuilder {
       if ( ["or", "and"].includes(key)) {
         const ops = key.toUpperCase();
         if (!Array.isArray(where[key])) {
-          throw new AppSyncUserError(`${key} expects conditions to be an array`);
+          throw codeError(`${key} expects conditions to be an array`);
         }
         const parts = where[key].map(part => {
           // only a condition object is accepted here - unlike a top-level `where`, a nested `sql`
           // template is refused
           if ((part == null) || (typeof part !== 'object') || Array.isArray(part) || isSqlTemplate(part)) {
-            throw new AppSyncUserError(`Expected ${key} to be an Object.`);
+            throw codeError(`Expected ${key} to be an Object.`);
           }
 
           return this.buildWhereClause(part, "(", ")", ops);
@@ -470,7 +470,7 @@ class StatementBuilder {
     const condition = defn[columnName];
 
     if ((condition == null) || (typeof condition !== 'object') || Array.isArray(condition)) {
-      throw new AppSyncUserError("Expected condition to be an Object.");
+      throw codeError("Expected condition to be an Object.");
     }
 
     // several conditions on the same column are ANDed together
@@ -508,7 +508,7 @@ class StatementBuilder {
       default: {
         const operator = COMPARISON_OPERATORS[conditionType];
         if (!operator) {
-          throw new AppSyncUserError(`Unsupported condition ${path}.`);
+          throw codeError(`Unsupported condition ${path}.`);
         }
 
         // unlike the same comparison under `size`, a direct comparison against a nullish value is
@@ -522,11 +522,11 @@ class StatementBuilder {
     // AWS uses two distinct messages here: one for a value that is not an array at all, another
     // for an array of the wrong length
     if (!Array.isArray(rawValue)) {
-      throw new AppSyncUserError(`${path} condition expects an array with length of 2.`);
+      throw codeError(`${path} condition expects an array with length of 2.`);
     }
 
     if (rawValue.length !== 2) {
-      throw new AppSyncUserError(`${path} condition expects an array with 2 values but received an array with length ${rawValue.length}.`);
+      throw codeError(`${path} condition expects an array with 2 values but received an array with length ${rawValue.length}.`);
     }
 
     // mapping in order keeps the bound variables numbered low-then-high
@@ -536,7 +536,7 @@ class StatementBuilder {
 
   buildSizeCondition(column, rawValue, path) {
     if ((typeof rawValue !== 'object') || (rawValue === null) || Array.isArray(rawValue)) {
-      throw new AppSyncUserError(`Expected ${path} to be an Object.`);
+      throw codeError(`Expected ${path} to be an Object.`);
     }
 
     // the comparison runs against the column's length, with the target repeated for each operator.
@@ -550,7 +550,7 @@ class StatementBuilder {
 
       const comparison = COMPARISON_OPERATORS[operator];
       if (!comparison) {
-        throw new AppSyncUserError(`${path} has invalid size operator.`);
+        throw codeError(`${path} has invalid size operator.`);
       }
 
       // unlike a direct comparison, a nullish value here is inlined rather than rejected
@@ -562,7 +562,7 @@ class StatementBuilder {
 
   requireNonNull(value, path) {
     if (value == null) {
-      throw new AppSyncUserError(`Value for ${path} can't be null.`);
+      throw codeError(`Value for ${path} can't be null.`);
     }
 
     return value;
@@ -571,7 +571,7 @@ class StatementBuilder {
   requireString(value, path) {
     // AWS rejects a non-string for the wildcard conditions instead of coercing it
     if (typeof this.requireNonNull(value, path) !== 'string') {
-      throw new AppSyncUserError(`${path} expects a string value to be passed.`);
+      throw codeError(`${path} expects a string value to be passed.`);
     }
 
     return value;
@@ -579,7 +579,7 @@ class StatementBuilder {
 
   requireBoolean(value, path) {
     if (typeof this.requireNonNull(value, path) !== 'boolean') {
-      throw new AppSyncUserError(`${path} expects a boolean value to be passed.`);
+      throw codeError(`${path} expects a boolean value to be passed.`);
     }
 
     return value;
@@ -591,20 +591,20 @@ class StatementBuilder {
     // `from` is an alias for `table`, but only in select(): insert/update/remove ignore the key
     // entirely, and only select() rejects the two being passed together
     if (allowFrom && (table != null) && (from != null)) {
-      throw new AppSyncUserError("'from' and 'table' keys cannot be used together");
+      throw codeError("'from' and 'table' keys cannot be used together");
     }
 
     if (allowFrom && (table == null) && (from != null)) {
       // `from` carries its own type message, and rejects the array `table` would too
       if ((typeof from !== 'string') && ((typeof from !== 'object') || Array.isArray(from))) {
-        throw new AppSyncUserError("'from' value is expected to be string or object.");
+        throw codeError("'from' value is expected to be string or object.");
       }
 
       return this.renderTableName(from);
     }
 
     if (table == null) {
-      throw new AppSyncUserError("'table' or 'from' key is required.");
+      throw codeError("'table' or 'from' key is required.");
     }
 
     return this.renderTableName(table);
@@ -621,23 +621,23 @@ class StatementBuilder {
     }
 
     if ((typeof name !== 'object') || Array.isArray(name)) {
-      throw new AppSyncUserError("table name is expected to be a string or alias.");
+      throw codeError("table name is expected to be a string or alias.");
     }
 
     const entries = Object.entries(name);
     if (entries.length > 1) {
-      throw new AppSyncUserError("table alias is allowed only one key-value pair.");
+      throw codeError("table alias is allowed only one key-value pair.");
     }
 
     if (entries.length === 0) {
       // an exception AWS's own implementation leaks for an empty alias object, reproduced verbatim
       // so error handling behaves the same here as it does against AWS
-      throw new AppSyncUserError("java.util.NoSuchElementException");
+      throw codeError("java.util.NoSuchElementException");
     }
 
     const [alias, actual] = entries[0];
     if (typeof actual !== 'string') {
-      throw new AppSyncUserError("Table alias value is expected to be a string.");
+      throw codeError("Table alias value is expected to be a string.");
     }
 
     return `${this.quoteIdentifier(actual)} as ${this.quoteIdentifier(alias)}`;

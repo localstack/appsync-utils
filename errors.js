@@ -16,3 +16,17 @@ export class AppSyncUserError extends Error {
     this.errorInfo = errorInfo;
   }
 }
+
+
+/**
+ * Build the error for input the utils reject. AppSync attributes a fault in the resolver code
+ * itself - which is what invalid input to a util is - to the errorType `Code`, as distinct from the
+ * null errorType a deliberate `util.error` carries. The two are otherwise indistinguishable, so
+ * without this a caller cannot tell a rejection raised by the library from an error the resolver
+ * author raised on purpose.
+ *
+ * `EvaluateCode` reports only the message, so this is not observable in the recorded snapshots.
+ */
+export function codeError(message) {
+  return new AppSyncUserError(message, "Code");
+}

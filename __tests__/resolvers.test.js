@@ -5,6 +5,7 @@ Within the request it can be resolved to both, e.g. `ctx.arguments` and `ctx.arg
 
 import { checkResolverValid } from "./helpers";
 import { util } from "..";
+import * as rds from "../rds";
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
@@ -1971,4 +1972,44 @@ describe("error handling", () => {
   `;
     await checkResolverValid(code, {}, "request");
   })
+})
+
+// LocalStack has to tell a rejection raised by the library from an error the resolver author raised
+// deliberately, and the two are otherwise identical: both are an `AppSyncUserError` carrying only a
+// message. AppSync attributes the former to the errorType `Code`.
+//
+// This pair is the one thing here that is NOT compared against AWS, and cannot be: `EvaluateCode`
+// reports an error as a bare message and never mentions errorType, so there is nothing to record.
+// It pins our own contract with the runtime rather than a claim about AWS.
+describe("error types", () => {
+  const thrownBy = (fn) => {
+    try {
+      fn();
+    } catch (e) {
+      return e;
+    }
+
+    throw new Error("expected the call to throw");
+  };
+
+  test("a rejected input is attributed to the resolver code", () => {
+    const error = thrownBy(() => rds.createPgStatement(rds.select({})));
+
+    expect(error.name).toBe("AppSyncUserError");
+    expect(error.errorType).toBe("Code");
+    expect(error.message).toBe("'table' or 'from' key is required.");
+  });
+
+  test("a deliberate util.error carries no errorType", () => {
+    const error = thrownBy(() => util.error("foo"));
+
+    expect(error.name).toBe("AppSyncUserError");
+    expect(error.errorType).toBeUndefined();
+  });
+
+  test("util.error keeps an errorType it was given", () => {
+    const error = thrownBy(() => util.error("foo", "MyErrorType"));
+
+    expect(error.errorType).toBe("MyErrorType");
+  });
 })
