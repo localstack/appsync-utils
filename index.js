@@ -1,15 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 import { toJsonObject } from './rds/index.js'
-
-class AppSyncUserError extends Error {
-  constructor(message, errorType, data, errorInfo) {
-    super(message);
-    this.name = "AppSyncUserError";
-    this.errorType = errorType;
-    this.data = data;
-    this.errorInfo = errorInfo;
-  }
-}
+import { AppSyncUserError } from './errors.js'
 
 export const dynamodbUtils = {
   toDynamoDB: function(value) {

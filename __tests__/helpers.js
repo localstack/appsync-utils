@@ -34,7 +34,12 @@ const runResolverFunctionOnAWS = async (code, context, functionName) => {
 
   const result = await client.send(command);
   if (result.error) {
-    return result.error;
+    // An error raised inside the utils reaches us as an uncaught exception, so AWS prefixes the
+    // message with the source position of the call that threw. A local run cannot reproduce the
+    // position, and the message is the part worth comparing, so drop the prefix and normalise to
+    // the same shape the local branch produces. A `util.error` message arrives without a prefix
+    // and is left alone.
+    return { message: result.error.message.replace(/^code\.js:\d+:\d+: /, "") };
   }
   try {
     return JSON.parse(result.evaluationResult);

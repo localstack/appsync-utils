@@ -249,6 +249,60 @@ exports[`rds resolvers additional conditions and the from alias beginsWith, betw
 }
 `;
 
+exports[`rds resolvers additional conditions and the from alias beginsWith, between and size rejects a nested between with the wrong number of values 1`] = `
+{
+  "message": "name.size condition expects an array with 2 values but received an array with length 1.",
+}
+`;
+
+exports[`rds resolvers additional conditions and the from alias beginsWith, between and size rejects a non-string for beginsWith 1`] = `
+{
+  "message": "name.beginsWith expects a string value to be passed.",
+}
+`;
+
+exports[`rds resolvers additional conditions and the from alias beginsWith, between and size rejects a non-string for contains 1`] = `
+{
+  "message": "name.contains expects a string value to be passed.",
+}
+`;
+
+exports[`rds resolvers additional conditions and the from alias beginsWith, between and size rejects a non-string for notContains 1`] = `
+{
+  "message": "name.notContains expects a string value to be passed.",
+}
+`;
+
+exports[`rds resolvers additional conditions and the from alias beginsWith, between and size rejects a size that is not an object 1`] = `
+{
+  "message": "Expected name.size to be an Object.",
+}
+`;
+
+exports[`rds resolvers additional conditions and the from alias beginsWith, between and size rejects an unsupported size operator 1`] = `
+{
+  "message": "name.size has invalid size operator.",
+}
+`;
+
+exports[`rds resolvers additional conditions and the from alias beginsWith, between and size rejects between with a value that is not an array 1`] = `
+{
+  "message": "age.between condition expects an array with length of 2.",
+}
+`;
+
+exports[`rds resolvers additional conditions and the from alias beginsWith, between and size rejects between with the wrong number of values 1`] = `
+{
+  "message": "age.between condition expects an array with 2 values but received an array with length 1.",
+}
+`;
+
+exports[`rds resolvers additional conditions and the from alias beginsWith, between and size rejects null for beginsWith 1`] = `
+{
+  "message": "Value for name.beginsWith can't be null.",
+}
+`;
+
 exports[`rds resolvers additional conditions and the from alias beginsWith, between and size size and beginsWith in a group 1`] = `
 {
   "statements": [
@@ -410,6 +464,42 @@ exports[`rds resolvers additional conditions and the from alias from as a table 
     ":P0": "test",
   },
   "variableTypeHintMap": {},
+}
+`;
+
+exports[`rds resolvers additional conditions and the from alias from as a table alias rejects a null table 1`] = `
+{
+  "message": "'table' or 'from' key is required.",
+}
+`;
+
+exports[`rds resolvers additional conditions and the from alias from as a table alias rejects a remove given only from 1`] = `
+{
+  "message": "'table' or 'from' key is required.",
+}
+`;
+
+exports[`rds resolvers additional conditions and the from alias from as a table alias rejects a select with neither table nor from 1`] = `
+{
+  "message": "'table' or 'from' key is required.",
+}
+`;
+
+exports[`rds resolvers additional conditions and the from alias from as a table alias rejects an insert given only from 1`] = `
+{
+  "message": "'table' or 'from' key is required.",
+}
+`;
+
+exports[`rds resolvers additional conditions and the from alias from as a table alias rejects an update given only from 1`] = `
+{
+  "message": "'table' or 'from' key is required.",
+}
+`;
+
+exports[`rds resolvers additional conditions and the from alias from as a table alias rejects from and table together in select 1`] = `
+{
+  "message": "'from' and 'table' keys cannot be used together",
 }
 `;
 
@@ -778,6 +868,30 @@ exports[`rds resolvers empty, null and repeated clause inputs null value in upda
 }
 `;
 
+exports[`rds resolvers empty, null and repeated clause inputs rejects a returning value that is neither a column array nor a star 1`] = `
+{
+  "message": "Expected column to be * or an array.",
+}
+`;
+
+exports[`rds resolvers empty, null and repeated clause inputs rejects an empty orderBy dir 1`] = `
+{
+  "message": "orderBy dir can have either ASC or DESC found .",
+}
+`;
+
+exports[`rds resolvers empty, null and repeated clause inputs rejects an orderBy dir that is neither ascending nor descending 1`] = `
+{
+  "message": "orderBy dir can have either ASC or DESC found ; DROP TABLE persons.",
+}
+`;
+
+exports[`rds resolvers empty, null and repeated clause inputs rejects returning in mysql 1`] = `
+{
+  "message": "returning is not supported in MySQL.",
+}
+`;
+
 exports[`rds resolvers empty, null and repeated clause inputs returning column array in insert 1`] = `
 {
   "statements": [
@@ -818,6 +932,545 @@ exports[`rds resolvers empty, null and repeated clause inputs undefined value in
 {
   "statements": [
     "INSERT INTO "persons" ("name") VALUES (NULL)",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`rds resolvers input validation column lists a malformed returning in mysql reports the column list 1`] = `
+{
+  "message": "Expected column to be * or an array.",
+}
+`;
+
+exports[`rds resolvers input validation column lists a null column list selects everything 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "persons"",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`rds resolvers input validation column lists a star column list selects everything 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "persons"",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`rds resolvers input validation column lists a star inside the column array is left unquoted 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "persons"",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`rds resolvers input validation column lists rejects a column list given as a plain string 1`] = `
+{
+  "message": "Expected column to be * or an array.",
+}
+`;
+
+exports[`rds resolvers input validation column lists rejects a non-string column name 1`] = `
+{
+  "message": "Invalid type in column array.",
+}
+`;
+
+exports[`rds resolvers input validation column lists rejects a null column name 1`] = `
+{
+  "message": "Invalid type in column array.",
+}
+`;
+
+exports[`rds resolvers input validation column lists rejects a null column name in returning 1`] = `
+{
+  "message": "Invalid type in column array.",
+}
+`;
+
+exports[`rds resolvers input validation column lists rejects a star returning in mysql 1`] = `
+{
+  "message": "returning is not supported in MySQL.",
+}
+`;
+
+exports[`rds resolvers input validation condition values a null size comparison renders a null literal 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "persons" WHERE LENGTH ("name") = NULL",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`rds resolvers input validation condition values attributeExists true renders is not null 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "persons" WHERE "name" IS NOT NULL",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`rds resolvers input validation condition values rejects a non-boolean attributeExists value 1`] = `
+{
+  "message": "name.attributeExists expects a boolean value to be passed.",
+}
+`;
+
+exports[`rds resolvers input validation condition values rejects a null attributeExists value 1`] = `
+{
+  "message": "Value for name.attributeExists can't be null.",
+}
+`;
+
+exports[`rds resolvers input validation condition values rejects a null equality value 1`] = `
+{
+  "message": "Value for id.eq can't be null.",
+}
+`;
+
+exports[`rds resolvers input validation condition values rejects a null greater-than value 1`] = `
+{
+  "message": "Value for id.gt can't be null.",
+}
+`;
+
+exports[`rds resolvers input validation condition values rejects an undefined equality value 1`] = `
+{
+  "message": "Value for id.eq can't be null.",
+}
+`;
+
+exports[`rds resolvers input validation condition values rejects zero for attributeExists 1`] = `
+{
+  "message": "name.attributeExists expects a boolean value to be passed.",
+}
+`;
+
+exports[`rds resolvers input validation insert and update values rejects an insert with no values 1`] = `
+{
+  "message": "values are expected to be passed to insert",
+}
+`;
+
+exports[`rds resolvers input validation insert and update values rejects an update with no values 1`] = `
+{
+  "message": "values are expected to be passed to update",
+}
+`;
+
+exports[`rds resolvers input validation insert and update values rejects insert values given as an array 1`] = `
+{
+  "message": "Expected values to an Object.",
+}
+`;
+
+exports[`rds resolvers input validation insert and update values rejects null insert values 1`] = `
+{
+  "message": "values are expected to be passed to insert",
+}
+`;
+
+exports[`rds resolvers input validation order by, limit and offset a numeric orderBy dir sorts ascending 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "persons" ORDER BY "name" ASC",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`rds resolvers input validation order by, limit and offset a numeric string limit binds a number 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "persons" LIMIT :P0",
+  ],
+  "variableMap": {
+    ":P0": 5,
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`rds resolvers input validation order by, limit and offset a numeric string offset binds a number 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "persons" OFFSET :P0",
+  ],
+  "variableMap": {
+    ":P0": 5,
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`rds resolvers input validation order by, limit and offset an object orderBy dir sorts ascending 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "persons" ORDER BY "name" ASC",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`rds resolvers input validation order by, limit and offset rejects a limit that is not numeric 1`] = `
+{
+  "message": "limit expects a number.",
+}
+`;
+
+exports[`rds resolvers input validation order by, limit and offset rejects a non-string orderBy column 1`] = `
+{
+  "message": "orderBy item expected to have property column.",
+}
+`;
+
+exports[`rds resolvers input validation order by, limit and offset rejects a null orderBy item 1`] = `
+{
+  "message": "orderBy item expected to be an object.",
+}
+`;
+
+exports[`rds resolvers input validation order by, limit and offset rejects an empty string limit 1`] = `
+{
+  "message": "limit expects a number.",
+}
+`;
+
+exports[`rds resolvers input validation order by, limit and offset rejects an object offset 1`] = `
+{
+  "message": "offset expects a number.",
+}
+`;
+
+exports[`rds resolvers input validation order by, limit and offset rejects an orderBy item with no column 1`] = `
+{
+  "message": "orderBy item expected to have property column.",
+}
+`;
+
+exports[`rds resolvers input validation order by, limit and offset rejects an orderBy that is not an array 1`] = `
+{
+  "message": "orderBy expects an array.",
+}
+`;
+
+exports[`rds resolvers input validation statement arguments rejects a call with no statement 1`] = `
+{
+  "message": "An argument is expected to be passed to createPgStatement",
+}
+`;
+
+exports[`rds resolvers input validation statement arguments rejects a call with no statement in mysql 1`] = `
+{
+  "message": "An argument is expected to be passed to createMySQLStatement",
+}
+`;
+
+exports[`rds resolvers input validation statement arguments rejects a malformed sql tagged template 1`] = `
+{
+  "message": "java.lang.IllegalArgumentException: Unexpected argument passed to sql tagged template",
+}
+`;
+
+exports[`rds resolvers input validation statement arguments rejects a null payload 1`] = `
+{
+  "message": "Expected payload to be an Object.",
+}
+`;
+
+exports[`rds resolvers input validation statement arguments rejects a number as a statement 1`] = `
+{
+  "message": "Unsupported type is passed as argument to createPgStatement",
+}
+`;
+
+exports[`rds resolvers input validation statement arguments rejects a payload given as an array 1`] = `
+{
+  "message": "Expected payload to be an Object.",
+}
+`;
+
+exports[`rds resolvers input validation statement arguments rejects a payload that is not an object 1`] = `
+{
+  "message": "Expected payload to be an Object.",
+}
+`;
+
+exports[`rds resolvers input validation statement arguments rejects a remove called with no payload 1`] = `
+{
+  "message": "An argument is expected to be passed to remove",
+}
+`;
+
+exports[`rds resolvers input validation statement arguments rejects a select called with no payload 1`] = `
+{
+  "message": "An argument is expected to be passed to select",
+}
+`;
+
+exports[`rds resolvers input validation statement arguments rejects an object that is not a statement 1`] = `
+{
+  "message": "Unsupported type is passed as argument to createPgStatement",
+}
+`;
+
+exports[`rds resolvers input validation statement arguments rejects an unknown statement type 1`] = `
+{
+  "message": "Unsupported type is passed as argument to createPgStatement",
+}
+`;
+
+exports[`rds resolvers input validation table names and aliases delete with a table alias 1`] = `
+{
+  "statements": [
+    "DELETE FROM "p" as "persons"",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`rds resolvers input validation table names and aliases from accepts an alias as well 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "p" as "persons"",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`rds resolvers input validation table names and aliases insert with a table alias 1`] = `
+{
+  "statements": [
+    "INSERT INTO "p" as "persons" ("name") VALUES (:P0)",
+  ],
+  "variableMap": {
+    ":P0": "test",
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`rds resolvers input validation table names and aliases rejects a from that is neither a string nor an object 1`] = `
+{
+  "message": "'from' value is expected to be string or object.",
+}
+`;
+
+exports[`rds resolvers input validation table names and aliases rejects a non-string alias value 1`] = `
+{
+  "message": "Table alias value is expected to be a string.",
+}
+`;
+
+exports[`rds resolvers input validation table names and aliases rejects a non-string table in insert 1`] = `
+{
+  "message": "table name is expected to be a string or alias.",
+}
+`;
+
+exports[`rds resolvers input validation table names and aliases rejects a table given as an array 1`] = `
+{
+  "message": "table name is expected to be a string or alias.",
+}
+`;
+
+exports[`rds resolvers input validation table names and aliases rejects a table that is neither a string nor an alias 1`] = `
+{
+  "message": "table name is expected to be a string or alias.",
+}
+`;
+
+exports[`rds resolvers input validation table names and aliases rejects an alias with more than one entry 1`] = `
+{
+  "message": "table alias is allowed only one key-value pair.",
+}
+`;
+
+exports[`rds resolvers input validation table names and aliases rejects an empty alias 1`] = `
+{
+  "message": "java.util.NoSuchElementException",
+}
+`;
+
+exports[`rds resolvers input validation table names and aliases select with a qualified table alias 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "p" as "public"."persons"",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`rds resolvers input validation table names and aliases select with a table alias 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "p" as "persons"",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`rds resolvers input validation table names and aliases select with a table alias in mysql 1`] = `
+{
+  "statements": [
+    "SELECT * FROM \`p\` as \`persons\`",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`rds resolvers input validation table names and aliases update with a table alias 1`] = `
+{
+  "statements": [
+    "UPDATE "p" as "persons" SET "name" = :P0",
+  ],
+  "variableMap": {
+    ":P0": "test",
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`rds resolvers input validation where clauses rejects a bare value as a condition 1`] = `
+{
+  "message": "Expected condition to be an Object.",
+}
+`;
+
+exports[`rds resolvers input validation where clauses rejects a null condition for a column 1`] = `
+{
+  "message": "Expected condition to be an Object.",
+}
+`;
+
+exports[`rds resolvers input validation where clauses rejects a null entry in an and group 1`] = `
+{
+  "message": "Expected and to be an Object.",
+}
+`;
+
+exports[`rds resolvers input validation where clauses rejects a sql template inside an and group 1`] = `
+{
+  "message": "Expected and to be an Object.",
+}
+`;
+
+exports[`rds resolvers input validation where clauses rejects a string entry in an or group 1`] = `
+{
+  "message": "Expected or to be an Object.",
+}
+`;
+
+exports[`rds resolvers input validation where clauses rejects a where given as a plain string 1`] = `
+{
+  "message": "WHERE values are expected to be SQL templates or a condition object.",
+}
+`;
+
+exports[`rds resolvers input validation where clauses rejects a where given as an array 1`] = `
+{
+  "message": "WHERE values are expected to be SQL templates or a condition object.",
+}
+`;
+
+exports[`rds resolvers input validation where clauses rejects an and that is not an array 1`] = `
+{
+  "message": "and expects conditions to be an array",
+}
+`;
+
+exports[`rds resolvers input validation where clauses rejects an or that is not an array 1`] = `
+{
+  "message": "or expects conditions to be an array",
+}
+`;
+
+exports[`rds resolvers input validation where clauses rejects an unsupported condition 1`] = `
+{
+  "message": "Unsupported condition name.bogus.",
+}
+`;
+
+exports[`rds resolvers input validation where clauses rejects the in operator 1`] = `
+{
+  "message": "Unsupported condition id.in.",
+}
+`;
+
+exports[`rds resolvers input validation where clauses where as a sql template 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "persons" WHERE id = :P0",
+  ],
+  "variableMap": {
+    ":P0": 1,
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`rds resolvers input validation where clauses where as a sql template in a delete 1`] = `
+{
+  "statements": [
+    "DELETE FROM "persons" WHERE id = :P0",
+  ],
+  "variableMap": {
+    ":P0": 1,
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`rds resolvers input validation where clauses where as a sql template in an update 1`] = `
+{
+  "statements": [
+    "UPDATE "persons" SET "name" = :P0 WHERE id = :P1",
+  ],
+  "variableMap": {
+    ":P0": "test",
+    ":P1": 1,
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`rds resolvers input validation where clauses where as a sql template in mysql 1`] = `
+{
+  "statements": [
+    "SELECT * FROM \`persons\` WHERE id = :P0",
+  ],
+  "variableMap": {
+    ":P0": 1,
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`rds resolvers input validation where clauses where as a sql template with nothing interpolated 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "persons" WHERE id = 1",
   ],
   "variableMap": {},
   "variableTypeHintMap": {},
