@@ -73,6 +73,351 @@ exports[`rds resolvers attributeExists true false 1`] = `
 }
 `;
 
+exports[`rds resolvers empty, null and repeated clause inputs attributeExists alongside another condition 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "persons" WHERE "id" = :P0 AND "id" IS NOT NULL",
+  ],
+  "variableMap": {
+    ":P0": 1,
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`rds resolvers empty, null and repeated clause inputs contains wraps the value in wildcards 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "persons" WHERE "name" LIKE :P0",
+  ],
+  "variableMap": {
+    ":P0": "%test%",
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`rds resolvers empty, null and repeated clause inputs empty column list 1`] = `
+{
+  "statements": [
+    "SELECT FROM "domain"."color"",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`rds resolvers empty, null and repeated clause inputs empty column list in mysql 1`] = `
+{
+  "statements": [
+    "SELECT FROM \`domain\`.\`color\`",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`rds resolvers empty, null and repeated clause inputs empty column list with limit 1`] = `
+{
+  "statements": [
+    "SELECT FROM "domain"."color" LIMIT :P0",
+  ],
+  "variableMap": {
+    ":P0": 3,
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`rds resolvers empty, null and repeated clause inputs empty condition object alongside a real condition 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "persons" WHERE "name" = :P0 AND",
+  ],
+  "variableMap": {
+    ":P0": "test",
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`rds resolvers empty, null and repeated clause inputs empty condition object for a column 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "persons"",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`rds resolvers empty, null and repeated clause inputs empty nested or group 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "persons"",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`rds resolvers empty, null and repeated clause inputs empty object in an and array 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "persons" WHERE ("id" = :P0) AND",
+  ],
+  "variableMap": {
+    ":P0": 1,
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`rds resolvers empty, null and repeated clause inputs empty objects in an or array 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "persons" WHERE  OR",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`rds resolvers empty, null and repeated clause inputs empty orderBy array 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "domain"."color"",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`rds resolvers empty, null and repeated clause inputs empty orderBy array in mysql 1`] = `
+{
+  "statements": [
+    "SELECT * FROM \`domain\`.\`color\`",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`rds resolvers empty, null and repeated clause inputs empty orderBy array with limit 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "domain"."color" LIMIT :P0",
+  ],
+  "variableMap": {
+    ":P0": 3,
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`rds resolvers empty, null and repeated clause inputs empty returning array in insert 1`] = `
+{
+  "statements": [
+    "INSERT INTO "persons" ("name") VALUES (:P0) RETURNING",
+  ],
+  "variableMap": {
+    ":P0": "test",
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`rds resolvers empty, null and repeated clause inputs empty returning array in remove 1`] = `
+{
+  "statements": [
+    "DELETE FROM "persons" WHERE "id" = :P0 RETURNING",
+  ],
+  "variableMap": {
+    ":P0": 1,
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`rds resolvers empty, null and repeated clause inputs empty values object in update 1`] = `
+{
+  "statements": [
+    "UPDATE "persons" SET WHERE "id" = :P0",
+  ],
+  "variableMap": {
+    ":P0": 1,
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`rds resolvers empty, null and repeated clause inputs false and zero values are bound 1`] = `
+{
+  "statements": [
+    "INSERT INTO "persons" ("active", "score") VALUES (:P0, :P1)",
+  ],
+  "variableMap": {
+    ":P0": false,
+    ":P1": 0,
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`rds resolvers empty, null and repeated clause inputs lowercase orderBy dir is uppercased 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "persons" ORDER BY "name" DESC",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`rds resolvers empty, null and repeated clause inputs multiple conditions on one column 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "persons" WHERE "id" >= :P0 AND "id" <= :P1 AND "id" != :P2",
+  ],
+  "variableMap": {
+    ":P0": 1,
+    ":P1": 9,
+    ":P2": 5,
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`rds resolvers empty, null and repeated clause inputs multiple conditions on one column inside a group 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "persons" WHERE ("id" = :P0 AND "id" > :P1) AND ("name" = :P2)",
+  ],
+  "variableMap": {
+    ":P0": 1,
+    ":P1": 0,
+    ":P2": "test",
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`rds resolvers empty, null and repeated clause inputs notContains does not wrap the value 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "persons" WHERE "name" NOT LIKE :P0",
+  ],
+  "variableMap": {
+    ":P0": "test",
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`rds resolvers empty, null and repeated clause inputs null alongside a type hint 1`] = `
+{
+  "statements": [
+    "INSERT INTO "persons" ("id", "country") VALUES (:P0, NULL)",
+  ],
+  "variableMap": {
+    ":P0": "0e0d0c0b-0a09-0807-0605-040302010000",
+  },
+  "variableTypeHintMap": {
+    ":P0": "UUID",
+  },
+}
+`;
+
+exports[`rds resolvers empty, null and repeated clause inputs null mixed with bound values in insert 1`] = `
+{
+  "statements": [
+    "INSERT INTO "persons" ("name", "country") VALUES (:P0, NULL)",
+  ],
+  "variableMap": {
+    ":P0": "test",
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`rds resolvers empty, null and repeated clause inputs null orderBy dir defaults to ascending 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "persons" ORDER BY "name" ASC",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`rds resolvers empty, null and repeated clause inputs null value in insert values 1`] = `
+{
+  "statements": [
+    "INSERT INTO "persons" ("name") VALUES (NULL)",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`rds resolvers empty, null and repeated clause inputs null value in update values 1`] = `
+{
+  "statements": [
+    "UPDATE "persons" SET "country" = NULL WHERE "id" = :P0",
+  ],
+  "variableMap": {
+    ":P0": 1,
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`rds resolvers empty, null and repeated clause inputs returning column array in insert 1`] = `
+{
+  "statements": [
+    "INSERT INTO "persons" ("name") VALUES (:P0) RETURNING "id", "name"",
+  ],
+  "variableMap": {
+    ":P0": "test",
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`rds resolvers empty, null and repeated clause inputs returning star in insert 1`] = `
+{
+  "statements": [
+    "INSERT INTO "persons" ("name") VALUES (:P0) RETURNING *",
+  ],
+  "variableMap": {
+    ":P0": "test",
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`rds resolvers empty, null and repeated clause inputs returning star in remove 1`] = `
+{
+  "statements": [
+    "DELETE FROM "persons" WHERE "id" = :P0 RETURNING *",
+  ],
+  "variableMap": {
+    ":P0": 1,
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`rds resolvers empty, null and repeated clause inputs undefined value in insert values 1`] = `
+{
+  "statements": [
+    "INSERT INTO "persons" ("name") VALUES (NULL)",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
 exports[`rds resolvers mysql insert 1`] = `
 {
   "statements": [
