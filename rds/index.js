@@ -1,3 +1,9 @@
+import { codeError } from '../errors.js';
+
+// AWS leaks the exception its own implementation raises for a malformed tagged template. It is
+// reproduced verbatim, like the rest of these messages.
+const TEMPLATE_ARITY_ERROR = "java.lang.IllegalArgumentException: Unexpected argument passed to sql tagged template";
+
 /**
  * Extract the value from the field given a row from sqlStatementResults.
  * 
@@ -68,28 +74,52 @@ export function toJsonObject(inputStr) {
 }
 
 export function sql(strings, ...keys) {
+  // AWS validates the arity when the template is built, not when it is rendered
   if (strings.length !== (keys.length + 1)) {
-    throw new Exception(`unhandled format for sql tagged template: ${{ strings, keys }}`);
+    throw codeError(TEMPLATE_ARITY_ERROR);
   }
 
   return { strings, keys };
 }
 
+// `sql` returns `{ strings, keys }`, and both keys are present even for a template that
+// interpolates nothing
+function isSqlTemplate(value) {
+  return (value != null) && (value.strings !== undefined) && (value.keys !== undefined);
+}
+
+
+/**
+ * Every statement constructor validates its payload the same way, and does so when it is called
+ * rather than when the statement is rendered - so the message names the constructor, not the
+ * `create*Statement` it was going to be passed to.
+ */
+function statementPayload(properties, verb) {
+  if (properties === undefined) {
+    throw codeError(`An argument is expected to be passed to ${verb}`);
+  }
+
+  if ((properties === null) || (typeof properties !== 'object') || Array.isArray(properties)) {
+    throw codeError("Expected payload to be an Object.");
+  }
+
+  return properties;
+}
 
 export function select(s) {
-  return { type: "SELECT", properties: s };
+  return { type: "SELECT", properties: statementPayload(s, 'select') };
 }
 
 export function insert(s) {
-  return { type: "INSERT", properties: s };
+  return { type: "INSERT", properties: statementPayload(s, 'insert') };
 }
 
 export function update(s) {
-  return { type: "UPDATE", properties: s };
+  return { type: "UPDATE", properties: statementPayload(s, 'update') };
 }
 
 export function remove(s) {
-  return { type: "REMOVE", properties: s };
+  return { type: "REMOVE", properties: statementPayload(s, 'remove') };
 }
 
 // SQL operators for the simple comparison conditions, shared by the direct form (`{ eq: 1 }`) and
@@ -104,8 +134,10 @@ const COMPARISON_OPERATORS = {
 };
 
 class StatementBuilder {
-  constructor({ quoteChar, supportsReturning = true }) {
+  constructor({ quoteChar, functionName, supportsReturning = true }) {
     this.quoteChar = quoteChar;
+    // named in the messages AWS raises for a statement it cannot make sense of
+    this.functionName = functionName;
     this.supportsReturning = supportsReturning;
     this.result = {
       statements: [],
@@ -117,23 +149,28 @@ class StatementBuilder {
   }
 
   render(statements) {
+    if (statements.length === 0) {
+      throw codeError(`An argument is expected to be passed to ${this.functionName}`);
+    }
+
     for (const stmt of statements) {
-      // handle raw sql strings
-      if (stmt.strings !== undefined) {
-        const { strings, keys } = stmt;
-        this.renderTaggedTemplateStatement(strings, keys);
+      if (typeof stmt === "string") {
+        // a raw SQL string passes straight through
+        this.renderRawTemplateStatement(stmt);
+      } else if (isSqlTemplate(stmt)) {
+        this.renderTaggedTemplateStatement(stmt.strings, stmt.keys);
+      } else if ((stmt != null) && (stmt.type !== undefined) && (stmt.properties !== undefined)) {
+        this.renderStructuredStatement(stmt.type, stmt.properties);
       } else {
-        const { type, properties } = stmt;
-        if ((type === undefined) && (properties === undefined)) {
-          // we have a raw string
-          this.renderRawTemplateStatement(stmt);
-        } else {
-          this.renderStructuredStatement(type, properties);
-        }
+        this.unsupportedStatement();
       }
     }
 
     return this.result;
+  }
+
+  unsupportedStatement() {
+    throw codeError(`Unsupported type is passed as argument to ${this.functionName}`);
   }
 
   renderRawTemplateStatement(query) {
@@ -141,21 +178,25 @@ class StatementBuilder {
   }
 
   renderTaggedTemplateStatement(strings, keys) {
-    let stmt = strings[0];
+    this.result.statements.push(this.renderTemplate(strings, keys));
+  }
 
+  /**
+   * Interpolate a `sql` tagged template, binding every interpolated value to a variable. A whole
+   * statement can be a template, and so can a `where` clause, so this returns the fragment rather
+   * than pushing it.
+   */
+  renderTemplate(strings, keys) {
     if (strings.length !== (keys.length + 1)) {
-      throw new Error(`Invalid raw string statement: ${{ strings, keys }}`);
+      throw codeError(TEMPLATE_ARITY_ERROR);
     }
 
+    let stmt = strings[0];
     for (let i = 0; i < keys.length; i++) {
-      const nextString = strings[i + 1];
-      const nextKey = keys[i];
-
-      const newVar = this.newVariable(nextKey);
-      stmt = `${stmt}${newVar}${nextString}`;
+      stmt = `${stmt}${this.newVariable(keys[i])}${strings[i + 1]}`;
     }
 
-    this.result.statements.push(stmt);
+    return stmt;
   }
 
   /**
@@ -175,27 +216,31 @@ class StatementBuilder {
         const { columns, where, orderBy, limit, offset } = properties;
         const parts = ["SELECT"];
 
-        if (columns) {
-          parts.push(columns.map(name => this.quoteIdentifier(name)).join(', '));
-        } else {
-          parts.push('*');
-        }
+        // an absent column list means every column. Anything else is validated, so `columns: []`
+        // still leaves a dangling `SELECT`, like AWS
+        parts.push(columns == null ? '*' : this.renderColumnList(columns));
 
         parts.push(`FROM ${this.resolveTableName(properties, true)}`);
         parts.push(...this.buildWhereParts(where));
 
-        // an empty sort list drops the whole clause, ORDER BY keyword included, like AWS
-        if (orderBy && orderBy.length > 0) {
-          parts.push('ORDER BY', orderBy.map(item => this.renderOrderByItem(item)).join(', '));
+        if (orderBy != null) {
+          if (!Array.isArray(orderBy)) {
+            throw codeError("orderBy expects an array.");
+          }
+
+          // an empty sort list drops the whole clause, ORDER BY keyword included, like AWS
+          if (orderBy.length > 0) {
+            parts.push('ORDER BY', orderBy.map(item => this.renderOrderByItem(item)).join(', '));
+          }
         }
 
         // limit/offset are optional and may be passed as null; 0 is a valid value
         if (limit != null) {
-          parts.push(`LIMIT ${this.newVariable(limit)}`);
+          parts.push(`LIMIT ${this.renderRowCount(limit, 'limit')}`);
         }
 
         if (offset != null) {
-          parts.push(`OFFSET ${this.newVariable(offset)}`);
+          parts.push(`OFFSET ${this.renderRowCount(offset, 'offset')}`);
         }
 
         this.result.statements.push(this.joinClauses(parts));
@@ -215,7 +260,8 @@ class StatementBuilder {
         break;
       }
       case "INSERT": {
-        const { values, returning } = properties;
+        const { returning } = properties;
+        const values = this.resolveValues(properties, 'insert');
         const parts = [`INSERT INTO ${this.resolveTableName(properties)}`];
 
         let columnTextItems = [];
@@ -234,7 +280,8 @@ class StatementBuilder {
         break;
       }
       case "UPDATE": {
-        const { values, where } = properties;
+        const { where } = properties;
+        const values = this.resolveValues(properties, 'update');
         const parts = [`UPDATE ${this.resolveTableName(properties)}`, 'SET'];
 
         let columnDefinitionItems = [];
@@ -249,13 +296,24 @@ class StatementBuilder {
         break;
       }
       default:
-        throw new Error(`TODO: "${type}" query unsupported`);
+        this.unsupportedStatement();
     }
   }
 
   buildWhereParts(where) {
-    if (!where) {
+    if (where == null) {
       return [];
+    }
+
+    // the whole clause may be a `sql` tagged template instead of a condition object, sharing the
+    // statement's variable numbering
+    if (isSqlTemplate(where)) {
+      const rendered = this.renderTemplate(where.strings, where.keys);
+      return rendered ? ['WHERE', rendered] : [];
+    }
+
+    if ((typeof where !== 'object') || Array.isArray(where)) {
+      throw codeError("WHERE values are expected to be SQL templates or a condition object.");
     }
 
     // a `where` that renders to nothing - `{}`, `{ and: [] }`, or a column with no condition -
@@ -264,35 +322,89 @@ class StatementBuilder {
     return clause ? ['WHERE', clause] : [];
   }
 
-  renderOrderByItem({ column, dir }) {
+  renderOrderByItem(item) {
+    if ((item == null) || (typeof item !== 'object') || Array.isArray(item)) {
+      throw codeError("orderBy item expected to be an object.");
+    }
+
+    const { column, dir } = item;
+    if (typeof column !== 'string') {
+      throw codeError("orderBy item expected to have property column.");
+    }
+
     // AWS uppercases `dir` and accepts only ASC or DESC. Interpolating it raw would let a caller
-    // inject arbitrary SQL through the sort direction. An absent or null `dir` means ASC, but an
-    // empty string is rejected, matching AWS.
-    const direction = dir == null ? 'ASC' : String(dir).toUpperCase();
+    // inject arbitrary SQL through the sort direction. Only a string is checked at all: any other
+    // value, null included, means ASC, while an empty string is rejected - matching AWS.
+    const direction = typeof dir !== 'string' ? 'ASC' : dir.toUpperCase();
     if ((direction !== 'ASC') && (direction !== 'DESC')) {
-      throw new Error(`orderBy dir can have either ASC or DESC found ${dir}.`);
+      throw codeError(`orderBy dir can have either ASC or DESC found ${dir}.`);
     }
 
     return `${this.quoteIdentifier(column)} ${direction}`;
   }
 
   renderReturning(returning) {
+    // the column list is validated before the dialect is considered: a malformed `returning` on
+    // MySQL is reported as malformed, not as unsupported
+    const columns = this.renderColumnList(returning);
+
     // MySQL has no RETURNING clause and AWS refuses the key outright rather than emitting SQL the
     // engine would reject
     if (!this.supportsReturning) {
-      throw new Error("returning is not supported in MySQL.");
+      throw codeError("returning is not supported in MySQL.");
     }
 
+    return columns;
+  }
+
+  /**
+   * Validate and quote a list of column names. AWS applies the same rules, and raises the same
+   * messages, for a select's `columns` and an insert or delete's `returning`.
+   */
+  renderColumnList(columns) {
     // AWS accepts either the bare string `*` or an array of column names
-    if (returning === '*') {
-      return returning;
+    if (columns === '*') {
+      return columns;
     }
 
-    if (!Array.isArray(returning)) {
-      throw new Error('Expected column to be * or an array.');
+    if (!Array.isArray(columns)) {
+      throw codeError("Expected column to be * or an array.");
     }
 
-    return returning.map(name => this.quoteIdentifier(name)).join(', ');
+    return columns.map(name => {
+      if (typeof name !== 'string') {
+        throw codeError("Invalid type in column array.");
+      }
+
+      return this.quoteIdentifier(name);
+    }).join(', ');
+  }
+
+  resolveValues(properties, verb) {
+    const { values } = properties;
+    if (values == null) {
+      throw codeError(`values are expected to be passed to ${verb}`);
+    }
+
+    if ((typeof values !== 'object') || Array.isArray(values)) {
+      // AWS's wording, grammar included
+      throw codeError("Expected values to an Object.");
+    }
+
+    return values;
+  }
+
+  /**
+   * LIMIT and OFFSET are bound as numbers, and AWS coerces a numeric string on the way in. An
+   * empty string is the one value coercion would quietly turn into 0, and AWS rejects it.
+   */
+  renderRowCount(value, keyword) {
+    const count = value === '' ? NaN : Number(value);
+    if (Number.isNaN(count)) {
+      throw codeError(`${keyword} expects a number.`);
+    }
+
+    return this.newVariable(count);
   }
 
   renderValue(value) {
@@ -325,12 +437,17 @@ class StatementBuilder {
       if ( ["or", "and"].includes(key)) {
         const ops = key.toUpperCase();
         if (!Array.isArray(where[key])) {
-          // TODO properly handle errors to return a more useful message
-          throw new Error(`'${key}' expects conditions to be an array`);
+          throw codeError(`${key} expects conditions to be an array`);
         }
-        const parts = where[key].map(
-          part => this.buildWhereClause(part, "(", ")", ops)
-        );
+        const parts = where[key].map(part => {
+          // only a condition object is accepted here - unlike a top-level `where`, a nested `sql`
+          // template is refused
+          if ((part == null) || (typeof part !== 'object') || Array.isArray(part) || isSqlTemplate(part)) {
+            throw codeError(`Expected ${key} to be an Object.`);
+          }
+
+          return this.buildWhereClause(part, "(", ")", ops);
+        });
         const group = parts.join(` ${ops} `);
         // an `and`/`or` holding no conditions contributes nothing at all: emitting the grouping on
         // its own would produce `WHERE ()`
@@ -351,6 +468,10 @@ class StatementBuilder {
   buildWhereStatement(defn, startGrouping = "(", endGrouping = ")") {
     const columnName = Object.keys(defn)[0];
     const condition = defn[columnName];
+
+    if ((condition == null) || (typeof condition !== 'object') || Array.isArray(condition)) {
+      throw codeError("Expected condition to be an Object.");
+    }
 
     // several conditions on the same column are ANDed together
     const statements = Object.keys(condition).map(
@@ -374,7 +495,8 @@ class StatementBuilder {
       case "between":
         return this.buildBetweenCondition(column, rawValue, path);
       case "attributeExists":
-        return `${column} IS ${rawValue? "NOT " : ""}NULL`;
+        // AWS wants a real boolean here rather than anything truthy
+        return `${column} IS ${this.requireBoolean(rawValue, path) ? "NOT " : ""}NULL`;
       case "contains":
         // the wildcards make `contains` a substring match rather than an equality test
         return `${column} LIKE ${this.newVariable(`%${this.requireString(rawValue, path)}%`)}`;
@@ -386,10 +508,12 @@ class StatementBuilder {
       default: {
         const operator = COMPARISON_OPERATORS[conditionType];
         if (!operator) {
-          throw new Error(`Unhandled condition type ${conditionType}`);
+          throw codeError(`Unsupported condition ${path}.`);
         }
 
-        return `${column} ${operator} ${this.newVariable(rawValue)}`;
+        // unlike the same comparison under `size`, a direct comparison against a nullish value is
+        // rejected rather than rendered as `= NULL`
+        return `${column} ${operator} ${this.newVariable(this.requireNonNull(rawValue, path))}`;
       }
     }
   }
@@ -398,11 +522,11 @@ class StatementBuilder {
     // AWS uses two distinct messages here: one for a value that is not an array at all, another
     // for an array of the wrong length
     if (!Array.isArray(rawValue)) {
-      throw new Error(`${path} condition expects an array with length of 2.`);
+      throw codeError(`${path} condition expects an array with length of 2.`);
     }
 
     if (rawValue.length !== 2) {
-      throw new Error(`${path} condition expects an array with 2 values but received an array with length ${rawValue.length}.`);
+      throw codeError(`${path} condition expects an array with 2 values but received an array with length ${rawValue.length}.`);
     }
 
     // mapping in order keeps the bound variables numbered low-then-high
@@ -412,7 +536,7 @@ class StatementBuilder {
 
   buildSizeCondition(column, rawValue, path) {
     if ((typeof rawValue !== 'object') || (rawValue === null) || Array.isArray(rawValue)) {
-      throw new Error(`Expected ${path} to be an Object.`);
+      throw codeError(`Expected ${path} to be an Object.`);
     }
 
     // the comparison runs against the column's length, with the target repeated for each operator.
@@ -426,7 +550,7 @@ class StatementBuilder {
 
       const comparison = COMPARISON_OPERATORS[operator];
       if (!comparison) {
-        throw new Error(`${path} has invalid size operator.`);
+        throw codeError(`${path} has invalid size operator.`);
       }
 
       // unlike a direct comparison, a nullish value here is inlined rather than rejected
@@ -436,14 +560,26 @@ class StatementBuilder {
     return statements.join(" AND ");
   }
 
-  requireString(value, path) {
-    // AWS rejects a non-string for the wildcard conditions instead of coercing it
+  requireNonNull(value, path) {
     if (value == null) {
-      throw new Error(`Value for ${path} can't be null.`);
+      throw codeError(`Value for ${path} can't be null.`);
     }
 
-    if (typeof value !== 'string') {
-      throw new Error(`${path} expects a string value to be passed.`);
+    return value;
+  }
+
+  requireString(value, path) {
+    // AWS rejects a non-string for the wildcard conditions instead of coercing it
+    if (typeof this.requireNonNull(value, path) !== 'string') {
+      throw codeError(`${path} expects a string value to be passed.`);
+    }
+
+    return value;
+  }
+
+  requireBoolean(value, path) {
+    if (typeof this.requireNonNull(value, path) !== 'boolean') {
+      throw codeError(`${path} expects a boolean value to be passed.`);
     }
 
     return value;
@@ -455,19 +591,56 @@ class StatementBuilder {
     // `from` is an alias for `table`, but only in select(): insert/update/remove ignore the key
     // entirely, and only select() rejects the two being passed together
     if (allowFrom && (table != null) && (from != null)) {
-      throw new Error("'from' and 'table' keys cannot be used together");
+      throw codeError("'from' and 'table' keys cannot be used together");
     }
 
-    const name = allowFrom ? (table ?? from) : table;
-    if (name == null) {
-      throw new Error("'table' or 'from' key is required.");
+    if (allowFrom && (table == null) && (from != null)) {
+      // `from` carries its own type message, and rejects the array `table` would too
+      if ((typeof from !== 'string') && ((typeof from !== 'object') || Array.isArray(from))) {
+        throw codeError("'from' value is expected to be string or object.");
+      }
+
+      return this.renderTableName(from);
     }
 
-    return this.getTableName(name);
+    if (table == null) {
+      throw codeError("'table' or 'from' key is required.");
+    }
+
+    return this.renderTableName(table);
   }
 
-  getTableName(rawName) {
-    return this.quoteIdentifier(rawName);
+  /**
+   * A table is named either by a string or by a single-entry alias object, which AWS renders with
+   * the *value* as the table name and the *key* as the alias: `{ persons: "p" }` becomes
+   * `"p" as "persons"`.
+   */
+  renderTableName(name) {
+    if (typeof name === 'string') {
+      return this.quoteIdentifier(name);
+    }
+
+    if ((typeof name !== 'object') || Array.isArray(name)) {
+      throw codeError("table name is expected to be a string or alias.");
+    }
+
+    const entries = Object.entries(name);
+    if (entries.length > 1) {
+      throw codeError("table alias is allowed only one key-value pair.");
+    }
+
+    if (entries.length === 0) {
+      // an exception AWS's own implementation leaks for an empty alias object, reproduced verbatim
+      // so error handling behaves the same here as it does against AWS
+      throw codeError("java.util.NoSuchElementException");
+    }
+
+    const [alias, actual] = entries[0];
+    if (typeof actual !== 'string') {
+      throw codeError("Table alias value is expected to be a string.");
+    }
+
+    return `${this.quoteIdentifier(actual)} as ${this.quoteIdentifier(alias)}`;
   }
 
   quoteIdentifier(rawName) {
@@ -487,6 +660,7 @@ class StatementBuilder {
 export function createPgStatement(...statements) {
   let builder = new StatementBuilder({
     quoteChar: '"',
+    functionName: 'createPgStatement',
   });
   return builder.render(statements);
 }
@@ -494,6 +668,7 @@ export function createPgStatement(...statements) {
 export function createMySQLStatement(...statements) {
   let builder = new StatementBuilder({
     quoteChar: '`',
+    functionName: 'createMySQLStatement',
     supportsReturning: false,
   });
   return builder.render(statements);

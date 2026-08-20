@@ -1366,33 +1366,23 @@ describe("rds resolvers", () => {
       await checkResolverValid(pg(`rds.select({ table: "persons", where: { name: { notContains: "test" } } })`), {}, "request");
     });
 
-    // These inputs are rejected outright. Note that these assertions never reach
-    // `checkResolverValid`, so they are NOT compared against AWS under either TEST_TARGET - they
-    // pin string literals that were checked against `EvaluateCode` by hand when written. They can
-    // become recorded snapshots once the harness captures a thrown error and strips the
-    // `code.js:<line>:<col>` prefix AWS puts in front of its message.
-    test("rejects an orderBy dir that is neither ascending nor descending", () => {
-      expect(() =>
-        rds.createPgStatement(rds.select({ table: "persons", orderBy: [{ column: "id", dir: "; DROP TABLE persons" }] }))
-      ).toThrow("orderBy dir can have either ASC or DESC found ; DROP TABLE persons.");
+    // These inputs are rejected outright. The message is snapshotted like any other result: the
+    // harness strips the source position AWS prefixes a thrown message with, so the recording holds
+    // against `EvaluateCode` and against the local module alike.
+    test("rejects an orderBy dir that is neither ascending nor descending", async () => {
+      await checkResolverValid(pg(`rds.select({ table: "persons", orderBy: [{ column: "id", dir: "; DROP TABLE persons" }] })`), {}, "request");
     });
 
-    test("rejects an empty orderBy dir", () => {
-      expect(() =>
-        rds.createPgStatement(rds.select({ table: "persons", orderBy: [{ column: "id", dir: "" }] }))
-      ).toThrow("orderBy dir can have either ASC or DESC found .");
+    test("rejects an empty orderBy dir", async () => {
+      await checkResolverValid(pg(`rds.select({ table: "persons", orderBy: [{ column: "id", dir: "" }] })`), {}, "request");
     });
 
-    test("rejects returning in mysql", () => {
-      expect(() =>
-        rds.createMySQLStatement(rds.remove({ table: "persons", where: { id: { eq: 1 } }, returning: ["id"] }))
-      ).toThrow("returning is not supported in MySQL.");
+    test("rejects returning in mysql", async () => {
+      await checkResolverValid(mysql(`rds.remove({ table: "persons", where: { id: { eq: 1 } }, returning: ["id"] })`), {}, "request");
     });
 
-    test("rejects a returning value that is neither a column array nor a star", () => {
-      expect(() =>
-        rds.createPgStatement(rds.insert({ table: "persons", values: { name: "test" }, returning: "id" }))
-      ).toThrow("Expected column to be * or an array.");
+    test("rejects a returning value that is neither a column array nor a star", async () => {
+      await checkResolverValid(pg(`rds.insert({ table: "persons", values: { name: "test" }, returning: "id" })`), {}, "request");
     });
   });
 
@@ -1530,52 +1520,41 @@ describe("rds resolvers", () => {
         await checkResolverValid(pg(`rds.select({ table: "persons", where: { name: { size: { gt: 2 } } }, orderBy: [{ column: "name", dir: "desc" }], limit: 5 })`), {}, "request");
       });
 
-      // The wildcard conditions all require a string. As above, these assertions never reach
-      // `checkResolverValid`, so they are NOT compared against AWS under either TEST_TARGET - they
-      // pin string literals checked against `EvaluateCode` by hand when written.
-      test("rejects a non-string for beginsWith", () => {
-        expect(() => rds.createPgStatement(rds.select({ table: "persons", where: { name: { beginsWith: 5 } } })))
-          .toThrow("name.beginsWith expects a string value to be passed.");
+      // The wildcard conditions all require a string
+      test("rejects a non-string for beginsWith", async () => {
+        await checkResolverValid(pg(`rds.select({ table: "persons", where: { name: { beginsWith: 5 } } })`), {}, "request");
       });
 
-      test("rejects null for beginsWith", () => {
-        expect(() => rds.createPgStatement(rds.select({ table: "persons", where: { name: { beginsWith: null } } })))
-          .toThrow("Value for name.beginsWith can't be null.");
+      test("rejects null for beginsWith", async () => {
+        await checkResolverValid(pg(`rds.select({ table: "persons", where: { name: { beginsWith: null } } })`), {}, "request");
       });
 
-      test("rejects a non-string for contains", () => {
-        expect(() => rds.createPgStatement(rds.select({ table: "persons", where: { name: { contains: 5 } } })))
-          .toThrow("name.contains expects a string value to be passed.");
+      test("rejects a non-string for contains", async () => {
+        await checkResolverValid(pg(`rds.select({ table: "persons", where: { name: { contains: 5 } } })`), {}, "request");
       });
 
-      test("rejects a non-string for notContains", () => {
-        expect(() => rds.createPgStatement(rds.select({ table: "persons", where: { name: { notContains: 5 } } })))
-          .toThrow("name.notContains expects a string value to be passed.");
+      test("rejects a non-string for notContains", async () => {
+        await checkResolverValid(pg(`rds.select({ table: "persons", where: { name: { notContains: 5 } } })`), {}, "request");
       });
 
-      test("rejects between with the wrong number of values", () => {
-        expect(() => rds.createPgStatement(rds.select({ table: "persons", where: { age: { between: [1] } } })))
-          .toThrow("age.between condition expects an array with 2 values but received an array with length 1.");
+      test("rejects between with the wrong number of values", async () => {
+        await checkResolverValid(pg(`rds.select({ table: "persons", where: { age: { between: [1] } } })`), {}, "request");
       });
 
-      test("rejects between with a value that is not an array", () => {
-        expect(() => rds.createPgStatement(rds.select({ table: "persons", where: { age: { between: 5 } } })))
-          .toThrow("age.between condition expects an array with length of 2.");
+      test("rejects between with a value that is not an array", async () => {
+        await checkResolverValid(pg(`rds.select({ table: "persons", where: { age: { between: 5 } } })`), {}, "request");
       });
 
-      test("rejects a nested between with the wrong number of values", () => {
-        expect(() => rds.createPgStatement(rds.select({ table: "persons", where: { name: { size: { between: [1] } } } })))
-          .toThrow("name.size condition expects an array with 2 values but received an array with length 1.");
+      test("rejects a nested between with the wrong number of values", async () => {
+        await checkResolverValid(pg(`rds.select({ table: "persons", where: { name: { size: { between: [1] } } } })`), {}, "request");
       });
 
-      test("rejects an unsupported size operator", () => {
-        expect(() => rds.createPgStatement(rds.select({ table: "persons", where: { name: { size: { contains: "x" } } } })))
-          .toThrow("name.size has invalid size operator.");
+      test("rejects an unsupported size operator", async () => {
+        await checkResolverValid(pg(`rds.select({ table: "persons", where: { name: { size: { contains: "x" } } } })`), {}, "request");
       });
 
-      test("rejects a size that is not an object", () => {
-        expect(() => rds.createPgStatement(rds.select({ table: "persons", where: { name: { size: 3 } } })))
-          .toThrow("Expected name.size to be an Object.");
+      test("rejects a size that is not an object", async () => {
+        await checkResolverValid(pg(`rds.select({ table: "persons", where: { name: { size: 3 } } })`), {}, "request");
       });
     });
 
@@ -1601,35 +1580,374 @@ describe("rds resolvers", () => {
         await checkResolverValid(pg(`rds.insert({ from: "ignored", table: "persons", values: { name: "test" } })`), {}, "request");
       });
 
-      test("rejects from and table together in select", () => {
-        expect(() => rds.createPgStatement(rds.select({ from: "a", table: "b" })))
-          .toThrow("'from' and 'table' keys cannot be used together");
+      test("rejects from and table together in select", async () => {
+        await checkResolverValid(pg(`rds.select({ from: "a", table: "b" })`), {}, "request");
       });
 
-      test("rejects a select with neither table nor from", () => {
-        expect(() => rds.createPgStatement(rds.select({ columns: ["id"] })))
-          .toThrow("'table' or 'from' key is required.");
+      test("rejects a select with neither table nor from", async () => {
+        await checkResolverValid(pg(`rds.select({ columns: ["id"] })`), {}, "request");
       });
 
-      test("rejects a null table", () => {
-        expect(() => rds.createPgStatement(rds.select({ table: null })))
-          .toThrow("'table' or 'from' key is required.");
+      test("rejects a null table", async () => {
+        await checkResolverValid(pg(`rds.select({ table: null })`), {}, "request");
       });
 
       // insert/update/remove do not accept the alias at all
-      test("rejects an insert given only from", () => {
-        expect(() => rds.createPgStatement(rds.insert({ from: "persons", values: { name: "test" } })))
-          .toThrow("'table' or 'from' key is required.");
+      test("rejects an insert given only from", async () => {
+        await checkResolverValid(pg(`rds.insert({ from: "persons", values: { name: "test" } })`), {}, "request");
       });
 
-      test("rejects an update given only from", () => {
-        expect(() => rds.createPgStatement(rds.update({ from: "persons", values: { name: "test" }, where: { id: { eq: 1 } } })))
-          .toThrow("'table' or 'from' key is required.");
+      test("rejects an update given only from", async () => {
+        await checkResolverValid(pg(`rds.update({ from: "persons", values: { name: "test" }, where: { id: { eq: 1 } } })`), {}, "request");
       });
 
-      test("rejects a remove given only from", () => {
-        expect(() => rds.createPgStatement(rds.remove({ from: "persons", where: { id: { eq: 1 } } })))
-          .toThrow("'table' or 'from' key is required.");
+      test("rejects a remove given only from", async () => {
+        await checkResolverValid(pg(`rds.remove({ from: "persons", where: { id: { eq: 1 } } })`), {}, "request");
+      });
+    });
+  });
+
+  describe("input validation", () => {
+    const pg = (expr) => `
+      export function request(ctx) {
+        return rds.createPgStatement(${expr});
+      }
+      export function response(ctx) {}
+    `;
+
+    const mysql = (expr) => `
+      export function request(ctx) {
+        return rds.createMySQLStatement(${expr});
+      }
+      export function response(ctx) {}
+    `;
+
+    describe("statement arguments", () => {
+      // an empty expression renders as `createPgStatement()`, with no statement at all
+      test("rejects a call with no statement", async () => {
+        await checkResolverValid(pg(``), {}, "request");
+      });
+
+      // the message names the entry point, so both dialects are worth pinning
+      test("rejects a call with no statement in mysql", async () => {
+        await checkResolverValid(mysql(``), {}, "request");
+      });
+
+      test("rejects a number as a statement", async () => {
+        await checkResolverValid(pg(`123`), {}, "request");
+      });
+
+      test("rejects an object that is not a statement", async () => {
+        await checkResolverValid(pg(`{}`), {}, "request");
+      });
+
+      test("rejects an unknown statement type", async () => {
+        await checkResolverValid(pg(`{ type: "BOGUS", properties: {} }`), {}, "request");
+      });
+
+      // `sql` is meant to be used as a tag; called by hand it can be given a mismatched arity
+      test("rejects a malformed sql tagged template", async () => {
+        await checkResolverValid(pg(`rds.sql(["a"], 1, 2)`), {}, "request");
+      });
+
+      // the statement constructors validate their payload when they are called, so the message
+      // names the constructor rather than the statement builder
+      test("rejects a select called with no payload", async () => {
+        await checkResolverValid(pg(`rds.select()`), {}, "request");
+      });
+
+      test("rejects a remove called with no payload", async () => {
+        await checkResolverValid(pg(`rds.remove()`), {}, "request");
+      });
+
+      test("rejects a null payload", async () => {
+        await checkResolverValid(pg(`rds.select(null)`), {}, "request");
+      });
+
+      test("rejects a payload that is not an object", async () => {
+        await checkResolverValid(pg(`rds.select("persons")`), {}, "request");
+      });
+
+      test("rejects a payload given as an array", async () => {
+        await checkResolverValid(pg(`rds.select([])`), {}, "request");
+      });
+    });
+
+    describe("table names and aliases", () => {
+      // an alias is a single-entry object, and AWS reads the value as the table and the key as the
+      // alias - so `{ persons: "p" }` means `"p" as "persons"`, not the other way round
+      test("select with a table alias", async () => {
+        await checkResolverValid(pg(`rds.select({ table: { persons: "p" } })`), {}, "request");
+      });
+
+      test("select with a table alias in mysql", async () => {
+        await checkResolverValid(mysql(`rds.select({ table: { persons: "p" } })`), {}, "request");
+      });
+
+      test("select with a qualified table alias", async () => {
+        await checkResolverValid(pg(`rds.select({ table: { "public.persons": "p" } })`), {}, "request");
+      });
+
+      test("from accepts an alias as well", async () => {
+        await checkResolverValid(pg(`rds.select({ from: { persons: "p" } })`), {}, "request");
+      });
+
+      // unlike `from`, the alias is understood by every statement type
+      test("insert with a table alias", async () => {
+        await checkResolverValid(pg(`rds.insert({ table: { persons: "p" }, values: { name: "test" } })`), {}, "request");
+      });
+
+      test("update with a table alias", async () => {
+        await checkResolverValid(pg(`rds.update({ table: { persons: "p" }, values: { name: "test" } })`), {}, "request");
+      });
+
+      test("delete with a table alias", async () => {
+        await checkResolverValid(pg(`rds.remove({ table: { persons: "p" } })`), {}, "request");
+      });
+
+      test("rejects an alias with more than one entry", async () => {
+        await checkResolverValid(pg(`rds.select({ table: { a: "x", b: "y" } })`), {}, "request");
+      });
+
+      // AWS leaks the exception from its own implementation here; the snapshot records it as-is
+      test("rejects an empty alias", async () => {
+        await checkResolverValid(pg(`rds.select({ table: {} })`), {}, "request");
+      });
+
+      test("rejects a non-string alias value", async () => {
+        await checkResolverValid(pg(`rds.select({ table: { persons: 1 } })`), {}, "request");
+      });
+
+      test("rejects a table that is neither a string nor an alias", async () => {
+        await checkResolverValid(pg(`rds.select({ table: 1 })`), {}, "request");
+      });
+
+      test("rejects a table given as an array", async () => {
+        await checkResolverValid(pg(`rds.select({ table: ["persons"] })`), {}, "request");
+      });
+
+      // `from` reports its own message rather than the one for `table`
+      test("rejects a from that is neither a string nor an object", async () => {
+        await checkResolverValid(pg(`rds.select({ from: 1 })`), {}, "request");
+      });
+
+      test("rejects a non-string table in insert", async () => {
+        await checkResolverValid(pg(`rds.insert({ table: 1, values: { name: "test" } })`), {}, "request");
+      });
+    });
+
+    describe("column lists", () => {
+      test("a star column list selects everything", async () => {
+        await checkResolverValid(pg(`rds.select({ table: "persons", columns: "*" })`), {}, "request");
+      });
+
+      test("a star inside the column array is left unquoted", async () => {
+        await checkResolverValid(pg(`rds.select({ table: "persons", columns: ["*"] })`), {}, "request");
+      });
+
+      test("a null column list selects everything", async () => {
+        await checkResolverValid(pg(`rds.select({ table: "persons", columns: null })`), {}, "request");
+      });
+
+      test("rejects a column list given as a plain string", async () => {
+        await checkResolverValid(pg(`rds.select({ table: "persons", columns: "name" })`), {}, "request");
+      });
+
+      test("rejects a null column name", async () => {
+        await checkResolverValid(pg(`rds.select({ table: "persons", columns: ["name", null] })`), {}, "request");
+      });
+
+      test("rejects a non-string column name", async () => {
+        await checkResolverValid(pg(`rds.select({ table: "persons", columns: [1] })`), {}, "request");
+      });
+
+      // `returning` is validated by the same rules as `columns`
+      test("rejects a null column name in returning", async () => {
+        await checkResolverValid(pg(`rds.insert({ table: "persons", values: { name: "test" }, returning: [null] })`), {}, "request");
+      });
+
+      // the shape of the list is checked before the dialect, so mysql reports the malformed list
+      // rather than its lack of RETURNING support
+      test("a malformed returning in mysql reports the column list", async () => {
+        await checkResolverValid(mysql(`rds.insert({ table: "persons", values: { name: "test" }, returning: "id" })`), {}, "request");
+      });
+
+      test("rejects a star returning in mysql", async () => {
+        await checkResolverValid(mysql(`rds.insert({ table: "persons", values: { name: "test" }, returning: "*" })`), {}, "request");
+      });
+    });
+
+    describe("where clauses", () => {
+      // a whole where clause may be a sql tagged template instead of a condition object
+      test("where as a sql template", async () => {
+        await checkResolverValid(pg('rds.select({ table: "persons", where: rds.sql`id = ${1}` })'), {}, "request");
+      });
+
+      test("where as a sql template with nothing interpolated", async () => {
+        await checkResolverValid(pg('rds.select({ table: "persons", where: rds.sql`id = 1` })'), {}, "request");
+      });
+
+      test("where as a sql template in mysql", async () => {
+        await checkResolverValid(mysql('rds.select({ table: "persons", where: rds.sql`id = ${1}` })'), {}, "request");
+      });
+
+      test("where as a sql template in a delete", async () => {
+        await checkResolverValid(pg('rds.remove({ table: "persons", where: rds.sql`id = ${1}` })'), {}, "request");
+      });
+
+      // the template shares the statement's variable numbering, so the update value binds first
+      test("where as a sql template in an update", async () => {
+        await checkResolverValid(pg('rds.update({ table: "persons", values: { name: "test" }, where: rds.sql`id = ${1}` })'), {}, "request");
+      });
+
+      // only a condition object is accepted inside and/or, not a template
+      test("rejects a sql template inside an and group", async () => {
+        await checkResolverValid(pg('rds.select({ table: "persons", where: { and: [rds.sql`id = ${1}`] } })'), {}, "request");
+      });
+
+      test("rejects a where given as a plain string", async () => {
+        await checkResolverValid(pg(`rds.select({ table: "persons", where: "id = 1" })`), {}, "request");
+      });
+
+      test("rejects a where given as an array", async () => {
+        await checkResolverValid(pg(`rds.select({ table: "persons", where: [] })`), {}, "request");
+      });
+
+      test("rejects a null condition for a column", async () => {
+        await checkResolverValid(pg(`rds.select({ table: "persons", where: { name: null } })`), {}, "request");
+      });
+
+      test("rejects a bare value as a condition", async () => {
+        await checkResolverValid(pg(`rds.select({ table: "persons", where: { name: "test" } })`), {}, "request");
+      });
+
+      test("rejects an and that is not an array", async () => {
+        await checkResolverValid(pg(`rds.select({ table: "persons", where: { and: "nope" } })`), {}, "request");
+      });
+
+      test("rejects an or that is not an array", async () => {
+        await checkResolverValid(pg(`rds.select({ table: "persons", where: { or: "nope" } })`), {}, "request");
+      });
+
+      test("rejects a null entry in an and group", async () => {
+        await checkResolverValid(pg(`rds.select({ table: "persons", where: { and: [null] } })`), {}, "request");
+      });
+
+      test("rejects a string entry in an or group", async () => {
+        await checkResolverValid(pg(`rds.select({ table: "persons", where: { or: ["id = 1"] } })`), {}, "request");
+      });
+
+      test("rejects an unsupported condition", async () => {
+        await checkResolverValid(pg(`rds.select({ table: "persons", where: { name: { bogus: 1 } } })`), {}, "request");
+      });
+
+      // the dynamodb operators are not shared with rds, `in` included
+      test("rejects the in operator", async () => {
+        await checkResolverValid(pg(`rds.select({ table: "persons", where: { id: { in: [1, 2] } } })`), {}, "request");
+      });
+    });
+
+    describe("condition values", () => {
+      test("rejects a null equality value", async () => {
+        await checkResolverValid(pg(`rds.select({ table: "persons", where: { id: { eq: null } } })`), {}, "request");
+      });
+
+      test("rejects an undefined equality value", async () => {
+        await checkResolverValid(pg(`rds.select({ table: "persons", where: { id: { eq: undefined } } })`), {}, "request");
+      });
+
+      test("rejects a null greater-than value", async () => {
+        await checkResolverValid(pg(`rds.select({ table: "persons", where: { id: { gt: null } } })`), {}, "request");
+      });
+
+      // a comparison under `size` keeps rendering a NULL literal - the rejection is only for a
+      // direct comparison
+      test("a null size comparison renders a null literal", async () => {
+        await checkResolverValid(pg(`rds.select({ table: "persons", where: { name: { size: { eq: null } } } })`), {}, "request");
+      });
+
+      test("attributeExists true renders is not null", async () => {
+        await checkResolverValid(pg(`rds.select({ table: "persons", where: { name: { attributeExists: true } } })`), {}, "request");
+      });
+
+      test("rejects a null attributeExists value", async () => {
+        await checkResolverValid(pg(`rds.select({ table: "persons", where: { name: { attributeExists: null } } })`), {}, "request");
+      });
+
+      // a truthy value is not enough, it has to be a boolean
+      test("rejects a non-boolean attributeExists value", async () => {
+        await checkResolverValid(pg(`rds.select({ table: "persons", where: { name: { attributeExists: "yes" } } })`), {}, "request");
+      });
+
+      test("rejects zero for attributeExists", async () => {
+        await checkResolverValid(pg(`rds.select({ table: "persons", where: { name: { attributeExists: 0 } } })`), {}, "request");
+      });
+    });
+
+    describe("order by, limit and offset", () => {
+      test("rejects an orderBy that is not an array", async () => {
+        await checkResolverValid(pg(`rds.select({ table: "persons", orderBy: { column: "name" } })`), {}, "request");
+      });
+
+      test("rejects a null orderBy item", async () => {
+        await checkResolverValid(pg(`rds.select({ table: "persons", orderBy: [null] })`), {}, "request");
+      });
+
+      test("rejects an orderBy item with no column", async () => {
+        await checkResolverValid(pg(`rds.select({ table: "persons", orderBy: [{}] })`), {}, "request");
+      });
+
+      test("rejects a non-string orderBy column", async () => {
+        await checkResolverValid(pg(`rds.select({ table: "persons", orderBy: [{ column: 1 }] })`), {}, "request");
+      });
+
+      // only a string dir is validated: any other value means ascending, the same as omitting it
+      test("a numeric orderBy dir sorts ascending", async () => {
+        await checkResolverValid(pg(`rds.select({ table: "persons", orderBy: [{ column: "name", dir: 1 }] })`), {}, "request");
+      });
+
+      test("an object orderBy dir sorts ascending", async () => {
+        await checkResolverValid(pg(`rds.select({ table: "persons", orderBy: [{ column: "name", dir: {} }] })`), {}, "request");
+      });
+
+      // a numeric string is coerced, so the bound variable is a number either way
+      test("a numeric string limit binds a number", async () => {
+        await checkResolverValid(pg(`rds.select({ table: "persons", limit: "5" })`), {}, "request");
+      });
+
+      test("a numeric string offset binds a number", async () => {
+        await checkResolverValid(pg(`rds.select({ table: "persons", offset: "5" })`), {}, "request");
+      });
+
+      test("rejects a limit that is not numeric", async () => {
+        await checkResolverValid(pg(`rds.select({ table: "persons", limit: "abc" })`), {}, "request");
+      });
+
+      test("rejects an empty string limit", async () => {
+        await checkResolverValid(pg(`rds.select({ table: "persons", limit: "" })`), {}, "request");
+      });
+
+      test("rejects an object offset", async () => {
+        await checkResolverValid(pg(`rds.select({ table: "persons", offset: {} })`), {}, "request");
+      });
+    });
+
+    describe("insert and update values", () => {
+      test("rejects an insert with no values", async () => {
+        await checkResolverValid(pg(`rds.insert({ table: "persons" })`), {}, "request");
+      });
+
+      // the message names the statement type
+      test("rejects an update with no values", async () => {
+        await checkResolverValid(pg(`rds.update({ table: "persons", where: { id: { eq: 1 } } })`), {}, "request");
+      });
+
+      test("rejects null insert values", async () => {
+        await checkResolverValid(pg(`rds.insert({ table: "persons", values: null })`), {}, "request");
+      });
+
+      test("rejects insert values given as an array", async () => {
+        await checkResolverValid(pg(`rds.insert({ table: "persons", values: [1] })`), {}, "request");
       });
     });
   });
@@ -1654,4 +1972,44 @@ describe("error handling", () => {
   `;
     await checkResolverValid(code, {}, "request");
   })
+})
+
+// LocalStack has to tell a rejection raised by the library from an error the resolver author raised
+// deliberately, and the two are otherwise identical: both are an `AppSyncUserError` carrying only a
+// message. AppSync attributes the former to the errorType `Code`.
+//
+// This pair is the one thing here that is NOT compared against AWS, and cannot be: `EvaluateCode`
+// reports an error as a bare message and never mentions errorType, so there is nothing to record.
+// It pins our own contract with the runtime rather than a claim about AWS.
+describe("error types", () => {
+  const thrownBy = (fn) => {
+    try {
+      fn();
+    } catch (e) {
+      return e;
+    }
+
+    throw new Error("expected the call to throw");
+  };
+
+  test("a rejected input is attributed to the resolver code", () => {
+    const error = thrownBy(() => rds.createPgStatement(rds.select({})));
+
+    expect(error.name).toBe("AppSyncUserError");
+    expect(error.errorType).toBe("Code");
+    expect(error.message).toBe("'table' or 'from' key is required.");
+  });
+
+  test("a deliberate util.error carries no errorType", () => {
+    const error = thrownBy(() => util.error("foo"));
+
+    expect(error.name).toBe("AppSyncUserError");
+    expect(error.errorType).toBeUndefined();
+  });
+
+  test("util.error keeps an errorType it was given", () => {
+    const error = thrownBy(() => util.error("foo", "MyErrorType"));
+
+    expect(error.errorType).toBe("MyErrorType");
+  });
 })
