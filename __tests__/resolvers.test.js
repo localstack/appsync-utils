@@ -1366,8 +1366,11 @@ describe("rds resolvers", () => {
       await checkResolverValid(pg(`rds.select({ table: "persons", where: { name: { notContains: "test" } } })`), {}, "request");
     });
 
-    // These inputs are rejected outright. AWS reports the same messages prefixed with a source
-    // position we cannot reproduce locally, so they are asserted directly rather than snapshotted.
+    // These inputs are rejected outright. Note that these assertions never reach
+    // `checkResolverValid`, so they are NOT compared against AWS under either TEST_TARGET - they
+    // pin string literals that were checked against `EvaluateCode` by hand when written. They can
+    // become recorded snapshots once the harness captures a thrown error and strips the
+    // `code.js:<line>:<col>` prefix AWS puts in front of its message.
     test("rejects an orderBy dir that is neither ascending nor descending", () => {
       expect(() =>
         rds.createPgStatement(rds.select({ table: "persons", orderBy: [{ column: "id", dir: "; DROP TABLE persons" }] }))
@@ -1527,9 +1530,9 @@ describe("rds resolvers", () => {
         await checkResolverValid(pg(`rds.select({ table: "persons", where: { name: { size: { gt: 2 } } }, orderBy: [{ column: "name", dir: "desc" }], limit: 5 })`), {}, "request");
       });
 
-      // The wildcard conditions all require a string. These are asserted directly rather than
-      // snapshotted: the same messages come back from AWS behind a `code.js:<line>:<col>` prefix
-      // that a local run cannot reproduce.
+      // The wildcard conditions all require a string. As above, these assertions never reach
+      // `checkResolverValid`, so they are NOT compared against AWS under either TEST_TARGET - they
+      // pin string literals checked against `EvaluateCode` by hand when written.
       test("rejects a non-string for beginsWith", () => {
         expect(() => rds.createPgStatement(rds.select({ table: "persons", where: { name: { beginsWith: 5 } } })))
           .toThrow("name.beginsWith expects a string value to be passed.");
