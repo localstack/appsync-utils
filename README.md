@@ -4,6 +4,8 @@ This package provides an implementation for the `@aws-appsync/utils` package tha
 
 ## Changelog:
 
+- v0.1.4: fix `rds` query builders with empty `orderBy`, `where` and `values` inputs, `contains` wildcards and multiple conditions per column; `orderBy` `dir` is now restricted to `ASC`/`DESC`
+- v0.1.3: fix `rds` query builders with star columns, empty `where` objects and nullable `limit`/`offset`
 - v0.1.2: fix `rds` query builders with schema qualified identifiers
 - v0.1.1: security updates
 - v0.1.0: first pinned version of the library

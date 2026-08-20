@@ -5,6 +5,7 @@ Within the request it can be resolved to both, e.g. `ctx.arguments` and `ctx.arg
 
 import { checkResolverValid } from "./helpers";
 import { util } from "..";
+import * as rds from "../rds";
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
@@ -1214,6 +1215,181 @@ describe("rds resolvers", () => {
         export function response(ctx) {}
       `;
       await checkResolverValid(code, {}, "request");
+    });
+  });
+
+  describe("empty, null and repeated clause inputs", () => {
+    // AWS assembles a statement from clause fragments and drops the ones that render to nothing.
+    // Some of the inputs below make AWS itself emit invalid SQL (a dangling SELECT, SET, RETURNING
+    // or AND); the snapshots reproduce that byte-for-byte, so a query that breaks in AWS breaks
+    // identically here rather than silently working.
+    const pg = (expr) => `
+      export function request(ctx) {
+        return rds.createPgStatement(${expr});
+      }
+      export function response(ctx) {}
+    `;
+
+    const mysql = (expr) => `
+      export function request(ctx) {
+        return rds.createMySQLStatement(${expr});
+      }
+      export function response(ctx) {}
+    `;
+
+    // an empty sort list drops the ORDER BY keyword along with its body
+    test("empty orderBy array", async () => {
+      await checkResolverValid(pg(`rds.select({ table: "domain.color", orderBy: [] })`), {}, "request");
+    });
+
+    test("empty orderBy array with limit", async () => {
+      await checkResolverValid(pg(`rds.select({ table: "domain.color", orderBy: [], limit: 3 })`), {}, "request");
+    });
+
+    test("empty orderBy array in mysql", async () => {
+      await checkResolverValid(mysql(`rds.select({ table: "domain.color", orderBy: [] })`), {}, "request");
+    });
+
+    // an empty column list leaves the column fragment out entirely: `SELECT FROM ...`
+    test("empty column list", async () => {
+      await checkResolverValid(pg(`rds.select({ table: "domain.color", columns: [] })`), {}, "request");
+    });
+
+    test("empty column list with limit", async () => {
+      await checkResolverValid(pg(`rds.select({ table: "domain.color", columns: [], limit: 3 })`), {}, "request");
+    });
+
+    test("empty column list in mysql", async () => {
+      await checkResolverValid(mysql(`rds.select({ table: "domain.color", columns: [] })`), {}, "request");
+    });
+
+    test("empty nested or group", async () => {
+      await checkResolverValid(pg(`rds.select({ table: "persons", where: { and: [{ or: [] }] } })`), {}, "request");
+    });
+
+    test("empty condition object for a column", async () => {
+      await checkResolverValid(pg(`rds.select({ table: "persons", where: { id: {} } })`), {}, "request");
+    });
+
+    test("empty condition object alongside a real condition", async () => {
+      await checkResolverValid(pg(`rds.select({ table: "persons", where: { name: { eq: "test" }, id: {} } })`), {}, "request");
+    });
+
+    test("empty object in an and array", async () => {
+      await checkResolverValid(pg(`rds.select({ table: "persons", where: { and: [{ id: { eq: 1 } }, {}] } })`), {}, "request");
+    });
+
+    test("empty objects in an or array", async () => {
+      await checkResolverValid(pg(`rds.select({ table: "persons", where: { or: [{}, {}] } })`), {}, "request");
+    });
+
+    test("empty returning array in insert", async () => {
+      await checkResolverValid(pg(`rds.insert({ table: "persons", values: { name: "test" }, returning: [] })`), {}, "request");
+    });
+
+    test("empty returning array in remove", async () => {
+      await checkResolverValid(pg(`rds.remove({ table: "persons", where: { id: { eq: 1 } }, returning: [] })`), {}, "request");
+    });
+
+    test("empty values object in update", async () => {
+      await checkResolverValid(pg(`rds.update({ table: "persons", values: {}, where: { id: { eq: 1 } } })`), {}, "request");
+    });
+
+    // a nullish value is inlined as a NULL literal rather than bound to a variable
+    test("null value in insert values", async () => {
+      await checkResolverValid(pg(`rds.insert({ table: "persons", values: { name: null } })`), {}, "request");
+    });
+
+    test("null mixed with bound values in insert", async () => {
+      await checkResolverValid(pg(`rds.insert({ table: "persons", values: { name: "test", country: null } })`), {}, "request");
+    });
+
+    test("undefined value in insert values", async () => {
+      await checkResolverValid(pg(`rds.insert({ table: "persons", values: { name: undefined } })`), {}, "request");
+    });
+
+    test("null value in update values", async () => {
+      await checkResolverValid(pg(`rds.update({ table: "persons", values: { country: null }, where: { id: { eq: 1 } } })`), {}, "request");
+    });
+
+    test("null alongside a type hint", async () => {
+      await checkResolverValid(pg(`rds.insert({ table: "persons", values: { id: rds.typeHint.UUID("0e0d0c0b-0a09-0807-0605-040302010000"), country: null } })`), {}, "request");
+    });
+
+    // `false` and `0` are ordinary bound values, not nulls
+    test("false and zero values are bound", async () => {
+      await checkResolverValid(pg(`rds.insert({ table: "persons", values: { active: false, score: 0 } })`), {}, "request");
+    });
+
+    // every condition on a column is rendered, not just the first one
+    test("multiple conditions on one column", async () => {
+      await checkResolverValid(pg(`rds.select({ table: "persons", where: { id: { ge: 1, le: 9, ne: 5 } } })`), {}, "request");
+    });
+
+    test("multiple conditions on one column inside a group", async () => {
+      await checkResolverValid(pg(`rds.select({ table: "persons", where: { and: [{ id: { eq: 1, gt: 0 } }, { name: { eq: "test" } }] } })`), {}, "request");
+    });
+
+    test("attributeExists alongside another condition", async () => {
+      await checkResolverValid(pg(`rds.select({ table: "persons", where: { id: { eq: 1, attributeExists: true } } })`), {}, "request");
+    });
+
+    // returning accepts a column array (quoted) or the bare string `*`
+    test("returning column array in insert", async () => {
+      await checkResolverValid(pg(`rds.insert({ table: "persons", values: { name: "test" }, returning: ["id", "name"] })`), {}, "request");
+    });
+
+    test("returning star in insert", async () => {
+      await checkResolverValid(pg(`rds.insert({ table: "persons", values: { name: "test" }, returning: "*" })`), {}, "request");
+    });
+
+    test("returning star in remove", async () => {
+      await checkResolverValid(pg(`rds.remove({ table: "persons", where: { id: { eq: 1 } }, returning: "*" })`), {}, "request");
+    });
+
+    // orderBy dir is normalised to upper case; an absent or null dir means ascending
+    test("lowercase orderBy dir is uppercased", async () => {
+      await checkResolverValid(pg(`rds.select({ table: "persons", orderBy: [{ column: "name", dir: "desc" }] })`), {}, "request");
+    });
+
+    test("null orderBy dir defaults to ascending", async () => {
+      await checkResolverValid(pg(`rds.select({ table: "persons", orderBy: [{ column: "name", dir: null }] })`), {}, "request");
+    });
+
+    // `contains` is a substring match, so the bound value carries wildcards; `notContains` does
+    // not wrap its value - AWS does not either
+    test("contains wraps the value in wildcards", async () => {
+      await checkResolverValid(pg(`rds.select({ table: "persons", where: { name: { contains: "test" } } })`), {}, "request");
+    });
+
+    test("notContains does not wrap the value", async () => {
+      await checkResolverValid(pg(`rds.select({ table: "persons", where: { name: { notContains: "test" } } })`), {}, "request");
+    });
+
+    // These inputs are rejected outright. AWS reports the same messages prefixed with a source
+    // position we cannot reproduce locally, so they are asserted directly rather than snapshotted.
+    test("rejects an orderBy dir that is neither ascending nor descending", () => {
+      expect(() =>
+        rds.createPgStatement(rds.select({ table: "persons", orderBy: [{ column: "id", dir: "; DROP TABLE persons" }] }))
+      ).toThrow("orderBy dir can have either ASC or DESC found ; DROP TABLE persons.");
+    });
+
+    test("rejects an empty orderBy dir", () => {
+      expect(() =>
+        rds.createPgStatement(rds.select({ table: "persons", orderBy: [{ column: "id", dir: "" }] }))
+      ).toThrow("orderBy dir can have either ASC or DESC found .");
+    });
+
+    test("rejects returning in mysql", () => {
+      expect(() =>
+        rds.createMySQLStatement(rds.remove({ table: "persons", where: { id: { eq: 1 } }, returning: ["id"] }))
+      ).toThrow("returning is not supported in MySQL.");
+    });
+
+    test("rejects a returning value that is neither a column array nor a star", () => {
+      expect(() =>
+        rds.createPgStatement(rds.insert({ table: "persons", values: { name: "test" }, returning: "id" }))
+      ).toThrow("Expected column to be * or an array.");
     });
   });
 });
