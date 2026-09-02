@@ -117,6 +117,76 @@ export const dynamodbUtils = {
 
 const FILTER_CONTAINS = "contains";
 
+// The strings `util.authType()` returns, see
+// https://docs.aws.amazon.com/appsync/latest/devguide/resolver-util-reference.html
+const AUTH_TYPE_API_KEY = "API Key Authorization";
+const AUTH_TYPE_IAM = "IAM Authorization";
+const AUTH_TYPE_USER_POOL = "User Pool Authorization";
+const AUTH_TYPE_OIDC = "Open ID Connect Authorization";
+const AUTH_TYPE_LAMBDA = "Lambda Authorization";
+
+// AppSync populates `ctx.identity` with a shape that is specific to the authorization mode of the
+// API, so the mode can be recovered from the identity alone. `keys` is the complete set of keys
+// the mode's identity may carry and `required` the ones it always carries, both taken from the
+// recordings described on `authTypeFromIdentity`.
+const IDENTITY_SCHEMAS = [
+  {
+    authType: AUTH_TYPE_IAM,
+    keys: ["accountId", "cognitoIdentityPoolId", "cognitoIdentityId", "sourceIp", "username",
+      "userArn", "cognitoIdentityAuthType", "cognitoIdentityAuthProvider"],
+    required: ["accountId", "sourceIp", "username", "userArn"],
+  },
+  {
+    authType: AUTH_TYPE_USER_POOL,
+    keys: ["sourceIp", "username", "groups", "sub", "issuer", "claims", "defaultAuthStrategy"],
+    required: ["sourceIp", "username", "sub", "issuer", "claims", "defaultAuthStrategy"],
+  },
+  {
+    authType: AUTH_TYPE_OIDC,
+    keys: ["sub", "issuer", "claims"],
+    required: ["sub", "issuer", "claims"],
+  },
+  {
+    // `resolverContext` is what the authorizer returned, and an authorizer may return nothing at
+    // all, so an identity with no keys whatsoever is a Lambda identity to AWS
+    authType: AUTH_TYPE_LAMBDA,
+    keys: ["resolverContext"],
+    required: [],
+  },
+];
+
+// Recorded from `EvaluateCode` against every identity shape in the AppSync resolver context
+// reference plus the ambiguous mixtures: an identity belongs to a mode when all of its keys are
+// keys of that mode and every key the mode requires is present and not null. Foreign keys rule a
+// mode out rather than being ignored, so `{sub, issuer, claims, username}` is an incomplete user
+// pool identity and not an OIDC one. The modes are mutually exclusive under those two rules, so
+// the order below only makes the outcome deterministic. Anything unmatched, an absent identity
+// included, is an API key request, which is the mode that populates no identity at all.
+function authTypeFromIdentity(identity) {
+  if (identity === null || typeof identity !== "object" || Array.isArray(identity)) {
+    return AUTH_TYPE_API_KEY;
+  }
+  const keys = Object.keys(identity);
+  for (const schema of IDENTITY_SCHEMAS) {
+    const noForeignKeys = keys.every((key) => schema.keys.includes(key));
+    const hasRequired = schema.required.every((key) => identity[key] !== null && identity[key] !== undefined);
+    if (noForeignKeys && hasRequired) {
+      return schema.authType;
+    }
+  }
+  return AUTH_TYPE_API_KEY;
+}
+
+// The context of the request being resolved. Every function on `util` is otherwise pure, but
+// `util.authType()` describes the request while having no access to the `ctx` the resolver
+// receives, so the host installs the context here before handing control to the resolver. Shared
+// by every request in the process, hence the host sets it immediately before the call.
+let resolverContext = null;
+
+export function setResolverContext(ctx) {
+  resolverContext = ctx ?? null;
+}
+
 export const util = {
   autoId: function() {
     return uuidv4();
@@ -136,6 +206,9 @@ export const util = {
   },
   unauthorized: function() {
     throw new AppSyncUserError("Unauthorized", "UnauthorizedException")
+  },
+  authType: function() {
+    return authTypeFromIdentity(resolverContext?.identity);
   },
   time: {
     nowFormatted: function(pattern) {

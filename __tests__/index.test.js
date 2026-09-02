@@ -14,6 +14,10 @@ describe("general utilities", () => {
     // cannot test on AWS due to random nature
     expect(util.autoId()).toBeTruthy();
   });
+
+  test("authType", async () => {
+    await checkValid(`util.authType()`);
+  });
 });
 
 describe("time utilities", () => {

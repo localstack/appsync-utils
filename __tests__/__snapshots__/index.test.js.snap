@@ -411,3 +411,5 @@ exports[`dynamodb helpers toStringSet 1`] = `
   ],
 }
 `;
+
+exports[`general utilities authType 1`] = `"API Key Authorization"`;

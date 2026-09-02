@@ -1,0 +1,91 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`util.authType an identity that names no single mode a subject, an issuer and claims beside a username fall back to an API key 1`] = `
+{
+  "authType": "API Key Authorization",
+}
+`;
+
+exports[`util.authType an identity that names no single mode a user pool identity missing its default auth strategy falls back to an API key 1`] = `
+{
+  "authType": "API Key Authorization",
+}
+`;
+
+exports[`util.authType an identity that names no single mode a user pool identity missing its source IP falls back to an API key 1`] = `
+{
+  "authType": "API Key Authorization",
+}
+`;
+
+exports[`util.authType an identity that names no single mode an IAM identity missing its user ARN falls back to an API key 1`] = `
+{
+  "authType": "API Key Authorization",
+}
+`;
+
+exports[`util.authType an identity that names no single mode an IAM identity whose source IP is null falls back to an API key 1`] = `
+{
+  "authType": "API Key Authorization",
+}
+`;
+
+exports[`util.authType an identity that names no single mode an identity holding only claims falls back to an API key 1`] = `
+{
+  "authType": "API Key Authorization",
+}
+`;
+
+exports[`util.authType the mode of an identity a null identity is authorized by an API key 1`] = `
+{
+  "authType": "API Key Authorization",
+}
+`;
+
+exports[`util.authType the mode of an identity a request carrying no identity is authorized by an API key 1`] = `
+{
+  "authType": "API Key Authorization",
+}
+`;
+
+exports[`util.authType the mode of an identity a user pool identity is user pool authorized 1`] = `
+{
+  "authType": "User Pool Authorization",
+}
+`;
+
+exports[`util.authType the mode of an identity a user pool identity without groups is user pool authorized 1`] = `
+{
+  "authType": "User Pool Authorization",
+}
+`;
+
+exports[`util.authType the mode of an identity an IAM identity from a Cognito identity pool is IAM authorized 1`] = `
+{
+  "authType": "IAM Authorization",
+}
+`;
+
+exports[`util.authType the mode of an identity an IAM identity is IAM authorized even though it also carries a username 1`] = `
+{
+  "authType": "IAM Authorization",
+}
+`;
+
+exports[`util.authType the mode of an identity an identity carrying a resolver context comes from a Lambda authorizer 1`] = `
+{
+  "authType": "Lambda Authorization",
+}
+`;
+
+exports[`util.authType the mode of an identity an identity holding a subject, an issuer and claims is OIDC authorized 1`] = `
+{
+  "authType": "Open ID Connect Authorization",
+}
+`;
+
+exports[`util.authType the mode of an identity an identity with no keys comes from a Lambda authorizer 1`] = `
+{
+  "authType": "Lambda Authorization",
+}
+`;

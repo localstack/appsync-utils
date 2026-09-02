@@ -4,6 +4,7 @@ This package provides an implementation for the `@aws-appsync/utils` package tha
 
 ## Changelog:
 
+- v0.1.6: add `util.authType()`, derived from the identity of the request; a host installs the request through the new `setResolverContext` export
 - v0.1.5: add `rds` `beginsWith`, `between` and `size` conditions, table aliases and `sql` template `where` clauses; invalid input now raises AWS's validation error instead of a raw `TypeError`, and the wildcard conditions require a string
 - v0.1.4: fix `rds` query builders with empty `orderBy`, `where` and `values` inputs, `contains` wildcards and multiple conditions per column; `orderBy` `dir` is now restricted to `ASC`/`DESC`
 - v0.1.3: fix `rds` query builders with star columns, empty `where` objects and nullable `limit`/`offset`

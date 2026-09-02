@@ -3,7 +3,7 @@
 import { fileURLToPath, pathToFileURL } from "url";
 import { dirname, resolve } from "path";
 import { AppSyncClient, EvaluateCodeCommand } from "@aws-sdk/client-appsync";
-import { util } from "..";
+import { util, setResolverContext } from "..";
 import * as ddb from "../dynamodb";
 import * as rds from "../rds";
 
@@ -86,6 +86,9 @@ export const checkResolverValid = async (code, context, functionName) => {
     const fn = module[functionName];
 
     transformContextForAppSync(context);
+    // mirrors the host installing the request before calling the resolver, so that utils reading
+    // the request (`util.authType()`) see what they see on AWS
+    setResolverContext(context);
     try {
       result = fn(context);
     } catch (e) {
@@ -93,6 +96,8 @@ export const checkResolverValid = async (code, context, functionName) => {
         throw e;
       }
       result = {"message": e.message}
+    } finally {
+      setResolverContext(null);
     }
   }
   expect(result).toMatchSnapshot();
@@ -110,7 +115,14 @@ export const checkValid = async (s, context, postProcess) => {
   if (process.env.TEST_TARGET === "AWS_CLOUD") {
     result = await runOnAWS(s, context);
   } else {
-    result = eval(s);
+    // AWS evaluates the expression inside a resolver that receives `context`; give the utils the
+    // same view of the request, matching the default an absent context gets on the AWS branch
+    setResolverContext(context ?? {});
+    try {
+      result = eval(s);
+    } finally {
+      setResolverContext(null);
+    }
   }
   if (postProcess) {
     result = postProcess(result);
