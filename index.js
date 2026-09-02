@@ -114,7 +114,25 @@ export const dynamodbUtils = {
   },
 
   fromS3ObjectJson: function(value) {
-    throw new Error("not implemented");
+    // takes the JSON string an S3 link is stored as, not the `{S: ...}` attribute wrapping it
+    if (typeof value !== "string") {
+      return null;
+    }
+    let parsed;
+    try {
+      parsed = JSON.parse(value);
+    } catch (error) {
+      return null;
+    }
+    const s3 = parsed?.s3;
+    if (!s3) {
+      return null;
+    }
+    const out = { bucket: s3.bucket, region: s3.region, key: s3.key };
+    if (s3.version !== undefined) {
+      out.version = s3.version;
+    }
+    return out;
   },
 }
 
@@ -227,6 +245,9 @@ export const util = {
     toDynamoDBConditionExpression: function(condition) {
       return transformToExpression(condition);
     },
+    toSubscriptionFilter: function(filter, ignoredFields, rules) {
+      return toSubscriptionFilter(filter, ignoredFields, rules);
+    },
   },
   dynamodb: dynamodbUtils,
   rds: { toJsonObject },
@@ -276,21 +297,28 @@ const isFilterObject = (value) => value !== null && typeof value === "object" &&
 
 const hasOperator = (operators, operator) => Object.hasOwn(operators, operator);
 
-function transformToExpression(filter) {
-  let node;
+// The `{expression, expressionNames, expressionValues}` object a DynamoDB request carries.
+// `util.transform` serialises it, while the `dynamodb` module embeds it as an object, so both go
+// through the one builder. `null` for a filter that cannot be rendered, matching `util.transform`.
+export function buildDynamoDBExpression(filter) {
   try {
-    node = buildFilter(filter, [], false);
+    const node = buildFilter(filter, [], false);
+    return {
+      expression: node.expression,
+      expressionNames: node.expressionNames,
+      expressionValues: node.expressionValues,
+    };
   } catch (error) {
     if (error instanceof InvalidFilter) {
       return null;
     }
     throw error;
   }
-  return JSON.stringify({
-    expression: node.expression,
-    expressionNames: node.expressionNames,
-    expressionValues: node.expressionValues,
-  });
+}
+
+function transformToExpression(filter) {
+  const expression = buildDynamoDBExpression(filter);
+  return expression === null ? null : JSON.stringify(expression);
 }
 
 // `wrap` parenthesises a group that holds more than one member. The filter as a whole is never
@@ -416,4 +444,75 @@ function buildOperator(target, operator, operand, value) {
     default:
       throw new InvalidFilter();
   }
+}
+
+// `util.transform.toSubscriptionFilter` expands a filter into the disjunctive normal form AppSync
+// delivers subscriptions against: a list of groups, each an AND of individual filters, the groups
+// themselves OR-ed. Recorded from AWS, which validates nothing - an unknown operator is passed
+// straight through, and `not` is treated as an ordinary field name rather than a negation.
+
+// every operator of a field, every member of an `or`, and every rule is an alternative, so the
+// groups multiply out
+const crossFilters = (groups, alternatives) =>
+  groups.flatMap((group) => alternatives.map((alternative) => [...group, ...alternative]));
+
+function subscriptionFilterAlternatives(field, operators) {
+  if (!isFilterObject(operators)) {
+    throw new InvalidFilter();
+  }
+  return Object.entries(operators).map(([operator, value]) => [{ fieldName: field, operator, value }]);
+}
+
+function expandSubscriptionFilter(filter, ignoredFields) {
+  if (!isFilterObject(filter)) {
+    throw new InvalidFilter();
+  }
+  let groups = [[]];
+  for (const [key, value] of Object.entries(filter)) {
+    if (key === "and") {
+      if (!Array.isArray(value)) {
+        throw new InvalidFilter();
+      }
+      for (const member of value) {
+        groups = crossFilters(groups, expandSubscriptionFilter(member, ignoredFields));
+      }
+      continue;
+    }
+    if (key === "or") {
+      if (!Array.isArray(value)) {
+        throw new InvalidFilter();
+      }
+      groups = crossFilters(groups, value.flatMap((member) => expandSubscriptionFilter(member, ignoredFields)));
+      continue;
+    }
+    if (ignoredFields.includes(key)) {
+      continue;
+    }
+    groups = crossFilters(groups, subscriptionFilterAlternatives(key, value));
+  }
+  return groups;
+}
+
+function toSubscriptionFilter(filter, ignoredFields, rules) {
+  const ignored = Array.isArray(ignoredFields) ? ignoredFields : [];
+  let groups;
+  try {
+    groups = expandSubscriptionFilter(filter, ignored);
+    if (isFilterObject(rules)) {
+      // a rule is satisfied when any one of them holds, so they multiply onto every group
+      const alternatives = Object.entries(rules).flatMap(([field, operators]) =>
+        subscriptionFilterAlternatives(field, operators),
+      );
+      if (alternatives.length) {
+        groups = crossFilters(groups, alternatives);
+      }
+    }
+  } catch (error) {
+    if (error instanceof InvalidFilter) {
+      return null;
+    }
+    throw error;
+  }
+  // a group that collected no filter at all is dropped, so an empty filter yields an empty list
+  return { filterGroup: groups.filter((filters) => filters.length).map((filters) => ({ filters })) };
 }

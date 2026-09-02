@@ -1,0 +1,564 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`subscription filters a single group a field beside an and 1`] = `
+{
+  "filterGroup": [
+    {
+      "filters": [
+        {
+          "fieldName": "z",
+          "operator": "eq",
+          "value": 0,
+        },
+        {
+          "fieldName": "a",
+          "operator": "eq",
+          "value": 1,
+        },
+      ],
+    },
+  ],
+}
+`;
+
+exports[`subscription filters a single group a field path is kept as written 1`] = `
+{
+  "filterGroup": [
+    {
+      "filters": [
+        {
+          "fieldName": "loc.addr.country",
+          "operator": "eq",
+          "value": "USA",
+        },
+      ],
+    },
+  ],
+}
+`;
+
+exports[`subscription filters a single group an and combines its members 1`] = `
+{
+  "filterGroup": [
+    {
+      "filters": [
+        {
+          "fieldName": "a",
+          "operator": "eq",
+          "value": 1,
+        },
+        {
+          "fieldName": "b",
+          "operator": "eq",
+          "value": 2,
+        },
+      ],
+    },
+  ],
+}
+`;
+
+exports[`subscription filters a single group one operator on one field 1`] = `
+{
+  "filterGroup": [
+    {
+      "filters": [
+        {
+          "fieldName": "a",
+          "operator": "eq",
+          "value": 1,
+        },
+      ],
+    },
+  ],
+}
+`;
+
+exports[`subscription filters a single group two fields are combined 1`] = `
+{
+  "filterGroup": [
+    {
+      "filters": [
+        {
+          "fieldName": "a",
+          "operator": "eq",
+          "value": 1,
+        },
+        {
+          "fieldName": "b",
+          "operator": "eq",
+          "value": 2,
+        },
+      ],
+    },
+  ],
+}
+`;
+
+exports[`subscription filters alternatives multiply the groups out an or nested in an and 1`] = `
+{
+  "filterGroup": [
+    {
+      "filters": [
+        {
+          "fieldName": "a",
+          "operator": "eq",
+          "value": 1,
+        },
+        {
+          "fieldName": "b",
+          "operator": "eq",
+          "value": 2,
+        },
+      ],
+    },
+    {
+      "filters": [
+        {
+          "fieldName": "a",
+          "operator": "eq",
+          "value": 1,
+        },
+        {
+          "fieldName": "c",
+          "operator": "eq",
+          "value": 3,
+        },
+      ],
+    },
+  ],
+}
+`;
+
+exports[`subscription filters alternatives multiply the groups out an or splits into a group per member 1`] = `
+{
+  "filterGroup": [
+    {
+      "filters": [
+        {
+          "fieldName": "a",
+          "operator": "eq",
+          "value": 1,
+        },
+      ],
+    },
+    {
+      "filters": [
+        {
+          "fieldName": "b",
+          "operator": "eq",
+          "value": 2,
+        },
+      ],
+    },
+  ],
+}
+`;
+
+exports[`subscription filters alternatives multiply the groups out operators and groups together 1`] = `
+{
+  "filterGroup": [
+    {
+      "filters": [
+        {
+          "fieldName": "percentageUp",
+          "operator": "lte",
+          "value": 50,
+        },
+        {
+          "fieldName": "title",
+          "operator": "ne",
+          "value": "Book1",
+        },
+        {
+          "fieldName": "downvotes",
+          "operator": "gt",
+          "value": 2000,
+        },
+        {
+          "fieldName": "author",
+          "operator": "eq",
+          "value": "Admin",
+        },
+      ],
+    },
+    {
+      "filters": [
+        {
+          "fieldName": "percentageUp",
+          "operator": "lte",
+          "value": 50,
+        },
+        {
+          "fieldName": "title",
+          "operator": "ne",
+          "value": "Book1",
+        },
+        {
+          "fieldName": "downvotes",
+          "operator": "gt",
+          "value": 2000,
+        },
+        {
+          "fieldName": "isPublished",
+          "operator": "eq",
+          "value": false,
+        },
+      ],
+    },
+    {
+      "filters": [
+        {
+          "fieldName": "percentageUp",
+          "operator": "gte",
+          "value": 20,
+        },
+        {
+          "fieldName": "title",
+          "operator": "ne",
+          "value": "Book1",
+        },
+        {
+          "fieldName": "downvotes",
+          "operator": "gt",
+          "value": 2000,
+        },
+        {
+          "fieldName": "author",
+          "operator": "eq",
+          "value": "Admin",
+        },
+      ],
+    },
+    {
+      "filters": [
+        {
+          "fieldName": "percentageUp",
+          "operator": "gte",
+          "value": 20,
+        },
+        {
+          "fieldName": "title",
+          "operator": "ne",
+          "value": "Book1",
+        },
+        {
+          "fieldName": "downvotes",
+          "operator": "gt",
+          "value": 2000,
+        },
+        {
+          "fieldName": "isPublished",
+          "operator": "eq",
+          "value": false,
+        },
+      ],
+    },
+  ],
+}
+`;
+
+exports[`subscription filters alternatives multiply the groups out two operators on one field 1`] = `
+{
+  "filterGroup": [
+    {
+      "filters": [
+        {
+          "fieldName": "a",
+          "operator": "eq",
+          "value": 1,
+        },
+      ],
+    },
+    {
+      "filters": [
+        {
+          "fieldName": "a",
+          "operator": "ne",
+          "value": 2,
+        },
+      ],
+    },
+  ],
+}
+`;
+
+exports[`subscription filters filters that cannot be read a JSON string 1`] = `null`;
+
+exports[`subscription filters filters that cannot be read an array 1`] = `null`;
+
+exports[`subscription filters filters that cannot be read no filter at all 1`] = `null`;
+
+exports[`subscription filters filters that cannot be read null 1`] = `null`;
+
+exports[`subscription filters filters that produce no group a field with no operator 1`] = `
+{
+  "filterGroup": [],
+}
+`;
+
+exports[`subscription filters filters that produce no group an empty and 1`] = `
+{
+  "filterGroup": [],
+}
+`;
+
+exports[`subscription filters filters that produce no group an empty filter 1`] = `
+{
+  "filterGroup": [],
+}
+`;
+
+exports[`subscription filters ignored fields drop a field 1`] = `
+{
+  "filterGroup": [
+    {
+      "filters": [
+        {
+          "fieldName": "b",
+          "operator": "eq",
+          "value": 2,
+        },
+      ],
+    },
+  ],
+}
+`;
+
+exports[`subscription filters ignored fields drop a field nested in an and 1`] = `
+{
+  "filterGroup": [
+    {
+      "filters": [
+        {
+          "fieldName": "a",
+          "operator": "eq",
+          "value": 1,
+        },
+      ],
+    },
+  ],
+}
+`;
+
+exports[`subscription filters operators are carried through as written a boolean value 1`] = `
+{
+  "filterGroup": [
+    {
+      "filters": [
+        {
+          "fieldName": "a",
+          "operator": "eq",
+          "value": false,
+        },
+      ],
+    },
+  ],
+}
+`;
+
+exports[`subscription filters operators are carried through as written an unknown operator 1`] = `
+{
+  "filterGroup": [
+    {
+      "filters": [
+        {
+          "fieldName": "a",
+          "operator": "bogus",
+          "value": 1,
+        },
+      ],
+    },
+  ],
+}
+`;
+
+exports[`subscription filters operators are carried through as written between 1`] = `
+{
+  "filterGroup": [
+    {
+      "filters": [
+        {
+          "fieldName": "a",
+          "operator": "between",
+          "value": [
+            1,
+            9,
+          ],
+        },
+      ],
+    },
+  ],
+}
+`;
+
+exports[`subscription filters operators are carried through as written containsAny 1`] = `
+{
+  "filterGroup": [
+    {
+      "filters": [
+        {
+          "fieldName": "a",
+          "operator": "containsAny",
+          "value": [
+            "x",
+            "y",
+          ],
+        },
+      ],
+    },
+  ],
+}
+`;
+
+exports[`subscription filters operators are carried through as written membership 1`] = `
+{
+  "filterGroup": [
+    {
+      "filters": [
+        {
+          "fieldName": "a",
+          "operator": "in",
+          "value": [
+            1,
+            2,
+          ],
+        },
+        {
+          "fieldName": "b",
+          "operator": "notIn",
+          "value": [
+            "x",
+          ],
+        },
+      ],
+    },
+  ],
+}
+`;
+
+exports[`subscription filters operators are carried through as written not is treated as a field 1`] = `
+{
+  "filterGroup": [
+    {
+      "filters": [
+        {
+          "fieldName": "not",
+          "operator": "a",
+          "value": {
+            "eq": 1,
+          },
+        },
+      ],
+    },
+  ],
+}
+`;
+
+exports[`subscription filters operators are carried through as written the comparisons 1`] = `
+{
+  "filterGroup": [
+    {
+      "filters": [
+        {
+          "fieldName": "a",
+          "operator": "le",
+          "value": 1,
+        },
+        {
+          "fieldName": "b",
+          "operator": "lt",
+          "value": 2,
+        },
+        {
+          "fieldName": "c",
+          "operator": "ge",
+          "value": 3,
+        },
+        {
+          "fieldName": "d",
+          "operator": "gt",
+          "value": 4,
+        },
+      ],
+    },
+  ],
+}
+`;
+
+exports[`subscription filters operators are carried through as written the string operators 1`] = `
+{
+  "filterGroup": [
+    {
+      "filters": [
+        {
+          "fieldName": "a",
+          "operator": "contains",
+          "value": "x",
+        },
+        {
+          "fieldName": "b",
+          "operator": "notContains",
+          "value": "y",
+        },
+        {
+          "fieldName": "c",
+          "operator": "beginsWith",
+          "value": "z",
+        },
+      ],
+    },
+  ],
+}
+`;
+
+exports[`subscription filters rules are added as alternatives 1`] = `
+{
+  "filterGroup": [
+    {
+      "filters": [
+        {
+          "fieldName": "a",
+          "operator": "eq",
+          "value": 1,
+        },
+        {
+          "fieldName": "r1",
+          "operator": "gte",
+          "value": 250,
+        },
+      ],
+    },
+    {
+      "filters": [
+        {
+          "fieldName": "a",
+          "operator": "eq",
+          "value": 1,
+        },
+        {
+          "fieldName": "r2",
+          "operator": "eq",
+          "value": "p",
+        },
+      ],
+    },
+  ],
+}
+`;
+
+exports[`subscription filters rules on their own 1`] = `
+{
+  "filterGroup": [
+    {
+      "filters": [
+        {
+          "fieldName": "r1",
+          "operator": "eq",
+          "value": 1,
+        },
+      ],
+    },
+  ],
+}
+`;
