@@ -1,0 +1,992 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`DynamoDB expression transforms Amplify model operations a list filter combining a prefix and a range 1`] = `
+{
+  "expression": "((begins_with(#content,:or_0_content_beginsWith)) OR (#id BETWEEN :or_1_id_between_start AND :or_1_id_between_end))",
+  "expressionNames": {
+    "#content": "content",
+    "#id": "id",
+  },
+  "expressionValues": {
+    ":or_0_content_beginsWith": {
+      "S": "a",
+    },
+    ":or_1_id_between_end": {
+      "S": "9",
+    },
+    ":or_1_id_between_start": {
+      "S": "1",
+    },
+  },
+}
+`;
+
+exports[`DynamoDB expression transforms Amplify model operations a list filter combining content and a flag 1`] = `
+{
+  "expression": "((contains(#content,:and_0_content_contains)) AND (#done = :and_1_done_eq))",
+  "expressionNames": {
+    "#content": "content",
+    "#done": "done",
+  },
+  "expressionValues": {
+    ":and_0_content_contains": {
+      "S": "a",
+    },
+    ":and_1_done_eq": {
+      "BOOL": true,
+    },
+  },
+}
+`;
+
+exports[`DynamoDB expression transforms Amplify model operations a list filter matching content 1`] = `
+{
+  "expression": "(contains(#content,:content_contains))",
+  "expressionNames": {
+    "#content": "content",
+  },
+  "expressionValues": {
+    ":content_contains": {
+      "S": "foo",
+    },
+  },
+}
+`;
+
+exports[`DynamoDB expression transforms Amplify model operations the condition guarding a create 1`] = `
+{
+  "expression": "(attribute_not_exists(#id))",
+  "expressionNames": {
+    "#id": "id",
+  },
+  "expressionValues": {},
+}
+`;
+
+exports[`DynamoDB expression transforms Amplify model operations the condition guarding an update 1`] = `
+{
+  "expression": "((attribute_exists(#id)) AND (#_version = :and_1__version_eq))",
+  "expressionNames": {
+    "#_version": "_version",
+    "#id": "id",
+  },
+  "expressionValues": {
+    ":and_1__version_eq": {
+      "N": 1,
+    },
+  },
+}
+`;
+
+exports[`DynamoDB expression transforms attributeExists false asks whether it does not 1`] = `
+{
+  "expression": "(attribute_not_exists(#v))",
+  "expressionNames": {
+    "#v": "v",
+  },
+  "expressionValues": {},
+}
+`;
+
+exports[`DynamoDB expression transforms attributeExists true asks whether the attribute exists 1`] = `
+{
+  "expression": "(attribute_exists(#v))",
+  "expressionNames": {
+    "#v": "v",
+  },
+  "expressionValues": {},
+}
+`;
+
+exports[`DynamoDB expression transforms attributeType every friendly type name becomes its DynamoDB type code 1`] = `
+{
+  "expression": "(attribute_type(#a,:a_attributeType)) AND (attribute_type(#b,:b_attributeType)) AND (attribute_type(#c,:c_attributeType)) AND (attribute_type(#d,:d_attributeType)) AND (attribute_type(#e,:e_attributeType)) AND (attribute_type(#f,:f_attributeType)) AND (attribute_type(#g,:g_attributeType)) AND (attribute_type(#h,:h_attributeType)) AND (attribute_type(#i,:i_attributeType)) AND (attribute_type(#j,:j_attributeType))",
+  "expressionNames": {
+    "#a": "a",
+    "#b": "b",
+    "#c": "c",
+    "#d": "d",
+    "#e": "e",
+    "#f": "f",
+    "#g": "g",
+    "#h": "h",
+    "#i": "i",
+    "#j": "j",
+  },
+  "expressionValues": {
+    ":a_attributeType": {
+      "S": "NULL",
+    },
+    ":b_attributeType": {
+      "S": "S",
+    },
+    ":c_attributeType": {
+      "S": "SS",
+    },
+    ":d_attributeType": {
+      "S": "N",
+    },
+    ":e_attributeType": {
+      "S": "NS",
+    },
+    ":f_attributeType": {
+      "S": "B",
+    },
+    ":g_attributeType": {
+      "S": "BS",
+    },
+    ":h_attributeType": {
+      "S": "BOOL",
+    },
+    ":i_attributeType": {
+      "S": "L",
+    },
+    ":j_attributeType": {
+      "S": "M",
+    },
+  },
+}
+`;
+
+exports[`DynamoDB expression transforms between ignores anything past the second bound 1`] = `
+{
+  "expression": "(#v BETWEEN :v_between_start AND :v_between_end)",
+  "expressionNames": {
+    "#v": "v",
+  },
+  "expressionValues": {
+    ":v_between_end": {
+      "S": "9",
+    },
+    ":v_between_start": {
+      "S": "1",
+    },
+  },
+}
+`;
+
+exports[`DynamoDB expression transforms between names its bounds start and end 1`] = `
+{
+  "expression": "(#v BETWEEN :v_between_start AND :v_between_end)",
+  "expressionNames": {
+    "#v": "v",
+  },
+  "expressionValues": {
+    ":v_between_end": {
+      "S": "9",
+    },
+    ":v_between_start": {
+      "S": "1",
+    },
+  },
+}
+`;
+
+exports[`DynamoDB expression transforms between numeric bounds 1`] = `
+{
+  "expression": "(#v BETWEEN :v_between_start AND :v_between_end)",
+  "expressionNames": {
+    "#v": "v",
+  },
+  "expressionValues": {
+    ":v_between_end": {
+      "N": 9,
+    },
+    ":v_between_start": {
+      "N": 1,
+    },
+  },
+}
+`;
+
+exports[`DynamoDB expression transforms both entry points render a filter the same way a comparison as a condition 1`] = `
+{
+  "expression": "(#content = :content_eq)",
+  "expressionNames": {
+    "#content": "content",
+  },
+  "expressionValues": {
+    ":content_eq": {
+      "S": "x",
+    },
+  },
+}
+`;
+
+exports[`DynamoDB expression transforms both entry points render a filter the same way a comparison as a filter 1`] = `
+{
+  "expression": "(#content = :content_eq)",
+  "expressionNames": {
+    "#content": "content",
+  },
+  "expressionValues": {
+    ":content_eq": {
+      "S": "x",
+    },
+  },
+}
+`;
+
+exports[`DynamoDB expression transforms both entry points render a filter the same way a group of two members as a condition 1`] = `
+{
+  "expression": "((#content = :and_0_content_eq) AND (attribute_exists(#version)))",
+  "expressionNames": {
+    "#content": "content",
+    "#version": "version",
+  },
+  "expressionValues": {
+    ":and_0_content_eq": {
+      "S": "x",
+    },
+  },
+}
+`;
+
+exports[`DynamoDB expression transforms both entry points render a filter the same way a group of two members as a filter 1`] = `
+{
+  "expression": "((#content = :and_0_content_eq) AND (attribute_exists(#version)))",
+  "expressionNames": {
+    "#content": "content",
+    "#version": "version",
+  },
+  "expressionValues": {
+    ":and_0_content_eq": {
+      "S": "x",
+    },
+  },
+}
+`;
+
+exports[`DynamoDB expression transforms both entry points render a filter the same way a negated range as a condition 1`] = `
+{
+  "expression": "(NOT (#id BETWEEN :not_id_between_start AND :not_id_between_end))",
+  "expressionNames": {
+    "#id": "id",
+  },
+  "expressionValues": {
+    ":not_id_between_end": {
+      "S": "9",
+    },
+    ":not_id_between_start": {
+      "S": "1",
+    },
+  },
+}
+`;
+
+exports[`DynamoDB expression transforms both entry points render a filter the same way a negated range as a filter 1`] = `
+{
+  "expression": "(NOT (#id BETWEEN :not_id_between_start AND :not_id_between_end))",
+  "expressionNames": {
+    "#id": "id",
+  },
+  "expressionValues": {
+    ":not_id_between_end": {
+      "S": "9",
+    },
+    ":not_id_between_start": {
+      "S": "1",
+    },
+  },
+}
+`;
+
+exports[`DynamoDB expression transforms comparison operators eq 1`] = `
+{
+  "expression": "(#v = :v_eq)",
+  "expressionNames": {
+    "#v": "v",
+  },
+  "expressionValues": {
+    ":v_eq": {
+      "S": "x",
+    },
+  },
+}
+`;
+
+exports[`DynamoDB expression transforms comparison operators ge 1`] = `
+{
+  "expression": "(#v >= :v_ge)",
+  "expressionNames": {
+    "#v": "v",
+  },
+  "expressionValues": {
+    ":v_ge": {
+      "S": "x",
+    },
+  },
+}
+`;
+
+exports[`DynamoDB expression transforms comparison operators gt 1`] = `
+{
+  "expression": "(#v > :v_gt)",
+  "expressionNames": {
+    "#v": "v",
+  },
+  "expressionValues": {
+    ":v_gt": {
+      "S": "x",
+    },
+  },
+}
+`;
+
+exports[`DynamoDB expression transforms comparison operators le 1`] = `
+{
+  "expression": "(#v <= :v_le)",
+  "expressionNames": {
+    "#v": "v",
+  },
+  "expressionValues": {
+    ":v_le": {
+      "S": "x",
+    },
+  },
+}
+`;
+
+exports[`DynamoDB expression transforms comparison operators lt 1`] = `
+{
+  "expression": "(#v < :v_lt)",
+  "expressionNames": {
+    "#v": "v",
+  },
+  "expressionValues": {
+    ":v_lt": {
+      "S": "x",
+    },
+  },
+}
+`;
+
+exports[`DynamoDB expression transforms comparison operators ne 1`] = `
+{
+  "expression": "(#v <> :v_ne)",
+  "expressionNames": {
+    "#v": "v",
+  },
+  "expressionValues": {
+    ":v_ne": {
+      "S": "x",
+    },
+  },
+}
+`;
+
+exports[`DynamoDB expression transforms filters that cannot be rendered a field holding a value instead of operators 1`] = `null`;
+
+exports[`DynamoDB expression transforms filters that cannot be rendered a field nested in a field 1`] = `null`;
+
+exports[`DynamoDB expression transforms filters that cannot be rendered a group holding a null member 1`] = `null`;
+
+exports[`DynamoDB expression transforms filters that cannot be rendered a list of values that is not a list 1`] = `null`;
+
+exports[`DynamoDB expression transforms filters that cannot be rendered a not given a list 1`] = `null`;
+
+exports[`DynamoDB expression transforms filters that cannot be rendered a range that is not a list 1`] = `null`;
+
+exports[`DynamoDB expression transforms filters that cannot be rendered a range with a single bound 1`] = `null`;
+
+exports[`DynamoDB expression transforms filters that cannot be rendered a string 1`] = `null`;
+
+exports[`DynamoDB expression transforms filters that cannot be rendered an and given a map instead of a list 1`] = `null`;
+
+exports[`DynamoDB expression transforms filters that cannot be rendered an and given null 1`] = `null`;
+
+exports[`DynamoDB expression transforms filters that cannot be rendered an array 1`] = `null`;
+
+exports[`DynamoDB expression transforms filters that cannot be rendered an unknown operator 1`] = `null`;
+
+exports[`DynamoDB expression transforms filters that cannot be rendered attributeExists given something other than a boolean 1`] = `null`;
+
+exports[`DynamoDB expression transforms filters that cannot be rendered attributeType given a type code instead of a type name 1`] = `null`;
+
+exports[`DynamoDB expression transforms filters that cannot be rendered attributeType given an unknown name 1`] = `null`;
+
+exports[`DynamoDB expression transforms filters that cannot be rendered no filter at all 1`] = `null`;
+
+exports[`DynamoDB expression transforms filters that cannot be rendered null 1`] = `null`;
+
+exports[`DynamoDB expression transforms filters that cannot be rendered size given a value instead of operators 1`] = `null`;
+
+exports[`DynamoDB expression transforms filters that render no expression a field without operators keeps its name 1`] = `
+{
+  "expression": "",
+  "expressionNames": {
+    "#v": "v",
+  },
+  "expressionValues": {},
+}
+`;
+
+exports[`DynamoDB expression transforms filters that render no expression a size without operators keeps the name of its field 1`] = `
+{
+  "expression": "",
+  "expressionNames": {
+    "#v": "v",
+  },
+  "expressionValues": {},
+}
+`;
+
+exports[`DynamoDB expression transforms filters that render no expression an empty field beside a comparison leaves a dangling joiner 1`] = `
+{
+  "expression": "(#a = :a_eq) AND ",
+  "expressionNames": {
+    "#a": "a",
+    "#b": "b",
+  },
+  "expressionValues": {
+    ":a_eq": {
+      "N": 1,
+    },
+  },
+}
+`;
+
+exports[`DynamoDB expression transforms filters that render no expression an empty filter 1`] = `
+{
+  "expression": "",
+  "expressionNames": {},
+  "expressionValues": {},
+}
+`;
+
+exports[`DynamoDB expression transforms filters that render no expression an empty group 1`] = `
+{
+  "expression": "",
+  "expressionNames": {},
+  "expressionValues": {},
+}
+`;
+
+exports[`DynamoDB expression transforms filters that render no expression an empty list of values 1`] = `
+{
+  "expression": "(null)",
+  "expressionNames": {
+    "#v": "v",
+  },
+  "expressionValues": {},
+}
+`;
+
+exports[`DynamoDB expression transforms filters that render no expression an empty member of a group leaves a dangling joiner 1`] = `
+{
+  "expression": "((#a = :and_0_a_eq) AND )",
+  "expressionNames": {
+    "#a": "a",
+  },
+  "expressionValues": {
+    ":and_0_a_eq": {
+      "N": 1,
+    },
+  },
+}
+`;
+
+exports[`DynamoDB expression transforms filters that render no expression not of an empty filter 1`] = `
+{
+  "expression": "(NOT )",
+  "expressionNames": {},
+  "expressionValues": {},
+}
+`;
+
+exports[`DynamoDB expression transforms function operators beginsWith 1`] = `
+{
+  "expression": "(begins_with(#v,:v_beginsWith))",
+  "expressionNames": {
+    "#v": "v",
+  },
+  "expressionValues": {
+    ":v_beginsWith": {
+      "S": "x",
+    },
+  },
+}
+`;
+
+exports[`DynamoDB expression transforms function operators contains leaves no space after the comma 1`] = `
+{
+  "expression": "(contains(#v,:v_contains))",
+  "expressionNames": {
+    "#v": "v",
+  },
+  "expressionValues": {
+    ":v_contains": {
+      "S": "x",
+    },
+  },
+}
+`;
+
+exports[`DynamoDB expression transforms function operators notContains 1`] = `
+{
+  "expression": "(NOT contains(#v,:v_notContains))",
+  "expressionNames": {
+    "#v": "v",
+  },
+  "expressionValues": {
+    ":v_notContains": {
+      "S": "x",
+    },
+  },
+}
+`;
+
+exports[`DynamoDB expression transforms grouping a field beside a group 1`] = `
+{
+  "expression": "(#a = :a_eq) AND (#b = :and_0_b_eq)",
+  "expressionNames": {
+    "#a": "a",
+    "#b": "b",
+  },
+  "expressionValues": {
+    ":a_eq": {
+      "N": 1,
+    },
+    ":and_0_b_eq": {
+      "N": 2,
+    },
+  },
+}
+`;
+
+exports[`DynamoDB expression transforms grouping a field carrying two operators is wrapped 1`] = `
+{
+  "expression": "((#v >= :v_ge) AND (#v <= :v_le))",
+  "expressionNames": {
+    "#v": "v",
+  },
+  "expressionValues": {
+    ":v_ge": {
+      "N": 1,
+    },
+    ":v_le": {
+      "N": 5,
+    },
+  },
+}
+`;
+
+exports[`DynamoDB expression transforms grouping a field name is used verbatim, dots included 1`] = `
+{
+  "expression": "(#a.b = :a.b_eq)",
+  "expressionNames": {
+    "#a.b": "a.b",
+  },
+  "expressionValues": {
+    ":a.b_eq": {
+      "N": 1,
+    },
+  },
+}
+`;
+
+exports[`DynamoDB expression transforms grouping an and inside an or 1`] = `
+{
+  "expression": "(((#a = :or_0_and_0_a_eq) AND (#b = :or_0_and_1_b_eq)) OR (#c = :or_1_c_eq))",
+  "expressionNames": {
+    "#a": "a",
+    "#b": "b",
+    "#c": "c",
+  },
+  "expressionValues": {
+    ":or_0_and_0_a_eq": {
+      "N": 1,
+    },
+    ":or_0_and_1_b_eq": {
+      "N": 2,
+    },
+    ":or_1_c_eq": {
+      "N": 3,
+    },
+  },
+}
+`;
+
+exports[`DynamoDB expression transforms grouping an and of one member is not wrapped 1`] = `
+{
+  "expression": "(#a = :and_0_a_eq)",
+  "expressionNames": {
+    "#a": "a",
+  },
+  "expressionValues": {
+    ":and_0_a_eq": {
+      "N": 1,
+    },
+  },
+}
+`;
+
+exports[`DynamoDB expression transforms grouping an and of two members is wrapped 1`] = `
+{
+  "expression": "((#a = :and_0_a_eq) AND (#b = :and_1_b_eq))",
+  "expressionNames": {
+    "#a": "a",
+    "#b": "b",
+  },
+  "expressionValues": {
+    ":and_0_a_eq": {
+      "N": 1,
+    },
+    ":and_1_b_eq": {
+      "N": 2,
+    },
+  },
+}
+`;
+
+exports[`DynamoDB expression transforms grouping an or inside an and 1`] = `
+{
+  "expression": "(((#a = :and_0_or_0_a_eq) OR (#b = :and_0_or_1_b_eq)) AND (#c = :and_1_c_eq))",
+  "expressionNames": {
+    "#a": "a",
+    "#b": "b",
+    "#c": "c",
+  },
+  "expressionValues": {
+    ":and_0_or_0_a_eq": {
+      "N": 1,
+    },
+    ":and_0_or_1_b_eq": {
+      "N": 2,
+    },
+    ":and_1_c_eq": {
+      "N": 3,
+    },
+  },
+}
+`;
+
+exports[`DynamoDB expression transforms grouping an or of two members 1`] = `
+{
+  "expression": "((#a = :or_0_a_eq) OR (#b = :or_1_b_eq))",
+  "expressionNames": {
+    "#a": "a",
+    "#b": "b",
+  },
+  "expressionValues": {
+    ":or_0_a_eq": {
+      "N": 1,
+    },
+    ":or_1_b_eq": {
+      "N": 2,
+    },
+  },
+}
+`;
+
+exports[`DynamoDB expression transforms grouping not inside an and 1`] = `
+{
+  "expression": "((NOT (#a = :and_0_not_a_eq)) AND (#b = :and_1_b_eq))",
+  "expressionNames": {
+    "#a": "a",
+    "#b": "b",
+  },
+  "expressionValues": {
+    ":and_0_not_a_eq": {
+      "N": 1,
+    },
+    ":and_1_b_eq": {
+      "N": 2,
+    },
+  },
+}
+`;
+
+exports[`DynamoDB expression transforms grouping not of a group 1`] = `
+{
+  "expression": "(NOT ((#a = :not_and_0_a_eq) AND (#b = :not_and_1_b_eq)))",
+  "expressionNames": {
+    "#a": "a",
+    "#b": "b",
+  },
+  "expressionValues": {
+    ":not_and_0_a_eq": {
+      "N": 1,
+    },
+    ":not_and_1_b_eq": {
+      "N": 2,
+    },
+  },
+}
+`;
+
+exports[`DynamoDB expression transforms grouping not of a not 1`] = `
+{
+  "expression": "(NOT (NOT (#a = :not_not_a_eq)))",
+  "expressionNames": {
+    "#a": "a",
+  },
+  "expressionValues": {
+    ":not_not_a_eq": {
+      "N": 1,
+    },
+  },
+}
+`;
+
+exports[`DynamoDB expression transforms grouping not of a single comparison 1`] = `
+{
+  "expression": "(NOT (#a = :not_a_eq))",
+  "expressionNames": {
+    "#a": "a",
+  },
+  "expressionValues": {
+    ":not_a_eq": {
+      "N": 1,
+    },
+  },
+}
+`;
+
+exports[`DynamoDB expression transforms grouping two fields at the top level are joined without being wrapped 1`] = `
+{
+  "expression": "(#a = :a_eq) AND (#b = :b_eq)",
+  "expressionNames": {
+    "#a": "a",
+    "#b": "b",
+  },
+  "expressionValues": {
+    ":a_eq": {
+      "N": 1,
+    },
+    ":b_eq": {
+      "N": 2,
+    },
+  },
+}
+`;
+
+exports[`DynamoDB expression transforms grouping value names carry every level of the nesting 1`] = `
+{
+  "expression": "(#a = :and_0_or_0_and_0_a_eq)",
+  "expressionNames": {
+    "#a": "a",
+  },
+  "expressionValues": {
+    ":and_0_or_0_and_0_a_eq": {
+      "N": 1,
+    },
+  },
+}
+`;
+
+exports[`DynamoDB expression transforms in a single value 1`] = `
+{
+  "expression": "(#v IN (:v_in_0))",
+  "expressionNames": {
+    "#v": "v",
+  },
+  "expressionValues": {
+    ":v_in_0": {
+      "S": "a",
+    },
+  },
+}
+`;
+
+exports[`DynamoDB expression transforms in separates its values with a comma and a space 1`] = `
+{
+  "expression": "(#v IN (:v_in_0, :v_in_1))",
+  "expressionNames": {
+    "#v": "v",
+  },
+  "expressionValues": {
+    ":v_in_0": {
+      "S": "a",
+    },
+    ":v_in_1": {
+      "S": "b",
+    },
+  },
+}
+`;
+
+exports[`DynamoDB expression transforms size combines with a function 1`] = `
+{
+  "expression": "(contains(size(#v),:v_size_contains))",
+  "expressionNames": {
+    "#v": "v",
+  },
+  "expressionValues": {
+    ":v_size_contains": {
+      "S": "x",
+    },
+  },
+}
+`;
+
+exports[`DynamoDB expression transforms size combines with a range 1`] = `
+{
+  "expression": "(size(#v) BETWEEN :v_size_between_start AND :v_size_between_end)",
+  "expressionNames": {
+    "#v": "v",
+  },
+  "expressionValues": {
+    ":v_size_between_end": {
+      "N": 3,
+    },
+    ":v_size_between_start": {
+      "N": 1,
+    },
+  },
+}
+`;
+
+exports[`DynamoDB expression transforms size combines with attributeExists 1`] = `
+{
+  "expression": "(attribute_exists(size(#v)))",
+  "expressionNames": {
+    "#v": "v",
+  },
+  "expressionValues": {},
+}
+`;
+
+exports[`DynamoDB expression transforms size compares the size of the attribute 1`] = `
+{
+  "expression": "(size(#v) > :v_size_gt)",
+  "expressionNames": {
+    "#v": "v",
+  },
+  "expressionValues": {
+    ":v_size_gt": {
+      "N": 2,
+    },
+  },
+}
+`;
+
+exports[`DynamoDB expression transforms size nesting size names the value again without nesting the call 1`] = `
+{
+  "expression": "(size(#v) > :v_size_size_gt)",
+  "expressionNames": {
+    "#v": "v",
+  },
+  "expressionValues": {
+    ":v_size_size_gt": {
+      "N": 1,
+    },
+  },
+}
+`;
+
+exports[`DynamoDB expression transforms size two comparisons on one size 1`] = `
+{
+  "expression": "((size(#v) > :v_size_gt) AND (size(#v) < :v_size_lt))",
+  "expressionNames": {
+    "#v": "v",
+  },
+  "expressionValues": {
+    ":v_size_gt": {
+      "N": 2,
+    },
+    ":v_size_lt": {
+      "N": 5,
+    },
+  },
+}
+`;
+
+exports[`DynamoDB expression transforms the shape of the result a condition expression is a JSON string 1`] = `"{"expression":"(attribute_not_exists(#id))","expressionNames":{"#id":"id"},"expressionValues":{}}"`;
+
+exports[`DynamoDB expression transforms the shape of the result a filter expression is a JSON string 1`] = `"{"expression":"(contains(#content,:content_contains))","expressionNames":{"#content":"content"},"expressionValues":{":content_contains":{"S":"foo"}}}"`;
+
+exports[`DynamoDB expression transforms the type of an operand a boolean 1`] = `
+{
+  "expression": "(#v = :v_eq)",
+  "expressionNames": {
+    "#v": "v",
+  },
+  "expressionValues": {
+    ":v_eq": {
+      "BOOL": true,
+    },
+  },
+}
+`;
+
+exports[`DynamoDB expression transforms the type of an operand a fractional number 1`] = `
+{
+  "expression": "(#v = :v_eq)",
+  "expressionNames": {
+    "#v": "v",
+  },
+  "expressionValues": {
+    ":v_eq": {
+      "N": 1.5,
+    },
+  },
+}
+`;
+
+exports[`DynamoDB expression transforms the type of an operand a list 1`] = `
+{
+  "expression": "(#v = :v_eq)",
+  "expressionNames": {
+    "#v": "v",
+  },
+  "expressionValues": {
+    ":v_eq": {
+      "L": [
+        {
+          "N": 1,
+        },
+        {
+          "N": 2,
+        },
+      ],
+    },
+  },
+}
+`;
+
+exports[`DynamoDB expression transforms the type of an operand a number keeps its numeric type 1`] = `
+{
+  "expression": "(#v = :v_eq)",
+  "expressionNames": {
+    "#v": "v",
+  },
+  "expressionValues": {
+    ":v_eq": {
+      "N": 10,
+    },
+  },
+}
+`;
+
+exports[`DynamoDB expression transforms the type of an operand an object 1`] = `
+{
+  "expression": "(#v = :v_eq)",
+  "expressionNames": {
+    "#v": "v",
+  },
+  "expressionValues": {
+    ":v_eq": {
+      "M": {
+        "a": {
+          "N": 1,
+        },
+      },
+    },
+  },
+}
+`;
+
+exports[`DynamoDB expression transforms the type of an operand null 1`] = `
+{
+  "expression": "(#v = :v_eq)",
+  "expressionNames": {
+    "#v": "v",
+  },
+  "expressionValues": {
+    ":v_eq": {
+      "NULL": null,
+    },
+  },
+}
+`;

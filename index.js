@@ -4,6 +4,9 @@ import { AppSyncUserError } from './errors.js'
 
 export const dynamodbUtils = {
   toDynamoDB: function(value) {
+    if (value === null) {
+      return this.toNull();
+    }
     if (typeof (value) === "number") {
       return this.toNumber(value);
     } else if (typeof (value) === "string") {
@@ -115,8 +118,6 @@ export const dynamodbUtils = {
   },
 }
 
-const FILTER_CONTAINS = "contains";
-
 // The strings `util.authType()` returns, see
 // https://docs.aws.amazon.com/appsync/latest/devguide/resolver-util-reference.html
 const AUTH_TYPE_API_KEY = "API Key Authorization";
@@ -220,216 +221,199 @@ export const util = {
     },
   },
   transform: {
-    toDynamoDBFilterExpression: function(value) {
-      const items = Object.entries(value);
-      if (items.length != 1) {
-        throw new Error("invalid structure, should have one entry");
-      }
-
-      const [key, filter] = items[0];
-
-      const filterItems = Object.entries(filter);
-      if (filterItems.length !== 1) {
-        throw new Error("invalid structure, should have one filter expression");
-      }
-
-
-      const [filterType, contents] = filterItems[0];
-      const expressionName = `#${key}`;
-      const expressionValue = `:${key}_${filterType}`;
-
-      let expression;
-      let expressionNames = {};
-      let expressionValues = {};
-      switch (filterType) {
-        case FILTER_CONTAINS:
-          expression = `(contains(${expressionName},${expressionValue}))`;
-          expressionNames[expressionName] = key;
-          expressionValues[expressionValue] = util.dynamodb.toDynamoDB(contents);
-          break;
-        default:
-          throw new Error(`Not implemented for ${filterType}`);
-
-      }
-
-      return JSON.stringify({ expression, expressionNames, expressionValues });
-
+    toDynamoDBFilterExpression: function(filter) {
+      return transformToExpression(filter);
     },
-    toDynamoDBConditionExpression(condition) {
-      const result = generateFilterExpression(condition);
-      return JSON.stringify({
-        expression: result.expressions.join(' ').trim(),
-        expressionNames: result.expressionNames,
-        // upstream is missing this value: https://github.com/aws-amplify/amplify-cli/blob/5cc1b556d8081421dc68ee264dac02d5660ffee7/packages/amplify-appsync-simulator/src/velocity/util/transform/index.ts#L11
-        expressionValues: result.expressionValues,
-      });
+    toDynamoDBConditionExpression: function(condition) {
+      return transformToExpression(condition);
     },
   },
   dynamodb: dynamodbUtils,
   rds: { toJsonObject },
 };
 
-// embedded here because imports don't yet work
-const OPERATOR_MAP = {
-  ne: '<>',
-  eq: '=',
-  lt: '<',
-  le: '<=',
-  gt: '>',
-  ge: '>=',
-  in: 'contains',
+// Both entry points of `util.transform` build a DynamoDB expression out of the same filter object.
+// Every case recorded from AWS produced byte identical output for the two of them, so they share
+// one builder. An attribute is referenced as `#<field>` and a value placeholder is named after the
+// nesting it sits in, the field and the operator, as in `:and_0_content_eq`.
+
+const COMPARISON_OPERATORS = {
+  eq: "=",
+  ne: "<>",
+  lt: "<",
+  le: "<=",
+  gt: ">",
+  ge: ">=",
 };
 
-const FUNCTION_MAP = {
-  contains: 'contains',
-  notContains: 'NOT contains',
-  beginsWith: 'begins_with',
+// rendered as `<function>(<target>,<value>)`, without a space after the comma
+const FUNCTION_OPERATORS = {
+  contains: "contains",
+  notContains: "NOT contains",
+  beginsWith: "begins_with",
 };
 
-export function generateFilterExpression(filter, prefix, parent) {
-  const expr = Object.entries(filter).reduce(
-    (sum, [name, value]) => {
-      let subExpr = {
-        expressions: [],
-        expressionNames: {},
-        expressionValues: {},
-      };
-      const fieldName = createExpressionFieldName(parent);
-      const filedValueName = createExpressionValueName(parent, name, prefix);
+// `attributeType` takes the friendly name of a DynamoDB type rather than the type code itself
+const ATTRIBUTE_TYPE_CODES = {
+  _null: "NULL",
+  string: "S",
+  stringSet: "SS",
+  number: "N",
+  numberSet: "NS",
+  binary: "B",
+  binarySet: "BS",
+  boolean: "BOOL",
+  list: "L",
+  map: "M",
+};
 
-      switch (name) {
-        case 'or':
-        case 'and': {
-          const JOINER = name === 'or' ? 'OR' : 'AND';
-          if (Array.isArray(value)) {
-            subExpr = scopeExpression(
-              value.reduce((expr, subFilter, idx) => {
-                const newExpr = generateFilterExpression(subFilter, [prefix, name, idx].filter((i) => i !== null).join('_'));
-                return merge(expr, newExpr, JOINER);
-              }, subExpr),
-            );
-          } else {
-            subExpr = generateFilterExpression(value, [prefix, name].filter((val) => val !== null).join('_'));
-          }
-          break;
-        }
-        case 'not': {
-          subExpr = scopeExpression(generateFilterExpression(value, [prefix, name].filter((val) => val !== null).join('_')));
-          subExpr.expressions.unshift('NOT');
-          break;
-        }
-        case 'between': {
-          const expr1 = createExpressionValueName(parent, 'between_1', prefix);
-          const expr2 = createExpressionValueName(parent, 'between_2', prefix);
-          const exprName = createExpressionName(parent);
-          const subExprExpr = `${createExpressionFieldName(parent)} BETWEEN ${expr1} AND ${expr2}`;
-          const exprValues = {
-            ...createExpressionValue(parent, 'between_1', value[0], prefix),
-            ...createExpressionValue(parent, 'between_2', value[1], prefix),
-          };
-          subExpr = {
-            expressions: [subExprExpr],
-            expressionNames: exprName,
-            expressionValues: exprValues,
-          };
-          break;
-        }
-        case 'ne':
-        case 'eq':
-        case 'gt':
-        case 'ge':
-        case 'lt':
-        case 'le': {
-          const operator = OPERATOR_MAP[name];
-          subExpr = {
-            expressions: [`(${fieldName} ${operator} ${filedValueName})`],
-            expressionNames: createExpressionName(parent),
-            expressionValues: createExpressionValue(parent, name, value, prefix),
-          };
-          break;
-        }
-        case 'attributeExists': {
-          const existsName = value === true ? 'attribute_exists' : 'attribute_not_exists';
-          subExpr = {
-            expressions: [`(${existsName}(${fieldName}))`],
-            expressionNames: createExpressionName(parent),
-            expressionValues: [],
-          };
-          break;
-        }
-        case 'contains':
-        case 'notContains':
-        case 'beginsWith': {
-          const functionName = FUNCTION_MAP[name];
-          subExpr = {
-            expressions: [`(${functionName}(${fieldName}, ${filedValueName}))`],
-            expressionNames: createExpressionName(parent),
-            expressionValues: createExpressionValue(parent, name, value, prefix),
-          };
-          break;
-        }
-        case 'in': {
-          const operatorName = OPERATOR_MAP[name];
-          subExpr = {
-            expressions: [`(${operatorName}(${filedValueName}, ${fieldName}))`],
-            expressionNames: createExpressionName(parent),
-            expressionValues: createExpressionValue(parent, name, value, prefix),
-          };
-          break;
-        }
-        default:
-          subExpr = scopeExpression(generateFilterExpression(value, prefix, name));
+// A filter AWS cannot turn into an expression, an unknown operator or an operand of the wrong type
+// for its operator, comes back as `null` rather than as an error. The builder throws this to unwind
+// and the entry point turns it back into `null`.
+class InvalidFilter extends Error {}
+
+const isFilterObject = (value) => value !== null && typeof value === "object" && !Array.isArray(value);
+
+const hasOperator = (operators, operator) => Object.hasOwn(operators, operator);
+
+function transformToExpression(filter) {
+  let node;
+  try {
+    node = buildFilter(filter, [], false);
+  } catch (error) {
+    if (error instanceof InvalidFilter) {
+      return null;
+    }
+    throw error;
+  }
+  return JSON.stringify({
+    expression: node.expression,
+    expressionNames: node.expressionNames,
+    expressionValues: node.expressionValues,
+  });
+}
+
+// `wrap` parenthesises a group that holds more than one member. The filter as a whole is never
+// wrapped, every group below it is. Members that render to nothing are joined all the same, which
+// is what leaves a dangling joiner on AWS for a filter such as `{a: {eq: 1}, b: {}}`.
+function joinFilters(nodes, joiner, wrap) {
+  const expression = nodes.map((node) => node.expression).join(` ${joiner} `);
+  return {
+    expression: wrap && nodes.length > 1 ? `(${expression})` : expression,
+    expressionNames: Object.assign({}, ...nodes.map((node) => node.expressionNames)),
+    expressionValues: Object.assign({}, ...nodes.map((node) => node.expressionValues)),
+  };
+}
+
+// `path` is the nesting the value placeholders are named after: the `and`/`or` groups with their
+// index, `not`, then the field and one `size` per level of size nesting.
+function buildFilter(filter, path, wrap) {
+  if (!isFilterObject(filter)) {
+    throw new InvalidFilter();
+  }
+  const nodes = Object.entries(filter).map(([key, value]) => {
+    if (key === "and" || key === "or") {
+      return buildGroup(key, value, path);
+    }
+    if (key === "not") {
+      return buildNegation(value, path);
+    }
+    return buildField(key, value, [...path, key], false);
+  });
+  return joinFilters(nodes, "AND", wrap);
+}
+
+function buildGroup(key, members, path) {
+  // AWS takes the list form only, even though its own types also describe a map
+  if (!Array.isArray(members)) {
+    throw new InvalidFilter();
+  }
+  const nodes = members.map((member, index) => buildFilter(member, [...path, key, index], false));
+  return joinFilters(nodes, key === "or" ? "OR" : "AND", true);
+}
+
+function buildNegation(filter, path) {
+  const node = buildFilter(filter, [...path, "not"], true);
+  return { ...node, expression: `(NOT ${node.expression})` };
+}
+
+function buildField(field, operators, path, sized) {
+  if (!isFilterObject(operators)) {
+    throw new InvalidFilter();
+  }
+  const name = `#${field}`;
+  const target = sized ? `size(${name})` : name;
+  const nodes = Object.entries(operators).map(([operator, operand]) => {
+    if (operator === "size") {
+      // nesting `size` deepens the placeholder but never nests the call itself
+      return buildField(field, operand, [...path, operator], true);
+    }
+    return buildOperator(target, operator, operand, `:${[...path, operator].join("_")}`);
+  });
+  const node = joinFilters(nodes, "AND", true);
+  // a field contributes its name even when it carries no operator at all
+  return { ...node, expressionNames: { [name]: field, ...node.expressionNames } };
+}
+
+function buildOperator(target, operator, operand, value) {
+  const leaf = (expression, expressionValues = {}) => ({
+    expression,
+    expressionNames: {},
+    expressionValues,
+  });
+
+  if (hasOperator(COMPARISON_OPERATORS, operator)) {
+    return leaf(`(${target} ${COMPARISON_OPERATORS[operator]} ${value})`, {
+      [value]: dynamodbUtils.toDynamoDB(operand),
+    });
+  }
+  if (hasOperator(FUNCTION_OPERATORS, operator)) {
+    return leaf(`(${FUNCTION_OPERATORS[operator]}(${target},${value}))`, {
+      [value]: dynamodbUtils.toDynamoDB(operand),
+    });
+  }
+
+  switch (operator) {
+    case "between": {
+      // anything the range does not need is ignored, but it does need both ends
+      if (!Array.isArray(operand) || operand.length < 2) {
+        throw new InvalidFilter();
       }
-      return merge(sum, subExpr);
-    },
-    {
-      expressions: [],
-      expressionNames: {},
-      expressionValues: {},
-    },
-  );
-
-  return expr;
-}
-
-function merge(expr1, expr2, joinCondition = 'AND') {
-  if (!expr2.expressions.length) {
-    return expr1;
+      return leaf(`(${target} BETWEEN ${value}_start AND ${value}_end)`, {
+        [`${value}_start`]: dynamodbUtils.toDynamoDB(operand[0]),
+        [`${value}_end`]: dynamodbUtils.toDynamoDB(operand[1]),
+      });
+    }
+    case "in": {
+      if (!Array.isArray(operand)) {
+        throw new InvalidFilter();
+      }
+      // an empty list leaves AWS with no operand to render and it emits this literal
+      if (operand.length === 0) {
+        return leaf("(null)");
+      }
+      const values = operand.map((_operand, index) => `${value}_${index}`);
+      return leaf(
+        // the only operator whose comma is followed by a space
+        `(${target} IN (${values.join(", ")}))`,
+        Object.fromEntries(values.map((name, index) => [name, dynamodbUtils.toDynamoDB(operand[index])])),
+      );
+    }
+    case "attributeExists": {
+      if (typeof operand !== "boolean") {
+        throw new InvalidFilter();
+      }
+      return leaf(`(${operand ? "attribute_exists" : "attribute_not_exists"}(${target}))`);
+    }
+    case "attributeType": {
+      if (typeof operand !== "string" || !hasOperator(ATTRIBUTE_TYPE_CODES, operand)) {
+        throw new InvalidFilter();
+      }
+      return leaf(`(attribute_type(${target},${value}))`, {
+        [value]: dynamodbUtils.toDynamoDB(ATTRIBUTE_TYPE_CODES[operand]),
+      });
+    }
+    default:
+      throw new InvalidFilter();
   }
-
-  const res = {
-    expressions: [...expr1.expressions, expr1.expressions.length ? joinCondition : '', ...expr2.expressions],
-    expressionNames: { ...expr1.expressionNames, ...expr2.expressionNames },
-    expressionValues: { ...expr1.expressionValues, ...expr2.expressionValues },
-  };
-  return res;
-}
-
-function createExpressionValueName(fieldName, op, prefix) {
-  return `:${[prefix, fieldName, op].filter((name) => name).join('_')}`;
-}
-function createExpressionName(fieldName) {
-  return {
-    [createExpressionFieldName(fieldName)]: fieldName,
-  };
-}
-
-function createExpressionFieldName(fieldName) {
-  return `#${fieldName}`;
-}
-function createExpressionValue(fieldName, op, value, prefix) {
-  const exprName = createExpressionValueName(fieldName, op, prefix);
-  const exprValue = dynamodbUtils.toDynamoDB(value);
-  return {
-    [`${exprName}`]: exprValue,
-  };
-}
-
-function scopeExpression(expr) {
-  const result = { ...expr };
-  result.expressions = result.expressions.filter((e) => !!e);
-  if (result.expressions.length > 1) {
-    result.expressions = ['(' + result.expressions.join(' ') + ')'];
-  }
-  return result;
 }

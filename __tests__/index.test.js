@@ -50,6 +50,9 @@ describe("dynamodb helpers", () => {
     test("boolean", async () => {
       await checkValid(`util.dynamodb.toDynamoDB(true)`);
     });
+    test("null", async () => {
+      await checkValid(`util.dynamodb.toDynamoDB(null)`);
+    });
   });
 
   test("toString", async () => {

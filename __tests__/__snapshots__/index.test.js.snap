@@ -304,6 +304,12 @@ exports[`dynamodb helpers toDynamoDB boolean 1`] = `
 }
 `;
 
+exports[`dynamodb helpers toDynamoDB null 1`] = `
+{
+  "NULL": null,
+}
+`;
+
 exports[`dynamodb helpers toDynamoDB number 1`] = `
 {
   "N": 12345,
