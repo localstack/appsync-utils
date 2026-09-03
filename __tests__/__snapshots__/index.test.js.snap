@@ -1,6 +1,125 @@
 // Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
-exports[`DynamoDB module functions get 1`] = `
+exports[`DynamoDB module functions batch delete 1`] = `
+{
+  "operation": "BatchDeleteItem",
+  "tables": {
+    "post": [
+      {
+        "id": {
+          "S": "one",
+        },
+      },
+    ],
+  },
+}
+`;
+
+exports[`DynamoDB module functions batch get 1`] = `
+{
+  "operation": "BatchGetItem",
+  "tables": {
+    "post": {
+      "consistentRead": false,
+      "keys": [
+        {
+          "id": {
+            "S": "1",
+          },
+        },
+        {
+          "id": {
+            "S": "2",
+          },
+        },
+      ],
+      "projection": {
+        "expression": "#expName_1, #expName_2",
+        "expressionNames": {
+          "#expName_1": "id",
+          "#expName_2": "name",
+        },
+      },
+    },
+  },
+}
+`;
+
+exports[`DynamoDB module functions batch get without options 1`] = `
+{
+  "operation": "BatchGetItem",
+  "tables": {
+    "post": {
+      "keys": [
+        {
+          "id": {
+            "S": "1",
+          },
+        },
+      ],
+    },
+  },
+}
+`;
+
+exports[`DynamoDB module functions batch put 1`] = `
+{
+  "operation": "BatchPutItem",
+  "tables": {
+    "post": [
+      {
+        "id": {
+          "S": "one",
+        },
+        "value": {
+          "S": "x",
+        },
+      },
+    ],
+  },
+}
+`;
+
+exports[`DynamoDB module functions get a consistent read of some attributes 1`] = `
+{
+  "consistentRead": true,
+  "key": {
+    "id": {
+      "S": "1",
+    },
+  },
+  "operation": "GetItem",
+  "projection": {
+    "expression": "#expName_1, #expName_2.#expName_3",
+    "expressionNames": {
+      "#expName_1": "id",
+      "#expName_2": "a",
+      "#expName_3": "b",
+    },
+  },
+}
+`;
+
+exports[`DynamoDB module functions get a projection reusing a path segment 1`] = `
+{
+  "key": {
+    "id": {
+      "S": "1",
+    },
+  },
+  "operation": "GetItem",
+  "projection": {
+    "expression": "#expName_1.#expName_2, #expName_1.#expName_3",
+    "expressionNames": {
+      "#expName_1": "a",
+      "#expName_2": "b",
+      "#expName_3": "c",
+    },
+  },
+}
+`;
+
+exports[`DynamoDB module functions get by key 1`] = `
 {
   "key": {
     "id": {
@@ -11,7 +130,7 @@ exports[`DynamoDB module functions get 1`] = `
 }
 `;
 
-exports[`DynamoDB module functions put 1`] = `
+exports[`DynamoDB module functions put an item 1`] = `
 {
   "attributeValues": {
     "value": {
@@ -27,7 +146,175 @@ exports[`DynamoDB module functions put 1`] = `
 }
 `;
 
-exports[`DynamoDB module functions remove 1`] = `
+exports[`DynamoDB module functions put guarded by a condition 1`] = `
+{
+  "attributeValues": {
+    "v": {
+      "N": 1,
+    },
+  },
+  "condition": {
+    "expression": "(#version = :version_eq)",
+    "expressionNames": {
+      "#version": "version",
+    },
+    "expressionValues": {
+      ":version_eq": {
+        "N": 1,
+      },
+    },
+  },
+  "key": {
+    "id": {
+      "S": "1",
+    },
+  },
+  "operation": "PutItem",
+}
+`;
+
+exports[`DynamoDB module functions put guarded by an attribute existing 1`] = `
+{
+  "attributeValues": {
+    "v": {
+      "N": 1,
+    },
+  },
+  "condition": {
+    "expression": "(attribute_exists(#v))",
+    "expressionNames": {
+      "#v": "v",
+    },
+  },
+  "key": {
+    "id": {
+      "S": "1",
+    },
+  },
+  "operation": "PutItem",
+}
+`;
+
+exports[`DynamoDB module functions put versioned, with a custom partition key and index fields 1`] = `
+{
+  "_version": 3,
+  "attributeValues": {
+    "v": {
+      "N": 1,
+    },
+  },
+  "customPartitionKey": "cpk",
+  "key": {
+    "id": {
+      "S": "1",
+    },
+  },
+  "operation": "PutItem",
+  "populateIndexFields": true,
+}
+`;
+
+exports[`DynamoDB module functions query on a key 1`] = `
+{
+  "operation": "Query",
+  "query": {
+    "expression": "(#id = :id_eq)",
+    "expressionNames": {
+      "#id": "id",
+    },
+    "expressionValues": {
+      ":id_eq": {
+        "S": "1",
+      },
+    },
+  },
+}
+`;
+
+exports[`DynamoDB module functions query on a partition and a sort key 1`] = `
+{
+  "operation": "Query",
+  "query": {
+    "expression": "(#a = :a_eq) AND (begins_with(#b,:b_beginsWith))",
+    "expressionNames": {
+      "#a": "a",
+      "#b": "b",
+    },
+    "expressionValues": {
+      ":a_eq": {
+        "S": "x",
+      },
+      ":b_beginsWith": {
+        "S": "y",
+      },
+    },
+  },
+}
+`;
+
+exports[`DynamoDB module functions query on a range of sort keys 1`] = `
+{
+  "operation": "Query",
+  "query": {
+    "expression": "(#sk BETWEEN :sk_between_start AND :sk_between_end)",
+    "expressionNames": {
+      "#sk": "sk",
+    },
+    "expressionValues": {
+      ":sk_between_end": {
+        "N": 9,
+      },
+      ":sk_between_start": {
+        "N": 1,
+      },
+    },
+  },
+}
+`;
+
+exports[`DynamoDB module functions query with every argument 1`] = `
+{
+  "consistentRead": true,
+  "filter": {
+    "expression": "(#done = :done_eq)",
+    "expressionNames": {
+      "#done": "done",
+    },
+    "expressionValues": {
+      ":done_eq": {
+        "BOOL": true,
+      },
+    },
+  },
+  "index": "gsi1",
+  "limit": 5,
+  "nextToken": "t",
+  "operation": "Query",
+  "projection": {
+    "expression": "#expName_1, #expName_2.#expName_3",
+    "expressionNames": {
+      "#expName_1": "id",
+      "#expName_2": "nested",
+      "#expName_3": "field",
+    },
+  },
+  "query": {
+    "expression": "(#pk = :pk_eq)",
+    "expressionNames": {
+      "#pk": "pk",
+    },
+    "expressionValues": {
+      ":pk_eq": {
+        "S": "a",
+      },
+    },
+  },
+  "scanIndexForward": false,
+  "select": "ALL_ATTRIBUTES",
+}
+`;
+
+exports[`DynamoDB module functions remove by key 1`] = `
 {
   "key": {
     "id": {
@@ -38,7 +325,64 @@ exports[`DynamoDB module functions remove 1`] = `
 }
 `;
 
-exports[`DynamoDB module functions scan 1`] = `
+exports[`DynamoDB module functions remove versioned and guarded by a condition 1`] = `
+{
+  "_version": 2,
+  "condition": {
+    "expression": "(#a = :a_eq)",
+    "expressionNames": {
+      "#a": "a",
+    },
+    "expressionValues": {
+      ":a_eq": {
+        "N": 1,
+      },
+    },
+  },
+  "key": {
+    "id": {
+      "S": "1",
+    },
+  },
+  "operation": "DeleteItem",
+}
+`;
+
+exports[`DynamoDB module functions scan of one segment of an index 1`] = `
+{
+  "consistentRead": true,
+  "index": "gsi",
+  "operation": "Scan",
+  "segment": 1,
+  "totalSegments": 4,
+}
+`;
+
+exports[`DynamoDB module functions scan with a filter and a projection 1`] = `
+{
+  "filter": {
+    "expression": "(#a = :a_eq)",
+    "expressionNames": {
+      "#a": "a",
+    },
+    "expressionValues": {
+      ":a_eq": {
+        "N": 1,
+      },
+    },
+  },
+  "limit": 2,
+  "operation": "Scan",
+  "projection": {
+    "expression": "#expName_1",
+    "expressionNames": {
+      "#expName_1": "a",
+    },
+  },
+}
+`;
+
+exports[`DynamoDB module functions scan with a limit and a page token 1`] = `
 {
   "limit": 10,
   "nextToken": "abc",
@@ -46,7 +390,218 @@ exports[`DynamoDB module functions scan 1`] = `
 }
 `;
 
-exports[`DynamoDB module functions sync 1`] = `undefined`;
+exports[`DynamoDB module functions scan without any arguments 1`] = `
+{
+  "operation": "Scan",
+}
+`;
+
+exports[`DynamoDB module functions set helpers toBinarySet 1`] = `
+{
+  "BS": [
+    "SGVsbG8=",
+  ],
+}
+`;
+
+exports[`DynamoDB module functions set helpers toNumberSet 1`] = `
+{
+  "NS": [
+    1,
+    2,
+    3,
+  ],
+}
+`;
+
+exports[`DynamoDB module functions set helpers toStringSet 1`] = `
+{
+  "SS": [
+    "a",
+    "b",
+  ],
+}
+`;
+
+exports[`DynamoDB module functions sync of a delta index with a filter 1`] = `
+{
+  "basePartitionKey": "bpk",
+  "deltaIndexName": "delta",
+  "filter": {
+    "expression": "(#a = :a_eq)",
+    "expressionNames": {
+      "#a": "a",
+    },
+    "expressionValues": {
+      ":a_eq": {
+        "N": 1,
+      },
+    },
+  },
+  "lastSync": 2,
+  "limit": 5,
+  "operation": "Sync",
+}
+`;
+
+exports[`DynamoDB module functions sync since the last one 1`] = `
+{
+  "lastSync": 1,
+  "limit": 10,
+  "nextToken": "abc",
+  "operation": "Sync",
+}
+`;
+
+exports[`DynamoDB module functions transact get 1`] = `
+{
+  "operation": "TransactGetItems",
+  "transactItems": [
+    {
+      "key": {
+        "id": {
+          "S": "1",
+        },
+      },
+      "projection": {
+        "expression": "#expName_1",
+        "expressionNames": {
+          "#expName_1": "name",
+        },
+      },
+      "table": "post",
+    },
+  ],
+}
+`;
+
+exports[`DynamoDB module functions transact get without a projection 1`] = `
+{
+  "operation": "TransactGetItems",
+  "transactItems": [
+    {
+      "key": {
+        "id": {
+          "S": "1",
+        },
+      },
+      "table": "post",
+    },
+  ],
+}
+`;
+
+exports[`DynamoDB module functions transact write putting and deleting 1`] = `
+{
+  "operation": "TransactWriteItems",
+  "transactItems": [
+    {
+      "attributeValues": {
+        "a": {
+          "N": 1,
+        },
+      },
+      "key": {
+        "id": {
+          "S": "1",
+        },
+      },
+      "operation": "PutItem",
+      "table": "post",
+    },
+    {
+      "condition": {
+        "expression": "(#v = :v_eq)",
+        "expressionNames": {
+          "#v": "v",
+        },
+        "expressionValues": {
+          ":v_eq": {
+            "N": 1,
+          },
+        },
+      },
+      "key": {
+        "id": {
+          "S": "2",
+        },
+      },
+      "operation": "DeleteItem",
+      "table": "post",
+    },
+  ],
+}
+`;
+
+exports[`DynamoDB module functions transact write updating and checking a condition 1`] = `
+{
+  "operation": "TransactWriteItems",
+  "transactItems": [
+    {
+      "key": {
+        "id": {
+          "S": "1",
+        },
+      },
+      "operation": "UpdateItem",
+      "table": "t",
+      "update": {
+        "expression": "SET #expName_1 = #expName_1 + :expValue_1",
+        "expressionNames": {
+          "#expName_1": "a",
+        },
+        "expressionValues": {
+          ":expValue_1": {
+            "N": 1,
+          },
+        },
+      },
+    },
+    {
+      "condition": {
+        "expression": "(#v = :v_eq)",
+        "expressionNames": {
+          "#v": "v",
+        },
+        "expressionValues": {
+          ":v_eq": {
+            "N": 1,
+          },
+        },
+      },
+      "key": {
+        "id": {
+          "S": "2",
+        },
+      },
+      "operation": "ConditionCheck",
+      "table": "t",
+    },
+  ],
+}
+`;
+
+exports[`DynamoDB module functions update a bare value sets the attribute 1`] = `
+{
+  "key": {
+    "id": {
+      "S": "1",
+    },
+  },
+  "operation": "UpdateItem",
+  "update": {
+    "expression": "SET #expName_1 = :expValue_1",
+    "expressionNames": {
+      "#expName_1": "isVerified",
+    },
+    "expressionValues": {
+      ":expValue_1": {
+        "BOOL": true,
+      },
+    },
+  },
+}
+`;
 
 exports[`DynamoDB module functions update add 1`] = `
 {
@@ -64,6 +619,28 @@ exports[`DynamoDB module functions update add 1`] = `
     "expressionValues": {
       ":expValue_1": {
         "N": 10,
+      },
+    },
+  },
+}
+`;
+
+exports[`DynamoDB module functions update an item of a list 1`] = `
+{
+  "key": {
+    "id": {
+      "S": "1",
+    },
+  },
+  "operation": "UpdateItem",
+  "update": {
+    "expression": "SET #expName_1[1] = :expValue_1",
+    "expressionNames": {
+      "#expName_1": "friends",
+    },
+    "expressionValues": {
+      ":expValue_1": {
+        "S": "x",
       },
     },
   },
@@ -146,6 +723,28 @@ exports[`DynamoDB module functions update increment 1`] = `
 }
 `;
 
+exports[`DynamoDB module functions update increment by one when given no step 1`] = `
+{
+  "key": {
+    "id": {
+      "S": "1",
+    },
+  },
+  "operation": "UpdateItem",
+  "update": {
+    "expression": "SET #expName_1 = #expName_1 + :expValue_1",
+    "expressionNames": {
+      "#expName_1": "a",
+    },
+    "expressionValues": {
+      ":expValue_1": {
+        "N": 1,
+      },
+    },
+  },
+}
+`;
+
 exports[`DynamoDB module functions update prepend 1`] = `
 {
   "key": {
@@ -178,6 +777,47 @@ exports[`DynamoDB module functions update prepend 1`] = `
 }
 `;
 
+exports[`DynamoDB module functions update remove 1`] = `
+{
+  "key": {
+    "id": {
+      "S": "1",
+    },
+  },
+  "operation": "UpdateItem",
+  "update": {
+    "expression": "REMOVE #expName_1",
+    "expressionNames": {
+      "#expName_1": "addr",
+    },
+    "expressionValues": {},
+  },
+}
+`;
+
+exports[`DynamoDB module functions update removing written before setting 1`] = `
+{
+  "key": {
+    "id": {
+      "S": "1",
+    },
+  },
+  "operation": "UpdateItem",
+  "update": {
+    "expression": "SET #expName_1 = #expName_1 + :expValue_1 REMOVE #expName_2",
+    "expressionNames": {
+      "#expName_1": "a",
+      "#expName_2": "b",
+    },
+    "expressionValues": {
+      ":expValue_1": {
+        "N": 1,
+      },
+    },
+  },
+}
+`;
+
 exports[`DynamoDB module functions update replace 1`] = `
 {
   "key": {
@@ -198,6 +838,133 @@ exports[`DynamoDB module functions update replace 1`] = `
             "N": 10,
           },
         },
+      },
+    },
+  },
+}
+`;
+
+exports[`DynamoDB module functions update setting and removing together 1`] = `
+{
+  "key": {
+    "id": {
+      "S": "1",
+    },
+  },
+  "operation": "UpdateItem",
+  "update": {
+    "expression": "SET #expName_1 = #expName_1 + :expValue_1 REMOVE #expName_2",
+    "expressionNames": {
+      "#expName_1": "a",
+      "#expName_2": "b",
+    },
+    "expressionValues": {
+      ":expValue_1": {
+        "N": 1,
+      },
+    },
+  },
+}
+`;
+
+exports[`DynamoDB module functions update two attributes at once 1`] = `
+{
+  "key": {
+    "id": {
+      "S": "1",
+    },
+  },
+  "operation": "UpdateItem",
+  "update": {
+    "expression": "SET #expName_1 = #expName_1 + :expValue_1, #expName_2 = :expValue_2",
+    "expressionNames": {
+      "#expName_1": "a",
+      "#expName_2": "b",
+    },
+    "expressionValues": {
+      ":expValue_1": {
+        "N": 1,
+      },
+      ":expValue_2": {
+        "S": "x",
+      },
+    },
+  },
+}
+`;
+
+exports[`DynamoDB module functions update two items of one list share an alias 1`] = `
+{
+  "key": {
+    "id": {
+      "S": "1",
+    },
+  },
+  "operation": "UpdateItem",
+  "update": {
+    "expression": "SET #expName_1[1] = :expValue_1, #expName_1[2] = :expValue_2",
+    "expressionNames": {
+      "#expName_1": "f",
+    },
+    "expressionValues": {
+      ":expValue_1": {
+        "S": "x",
+      },
+      ":expValue_2": {
+        "S": "y",
+      },
+    },
+  },
+}
+`;
+
+exports[`DynamoDB module functions update two removals share one clause 1`] = `
+{
+  "key": {
+    "id": {
+      "S": "1",
+    },
+  },
+  "operation": "UpdateItem",
+  "update": {
+    "expression": "REMOVE #expName_1, #expName_2",
+    "expressionNames": {
+      "#expName_1": "a",
+      "#expName_2": "b",
+    },
+    "expressionValues": {},
+  },
+}
+`;
+
+exports[`DynamoDB module functions update versioned and guarded by a condition 1`] = `
+{
+  "_version": 5,
+  "condition": {
+    "expression": "(#b = :b_eq)",
+    "expressionNames": {
+      "#b": "b",
+    },
+    "expressionValues": {
+      ":b_eq": {
+        "N": 2,
+      },
+    },
+  },
+  "key": {
+    "id": {
+      "S": "1",
+    },
+  },
+  "operation": "UpdateItem",
+  "update": {
+    "expression": "SET #expName_1 = #expName_1 + :expValue_1",
+    "expressionNames": {
+      "#expName_1": "a",
+    },
+    "expressionValues": {
+      ":expValue_1": {
+        "N": 1,
       },
     },
   },
@@ -247,6 +1014,12 @@ exports[`DynamoDB operations prepend 1`] = `
 }
 `;
 
+exports[`DynamoDB operations remove 1`] = `
+{
+  "type": "OPERATION_REMOVE",
+}
+`;
+
 exports[`DynamoDB operations replace 1`] = `
 {
   "type": "OPERATION_REPLACE",
@@ -268,7 +1041,22 @@ exports[`dynamodb helpers s3 objects four parameter function 1`] = `
 }
 `;
 
-exports[`dynamodb helpers s3 objects fromS3ObjectJson 1`] = `undefined`;
+exports[`dynamodb helpers s3 objects fromS3ObjectJson 1`] = `
+{
+  "bucket": "bar",
+  "key": "foo",
+  "region": "baz",
+}
+`;
+
+exports[`dynamodb helpers s3 objects fromS3ObjectJson with a version 1`] = `
+{
+  "bucket": "bar",
+  "key": "foo",
+  "region": "baz",
+  "version": "beep",
+}
+`;
 
 exports[`dynamodb helpers s3 objects three parameter function 1`] = `
 {
