@@ -4,6 +4,7 @@ This package provides an implementation for the `@aws-appsync/utils` package tha
 
 ## Changelog:
 
+- v0.1.8: `util.authType()` now reports `Lambda Authorization` for the identity of a Lambda-authorized Event API request, which carries what the authorizer returned as `handlerContext` rather than the `resolverContext` a GraphQL API uses
 - v0.1.7: complete the `@aws-appsync/utils/dynamodb` module with `query`, `sync`, the batch and transact helpers, the set helpers, `operations.remove` and `operations.updateListItem`, and the arguments the existing helpers dropped (`filter`, `projection`, `condition`, `consistentRead`, `_version` and the rest); add `util.transform.toSubscriptionFilter`; `util.dynamodb.fromS3ObjectJson` now parses instead of throwing
 - v0.1.6: add `util.authType()`, derived from the identity of the request; a host installs the request through the new `setResolverContext` export. `util.transform.toDynamoDBFilterExpression` and `toDynamoDBConditionExpression` now cover every operator, including `between`, `in`, `size` and `attributeType`, and nested `and`/`or`/`not`; `util.dynamodb.toDynamoDB` accepts `null`
 - v0.1.5: add `rds` `beginsWith`, `between` and `size` conditions, table aliases and `sql` template `where` clauses; invalid input now raises AWS's validation error instead of a raw `TypeError`, and the wildcard conditions require a string

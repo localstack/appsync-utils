@@ -166,10 +166,12 @@ const IDENTITY_SCHEMAS = [
     required: ["sub", "issuer", "claims"],
   },
   {
-    // `resolverContext` is what the authorizer returned, and an authorizer may return nothing at
-    // all, so an identity with no keys whatsoever is a Lambda identity to AWS
+    // Both keys carry what the authorizer returned: a GraphQL API puts it under `resolverContext`
+    // and an Event API under `handlerContext`. An authorizer may return nothing at all, which
+    // leaves the key holding an empty object or the identity holding no keys whatsoever, so an
+    // empty identity is a Lambda identity to AWS rather than an absent one.
     authType: AUTH_TYPE_LAMBDA,
-    keys: ["resolverContext"],
+    keys: ["resolverContext", "handlerContext"],
     required: [],
   },
 ];
@@ -181,6 +183,11 @@ const IDENTITY_SCHEMAS = [
 // pool identity and not an OIDC one. The modes are mutually exclusive under those two rules, so
 // the order below only makes the outcome deterministic. Anything unmatched, an absent identity
 // included, is an API key request, which is the mode that populates no identity at all.
+//
+// The Event API identity, `{handlerContext}`, is the one shape not recorded that way:
+// `EvaluateCode` validates its mock context against the GraphQL identity keys alone and rejects
+// `handlerContext` before the resolver runs. It was read off the responses of a real
+// Lambda-authorized Event API instead.
 function authTypeFromIdentity(identity) {
   if (identity === null || typeof identity !== "object" || Array.isArray(identity)) {
     return AUTH_TYPE_API_KEY;
