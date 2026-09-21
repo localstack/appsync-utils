@@ -24,6 +24,9 @@ const COGNITO_CLAIMS = {
 
 const LAMBDA_IDENTITY = { resolverContext: { userId: "alice", role: "admin" } };
 
+// the same authorizer output on an Event API, which names the key `handlerContext`
+const EVENT_LAMBDA_IDENTITY = { handlerContext: { userId: "alice", invocation: "inv-1" } };
+
 const IAM_IDENTITY = {
   accountId: "123456789012",
   cognitoIdentityPoolId: null,
@@ -131,6 +134,31 @@ describe("util.authType", () => {
     // identity rather than an OIDC one
     test("a subject, an issuer and claims beside a username fall back to an API key", async () => {
       await authTypeFor({ ...OIDC_IDENTITY, username: "alice" });
+    });
+  });
+
+  // NOT compared against AWS by this suite, unlike the blocks above: `EvaluateCode` validates its
+  // mock context against the GraphQL identity keys and rejects one carrying `handlerContext` ("The
+  // following properties in your mock context object failed validation: ctx.identity"), so
+  // `checkResolverValid` cannot reach this shape even with `TEST_TARGET=AWS_CLOUD`. The expected
+  // values were instead read off responses recorded from a real Lambda-authorized Event API on
+  // AWS, where `ctx.identity` is `{handlerContext: {...}}` and `util.authType()` is `Lambda
+  // Authorization`.
+  describe("the identity of an Event API request", () => {
+    afterEach(() => setResolverContext(null));
+
+    const authTypeForEventIdentity = (identity) => {
+      setResolverContext({ identity });
+      return util.authType();
+    };
+
+    test("an identity carrying a handler context comes from a Lambda authorizer", () => {
+      expect(authTypeForEventIdentity(EVENT_LAMBDA_IDENTITY)).toBe("Lambda Authorization");
+    });
+
+    // an authorizer that returns no context at all leaves the key holding an empty object
+    test("an identity whose handler context is empty comes from a Lambda authorizer", () => {
+      expect(authTypeForEventIdentity({ handlerContext: {} })).toBe("Lambda Authorization");
     });
   });
 
