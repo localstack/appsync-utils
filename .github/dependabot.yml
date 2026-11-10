@@ -19,6 +19,7 @@ updates:
     groups:
       github-actions:
         patterns: ["*"]
+        update-types: ["minor", "patch"]
 
   # CDK test infrastructure: nothing here reaches consumers, so batch it all.
   - package-ecosystem: "npm"
