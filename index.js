@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 import { toJsonObject } from './rds/index.js'
-import { AppSyncUserError } from './errors.js'
+import { AppSyncUserError, codeError } from './errors.js'
 
 export const dynamodbUtils = {
   toDynamoDB: function(value) {
@@ -523,3 +523,31 @@ function toSubscriptionFilter(filter, ignoredFields, rules) {
   // a group that collected no filter at all is dropped, so an empty filter yields an empty list
   return { filterGroup: groups.filter((filters) => filters.length).map((filters) => ({ filters })) };
 }
+
+// Unwinds the handler that called `runtime.earlyReturn`. The host recognises it by name, takes
+// `value` as the handler's result, and uses `skipTo` to decide which handlers still run.
+class AppSyncEarlyReturn extends Error {
+  constructor(value, skipTo) {
+    super("runtime.earlyReturn");
+    this.name = "AppSyncEarlyReturn";
+    this.value = value;
+    this.skipTo = skipTo;
+  }
+}
+
+const SKIP_TO_TARGETS = ["END", "NEXT"];
+
+export const runtime = {
+  earlyReturn: function(obj, returnOptions) {
+    if (returnOptions === undefined || returnOptions === null) {
+      throw new AppSyncEarlyReturn(obj, "NEXT");
+    }
+    if (!Object.hasOwn(returnOptions, "skipTo")) {
+      throw codeError("ReturnOptions parameter must contain a 'skipTo' key ");
+    }
+    if (!SKIP_TO_TARGETS.includes(returnOptions.skipTo)) {
+      throw codeError("SkipTo only supports input `END` or `NEXT` ");
+    }
+    throw new AppSyncEarlyReturn(obj, returnOptions.skipTo);
+  },
+};

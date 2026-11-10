@@ -3,7 +3,7 @@
 import { fileURLToPath, pathToFileURL } from "url";
 import { dirname, resolve } from "path";
 import { AppSyncClient, EvaluateCodeCommand } from "@aws-sdk/client-appsync";
-import { util, setResolverContext } from "..";
+import { util, runtime, setResolverContext } from "..";
 import * as ddb from "../dynamodb";
 import * as rds from "../rds";
 
@@ -70,13 +70,13 @@ export const checkResolverValid = async (code, context, functionName) => {
   let result;
   if (process.env.TEST_TARGET === "AWS_CLOUD") {
     const fullCode = `
-        import { util } from '@aws-appsync/utils';
+        import { util, runtime } from '@aws-appsync/utils';
         import * as rds from '@aws-appsync/utils/rds';
         ` + code;
     result = await runResolverFunctionOnAWS(fullCode, context, functionName);
   } else {
     const fullCode = `
-        import { util } from '${pathToFileURL(resolve(projectRoot, "index.js"))}';
+        import { util, runtime } from '${pathToFileURL(resolve(projectRoot, "index.js"))}';
         import * as rds from '${pathToFileURL(resolve(projectRoot, "rds/index.js"))}';
         ` + code;
     const encodedJs = encodeURIComponent(fullCode);
@@ -92,10 +92,14 @@ export const checkResolverValid = async (code, context, functionName) => {
     try {
       result = fn(context);
     } catch (e) {
-      if (e.name !== "AppSyncUserError") {
+      if (e.name === "AppSyncEarlyReturn") {
+        // what the host does with the value it returned early: on AWS it is the evaluation result
+        result = e.value ?? null;
+      } else if (e.name === "AppSyncUserError") {
+        result = {"message": e.message}
+      } else {
         throw e;
       }
-      result = {"message": e.message}
     } finally {
       setResolverContext(null);
     }
