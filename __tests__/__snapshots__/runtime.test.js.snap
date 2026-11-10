@@ -1,0 +1,25 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`runtime.earlyReturn accepts skipTo END 1`] = `"end"`;
+
+exports[`runtime.earlyReturn accepts skipTo NEXT 1`] = `"next"`;
+
+exports[`runtime.earlyReturn rejects an unknown skipTo 1`] = `
+{
+  "message": "SkipTo only supports input \`END\` or \`NEXT\` ",
+}
+`;
+
+exports[`runtime.earlyReturn rejects options without skipTo 1`] = `
+{
+  "message": "ReturnOptions parameter must contain a 'skipTo' key ",
+}
+`;
+
+exports[`runtime.earlyReturn returns null without a value 1`] = `null`;
+
+exports[`runtime.earlyReturn returns the value 1`] = `
+{
+  "early": true,
+}
+`;
