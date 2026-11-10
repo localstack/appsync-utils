@@ -1,16 +1,31 @@
 version: 2
 updates:
+  # Library deps. `uuid` is the only runtime dependency and ships to consumers
+  # via the git-tag pin, so it is deliberately left out of the group and keeps
+  # its own PR. Majors also stay ungrouped so they can be reviewed individually.
   - package-ecosystem: "npm"
     directory: "/"
     schedule:
       interval: "weekly"
+    groups:
+      dev-dependencies:
+        dependency-type: "development"
+        update-types: ["minor", "patch"]
 
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "weekly"
+    groups:
+      github-actions:
+        patterns: ["*"]
 
+  # CDK test infrastructure: nothing here reaches consumers, so batch it all.
   - package-ecosystem: "npm"
     directory: "/cdk"
     schedule:
       interval: "weekly"
+    groups:
+      cdk:
+        patterns: ["*"]
+        update-types: ["minor", "patch"]
