@@ -69,6 +69,16 @@ const withoutKey = (identity, key) => {
   return rest;
 };
 
+// the same user pool on an Event API, which leaves out `defaultAuthStrategy`
+const EVENT_USER_POOL_IDENTITY = withoutKey(USER_POOL_IDENTITY, "defaultAuthStrategy");
+
+// the `ctx.info` of an Event API handler, the only one naming a channel namespace
+const EVENT_INFO = {
+  channel: { path: "/default/channel", segments: ["default", "channel"] },
+  channelNamespace: { name: "default" },
+  operation: "PUBLISH",
+};
+
 describe("util.authType", () => {
   describe("the mode of an identity", () => {
     test("a request carrying no identity is authorized by an API key", async () => {
@@ -141,14 +151,15 @@ describe("util.authType", () => {
   // mock context against the GraphQL identity keys and rejects one carrying `handlerContext` ("The
   // following properties in your mock context object failed validation: ctx.identity"), so
   // `checkResolverValid` cannot reach this shape even with `TEST_TARGET=AWS_CLOUD`. The expected
-  // values were instead read off responses recorded from a real Lambda-authorized Event API on
-  // AWS, where `ctx.identity` is `{handlerContext: {...}}` and `util.authType()` is `Lambda
+  // values were instead read off responses recorded from real Lambda- and user-pool-authorized
+  // Event APIs on AWS, where `ctx.identity` is `{handlerContext: {...}}` and `util.authType()` is
+  // `Lambda Authorization`, or the user pool identity without `defaultAuthStrategy` and `User Pool
   // Authorization`.
   describe("the identity of an Event API request", () => {
     afterEach(() => setResolverContext(null));
 
     const authTypeForEventIdentity = (identity) => {
-      setResolverContext({ identity });
+      setResolverContext({ identity, info: EVENT_INFO });
       return util.authType();
     };
 
@@ -159,6 +170,27 @@ describe("util.authType", () => {
     // an authorizer that returns no context at all leaves the key holding an empty object
     test("an identity whose handler context is empty comes from a Lambda authorizer", () => {
       expect(authTypeForEventIdentity({ handlerContext: {} })).toBe("Lambda Authorization");
+    });
+
+    // unlike the GraphQL user pool identity, it carries no `defaultAuthStrategy`
+    test("a user pool identity is user pool authorized", () => {
+      expect(authTypeForEventIdentity(EVENT_USER_POOL_IDENTITY)).toBe("User Pool Authorization");
+    });
+
+    test("a user pool identity without groups is user pool authorized", () => {
+      expect(authTypeForEventIdentity(withoutKey(EVENT_USER_POOL_IDENTITY, "groups"))).toBe(
+        "User Pool Authorization",
+      );
+    });
+
+    test("a user pool identity missing its source IP falls back to an API key", () => {
+      expect(authTypeForEventIdentity(withoutKey(EVENT_USER_POOL_IDENTITY, "sourceIp"))).toBe(
+        "API Key Authorization",
+      );
+    });
+
+    test("an OIDC identity is OIDC authorized", () => {
+      expect(authTypeForEventIdentity(OIDC_IDENTITY)).toBe("Open ID Connect Authorization");
     });
   });
 

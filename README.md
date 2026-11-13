@@ -4,6 +4,7 @@ This package provides an implementation for the `@aws-appsync/utils` package tha
 
 ## Changelog:
 
+- v0.1.10: `util.authType()` now reports `User Pool Authorization` for the user pool identity of an Event API request, which carries no `defaultAuthStrategy` unlike the GraphQL one
 - v0.1.9: add `runtime.earlyReturn()`, importable from `@aws-appsync/utils`; it validates the `skipTo` return option and hands the value and target to the host, which decides which handlers still run
 - v0.1.8: `util.authType()` now reports `Lambda Authorization` for the identity of a Lambda-authorized Event API request, which carries what the authorizer returned as `handlerContext` rather than the `resolverContext` a GraphQL API uses
 - v0.1.7: complete the `@aws-appsync/utils/dynamodb` module with `query`, `sync`, the batch and transact helpers, the set helpers, `operations.remove` and `operations.updateListItem`, and the arguments the existing helpers dropped (`filter`, `projection`, `condition`, `consistentRead`, `_version` and the rest); add `util.transform.toSubscriptionFilter`; `util.dynamodb.fromS3ObjectJson` now parses instead of throwing

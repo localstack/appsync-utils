@@ -176,6 +176,18 @@ const IDENTITY_SCHEMAS = [
   },
 ];
 
+// An Event API hands its handlers a user pool identity without `defaultAuthStrategy`, a shape the
+// GraphQL schemas above read as an API key request. Read off the responses of a real
+// user-pool-authorized Event API, like the `handlerContext` shape described below.
+const EVENT_API_IDENTITY_SCHEMAS = [
+  {
+    authType: AUTH_TYPE_USER_POOL,
+    keys: ["sourceIp", "username", "groups", "sub", "issuer", "claims"],
+    required: ["sourceIp", "username", "sub", "issuer", "claims"],
+  },
+  ...IDENTITY_SCHEMAS,
+];
+
 // Recorded from `EvaluateCode` against every identity shape in the AppSync resolver context
 // reference plus the ambiguous mixtures: an identity belongs to a mode when all of its keys are
 // keys of that mode and every key the mode requires is present and not null. Foreign keys rule a
@@ -188,12 +200,12 @@ const IDENTITY_SCHEMAS = [
 // `EvaluateCode` validates its mock context against the GraphQL identity keys alone and rejects
 // `handlerContext` before the resolver runs. It was read off the responses of a real
 // Lambda-authorized Event API instead.
-function authTypeFromIdentity(identity) {
+function authTypeFromIdentity(identity, schemas) {
   if (identity === null || typeof identity !== "object" || Array.isArray(identity)) {
     return AUTH_TYPE_API_KEY;
   }
   const keys = Object.keys(identity);
-  for (const schema of IDENTITY_SCHEMAS) {
+  for (const schema of schemas) {
     const noForeignKeys = keys.every((key) => schema.keys.includes(key));
     const hasRequired = schema.required.every((key) => identity[key] !== null && identity[key] !== undefined);
     if (noForeignKeys && hasRequired) {
@@ -234,7 +246,12 @@ export const util = {
     throw new AppSyncUserError("Unauthorized", "UnauthorizedException")
   },
   authType: function() {
-    return authTypeFromIdentity(resolverContext?.identity);
+    // only an Event API handler's `ctx.info` names a channel namespace
+    const isEventApi = resolverContext?.info?.channelNamespace != null;
+    return authTypeFromIdentity(
+      resolverContext?.identity,
+      isEventApi ? EVENT_API_IDENTITY_SCHEMAS : IDENTITY_SCHEMAS,
+    );
   },
   time: {
     nowFormatted: function(pattern) {
