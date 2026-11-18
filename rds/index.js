@@ -88,6 +88,11 @@ function isSqlTemplate(value) {
   return (value != null) && (value.strings !== undefined) && (value.keys !== undefined);
 }
 
+// what `select`, `insert`, `update` and `remove` return
+function isStructuredStatement(value) {
+  return (value != null) && (value.type !== undefined) && (value.properties !== undefined);
+}
+
 
 /**
  * Every statement constructor validates its payload the same way, and does so when it is called
@@ -133,6 +138,26 @@ const COMPARISON_OPERATORS = {
   le: '<=',
 };
 
+// The join keys a select accepts, in the order AWS considers them. A select applies a single kind:
+// the first one present, whatever order the keys were written in.
+const JOIN_KINDS = [
+  ['join', 'JOIN'],
+  ['joinNatural', 'NATURAL JOIN'],
+  ['innerJoinNatural', 'NATURAL INNER JOIN'],
+  ['innerJoin', 'INNER JOIN'],
+  ['crossJoin', 'CROSS JOIN'],
+  ['leftJoin', 'LEFT JOIN'],
+  ['leftJoinNatural', 'NATURAL LEFT JOIN'],
+  ['leftOuterJoin', 'LEFT OUTER JOIN'],
+  ['leftOuterJoinNatural', 'NATURAL LEFT OUTER JOIN'],
+  ['rightJoin', 'RIGHT JOIN'],
+  ['rightJoinNatural', 'NATURAL RIGHT JOIN'],
+  ['rightOuterJoin', 'RIGHT OUTER JOIN'],
+  ['rightOuterJoinNatural', 'NATURAL RIGHT OUTER JOIN'],
+  ['fullOuterJoin', 'FULL OUTER JOIN'],
+  ['fullOuterJoinNatural', 'NATURAL FULL OUTER JOIN'],
+];
+
 class StatementBuilder {
   constructor({ quoteChar, functionName, supportsReturning = true }) {
     this.quoteChar = quoteChar;
@@ -146,6 +171,8 @@ class StatementBuilder {
     };
 
     this.variableIndex = 0;
+    // set while an `on` condition object renders, where AWS binds only strings and type hints
+    this.bindingOnCondition = false;
   }
 
   render(statements) {
@@ -159,7 +186,7 @@ class StatementBuilder {
         this.renderRawTemplateStatement(stmt);
       } else if (isSqlTemplate(stmt)) {
         this.renderTaggedTemplateStatement(stmt.strings, stmt.keys);
-      } else if ((stmt != null) && (stmt.type !== undefined) && (stmt.properties !== undefined)) {
+      } else if (isStructuredStatement(stmt)) {
         this.renderStructuredStatement(stmt.type, stmt.properties);
       } else {
         this.unsupportedStatement();
@@ -212,40 +239,9 @@ class StatementBuilder {
 
   renderStructuredStatement(type, properties) {
     switch (type) {
-      case "SELECT": {
-        const { columns, where, orderBy, limit, offset } = properties;
-        const parts = ["SELECT"];
-
-        // an absent column list means every column. Anything else is validated, so `columns: []`
-        // still leaves a dangling `SELECT`, like AWS
-        parts.push(columns == null ? '*' : this.renderColumnList(columns));
-
-        parts.push(`FROM ${this.resolveTableName(properties, true)}`);
-        parts.push(...this.buildWhereParts(where));
-
-        if (orderBy != null) {
-          if (!Array.isArray(orderBy)) {
-            throw codeError("orderBy expects an array.");
-          }
-
-          // an empty sort list drops the whole clause, ORDER BY keyword included, like AWS
-          if (orderBy.length > 0) {
-            parts.push('ORDER BY', orderBy.map(item => this.renderOrderByItem(item)).join(', '));
-          }
-        }
-
-        // limit/offset are optional and may be passed as null; 0 is a valid value
-        if (limit != null) {
-          parts.push(`LIMIT ${this.renderRowCount(limit, 'limit')}`);
-        }
-
-        if (offset != null) {
-          parts.push(`OFFSET ${this.renderRowCount(offset, 'offset')}`);
-        }
-
-        this.result.statements.push(this.joinClauses(parts));
+      case "SELECT":
+        this.result.statements.push(this.renderSelect(properties));
         break;
-      }
       case "REMOVE": {
         const { where, returning, } = properties;
         const parts = [`DELETE FROM ${this.resolveTableName(properties)}`];
@@ -298,6 +294,103 @@ class StatementBuilder {
       default:
         this.unsupportedStatement();
     }
+  }
+
+  /**
+   * Render a select to its SQL text. A select is also a valid `from` source, so this returns the
+   * text rather than pushing it, and a subquery binds its variables before the outer statement's.
+   */
+  renderSelect(properties) {
+    const { columns, where, orderBy, limit, offset } = properties;
+    const parts = ["SELECT"];
+
+    // an absent column list means every column. Anything else is validated, so `columns: []`
+    // still leaves a dangling `SELECT`, like AWS
+    parts.push(columns == null ? '*' : this.renderColumnList(columns));
+
+    parts.push(`FROM ${this.resolveTableName(properties, true)}`);
+    parts.push(...this.buildJoinParts(properties));
+    parts.push(...this.buildWhereParts(where));
+
+    if (orderBy != null) {
+      if (!Array.isArray(orderBy)) {
+        throw codeError("orderBy expects an array.");
+      }
+
+      // an empty sort list drops the whole clause, ORDER BY keyword included, like AWS
+      if (orderBy.length > 0) {
+        parts.push('ORDER BY', orderBy.map(item => this.renderOrderByItem(item)).join(', '));
+      }
+    }
+
+    // limit/offset are optional and may be passed as null; 0 is a valid value
+    if (limit != null) {
+      parts.push(`LIMIT ${this.renderRowCount(limit, 'limit')}`);
+    }
+
+    if (offset != null) {
+      parts.push(`OFFSET ${this.renderRowCount(offset, 'offset')}`);
+    }
+
+    return this.joinClauses(parts);
+  }
+
+  buildJoinParts(properties) {
+    const kind = JOIN_KINDS.find(([key]) => properties[key] != null);
+    if (kind === undefined) {
+      return [];
+    }
+
+    // only the applied kind is validated: a malformed later kind is ignored, like on AWS
+    const [key, keyword] = kind;
+    const joins = properties[key];
+    if (!Array.isArray(joins)) {
+      throw codeError(`${key} expects an array.`);
+    }
+
+    const parts = [];
+    for (const join of joins) {
+      // AWS skips an item that is not an object rather than rejecting it
+      if ((join == null) || (typeof join !== 'object') || Array.isArray(join)) {
+        continue;
+      }
+
+      // a joined source follows the select's own `table`/`from` rules
+      parts.push(keyword, this.resolveTableName(join, true));
+
+      const { on, using } = join;
+      if ((on != null) && (using != null)) {
+        throw codeError("'on' and 'using' keys cannot be used together");
+      }
+
+      if (isSqlTemplate(on)) {
+        parts.push('ON', this.renderTemplate(on.strings, on.keys));
+      } else if (on != null) {
+        if ((typeof on !== 'object') || Array.isArray(on)) {
+          throw codeError("ON values are expected to be SQL templates or a condition object.");
+        }
+
+        // the condition renders like a WHERE clause, its values bound as variables rather than
+        // read as column references, but AWS binds only strings and type hints here. An empty
+        // condition drops the ON keyword too.
+        this.bindingOnCondition = true;
+        try {
+          const condition = this.buildWhereClause(on);
+          if (condition) {
+            parts.push('ON', condition);
+          }
+        } finally {
+          this.bindingOnCondition = false;
+        }
+      }
+
+      if (using != null) {
+        // an empty list still renders, as `USING ()`, like AWS
+        parts.push(`USING (${this.renderColumnList(using)})`);
+      }
+    }
+
+    return parts;
   }
 
   buildWhereParts(where) {
@@ -371,12 +464,24 @@ class StatementBuilder {
       throw codeError("Expected column to be * or an array.");
     }
 
-    return columns.map(name => {
-      if (typeof name !== 'string') {
+    return columns.map(column => {
+      if (typeof column === 'string') {
+        return this.quoteIdentifier(column);
+      }
+
+      if ((column == null) || (typeof column !== 'object') || Array.isArray(column)) {
         throw codeError("Invalid type in column array.");
       }
 
-      return this.quoteIdentifier(name);
+      // a single-entry alias object, read like a table alias: `{ n: "p.name" }` becomes
+      // `"p"."name" as "n"`
+      const [alias, name] = this.aliasEntry(column, "column");
+      if (typeof name !== 'string') {
+        throw codeError("Column alias value is expected to be a string or rds.agg.");
+      }
+
+      // unlike a bare `*`, an aliased one is quoted
+      return `${this.quoteSegments(name)} as ${this.quoteIdentifier(alias)}`;
     }).join(', ');
   }
 
@@ -418,6 +523,10 @@ class StatementBuilder {
   }
 
   newVariable(value, addTypeHint = true) {
+    if (this.bindingOnCondition && (typeof value !== 'string') && !value.type) {
+      throw codeError("ON expects a string value comparisons.");
+    }
+
     const name = `:P${this.variableIndex}`;
     if (value.type) {
       this.result.variableMap[name] = value.value;
@@ -595,12 +704,15 @@ class StatementBuilder {
     }
 
     if (allowFrom && (table == null) && (from != null)) {
-      // `from` carries its own type message, and rejects the array `table` would too
-      if ((typeof from !== 'string') && ((typeof from !== 'object') || Array.isArray(from))) {
+      // `from` carries its own type message, and rejects the array `table` would too. A statement
+      // is only accepted as the value of an alias, never on its own.
+      const isAliasObject = (typeof from === 'object') && !Array.isArray(from)
+        && !isSqlTemplate(from) && !isStructuredStatement(from);
+      if ((typeof from !== 'string') && !isAliasObject) {
         throw codeError("'from' value is expected to be string or object.");
       }
 
-      return this.renderTableName(from);
+      return this.renderTableName(from, true);
     }
 
     if (table == null) {
@@ -613,9 +725,10 @@ class StatementBuilder {
   /**
    * A table is named either by a string or by a single-entry alias object, which AWS renders with
    * the *value* as the table name and the *key* as the alias: `{ persons: "p" }` becomes
-   * `"p" as "persons"`.
+   * `"p" as "persons"`. Only a select's `from` (and a join's) may alias a subquery instead, given
+   * as a select or a `sql` template: `{ s: select(...) }` becomes `(SELECT ...) as "s"`.
    */
-  renderTableName(name) {
+  renderTableName(name, allowSubquery = false) {
     if (typeof name === 'string') {
       return this.quoteIdentifier(name);
     }
@@ -624,9 +737,34 @@ class StatementBuilder {
       throw codeError("table name is expected to be a string or alias.");
     }
 
-    const entries = Object.entries(name);
+    const [alias, actual] = this.aliasEntry(name, "table");
+    const quotedAlias = this.quoteIdentifier(alias);
+    if (typeof actual === 'string') {
+      return `${this.quoteIdentifier(actual)} as ${quotedAlias}`;
+    }
+
+    if (!allowSubquery) {
+      throw codeError("Table alias value is expected to be a string.");
+    }
+
+    if (isSqlTemplate(actual)) {
+      return `(${this.renderTemplate(actual.strings, actual.keys)}) as ${quotedAlias}`;
+    }
+
+    if (isStructuredStatement(actual) && (actual.type === "SELECT")) {
+      return `(${this.renderSelect(actual.properties)}) as ${quotedAlias}`;
+    }
+
+    throw codeError("Object value must be a SQL statement or string.");
+  }
+
+  /**
+   * The single `[alias, value]` entry of a table or column alias object.
+   */
+  aliasEntry(aliasObject, kind) {
+    const entries = Object.entries(aliasObject);
     if (entries.length > 1) {
-      throw codeError("table alias is allowed only one key-value pair.");
+      throw codeError(`${kind} alias is allowed only one key-value pair.`);
     }
 
     if (entries.length === 0) {
@@ -635,12 +773,7 @@ class StatementBuilder {
       throw codeError("java.util.NoSuchElementException");
     }
 
-    const [alias, actual] = entries[0];
-    if (typeof actual !== 'string') {
-      throw codeError("Table alias value is expected to be a string.");
-    }
-
-    return `${this.quoteIdentifier(actual)} as ${this.quoteIdentifier(alias)}`;
+    return entries[0];
   }
 
   quoteIdentifier(rawName) {
@@ -650,6 +783,11 @@ class StatementBuilder {
     if (rawName === '*') {
       return rawName;
     }
+
+    return this.quoteSegments(rawName);
+  }
+
+  quoteSegments(rawName) {
     // Split schema/table-qualified identifiers (e.g. "schema.table" or "table.column") on `.`
     // and quote each segment individually, matching AWS AppSync (e.g. `"schema"."table"`)
     // rather than quoting the whole string as one literal identifier (`"schema.table"`).

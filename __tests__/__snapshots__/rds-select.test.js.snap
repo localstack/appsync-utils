@@ -1,0 +1,924 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`column aliases aliased columns 1`] = `
+{
+  "statements": [
+    "SELECT "b" as "a", "x"."y" as "c", "plain" FROM "t"",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`column aliases aliased columns in mysql 1`] = `
+{
+  "statements": [
+    "SELECT \`db\`.\`a\` as \`x\` FROM \`t\`",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`column aliases aliased returning columns 1`] = `
+{
+  "statements": [
+    "INSERT INTO "t" ("a") VALUES (:P0) RETURNING "a" as "x", "b"",
+  ],
+  "variableMap": {
+    ":P0": 1,
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`column aliases an aliased star is quoted 1`] = `
+{
+  "statements": [
+    "SELECT "*" as "a" FROM "t"",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`column aliases rejects a number as the aliased column 1`] = `
+{
+  "message": "Column alias value is expected to be a string or rds.agg.",
+}
+`;
+
+exports[`column aliases rejects a select as the aliased column 1`] = `
+{
+  "message": "Column alias value is expected to be a string or rds.agg.",
+}
+`;
+
+exports[`column aliases rejects a sql template as the aliased column 1`] = `
+{
+  "message": "Column alias value is expected to be a string or rds.agg.",
+}
+`;
+
+exports[`column aliases rejects an alias with two entries 1`] = `
+{
+  "message": "column alias is allowed only one key-value pair.",
+}
+`;
+
+exports[`column aliases rejects an array in the column list 1`] = `
+{
+  "message": "Invalid type in column array.",
+}
+`;
+
+exports[`column aliases rejects an empty alias 1`] = `
+{
+  "message": "java.util.NoSuchElementException",
+}
+`;
+
+exports[`column aliases rejects null as the aliased column 1`] = `
+{
+  "message": "Column alias value is expected to be a string or rds.agg.",
+}
+`;
+
+exports[`joins join items a cross join keeps its using clause 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "t" CROSS JOIN "u" USING ("id")",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`joins join items a natural join keeps its on clause 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "t" NATURAL JOIN "u" ON a=b",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`joins join items an empty join list renders nothing 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "t"",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`joins join items join a subquery 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "t" LEFT JOIN (SELECT * FROM "u") as "s" ON s.id = t.id",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`joins join items join a table given as from 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "t" LEFT JOIN "u"",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`joins join items join in mysql 1`] = `
+{
+  "statements": [
+    "SELECT * FROM \`t\` LEFT JOIN \`db\`.\`u\` as \`s\` ON s.a = t.a",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`joins join items join items that are not objects are skipped 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "t" LEFT JOIN "u" LEFT JOIN "v"",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`joins join items join with every other select clause 1`] = `
+{
+  "statements": [
+    "SELECT "u"."name" as "n" FROM "t" LEFT JOIN "u" USING ("id") WHERE "a" = :P0 ORDER BY "u"."name" ASC LIMIT :P1 OFFSET :P2",
+  ],
+  "variableMap": {
+    ":P0": 1,
+    ":P1": 1,
+    ":P2": 2,
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`joins join items rejects a join from given as an array 1`] = `
+{
+  "message": "'from' value is expected to be string or object.",
+}
+`;
+
+exports[`joins join items rejects a join kind that is not an array 1`] = `
+{
+  "message": "leftJoin expects an array.",
+}
+`;
+
+exports[`joins join items rejects a join with both table and from 1`] = `
+{
+  "message": "'from' and 'table' keys cannot be used together",
+}
+`;
+
+exports[`joins join items rejects a join with neither table nor from 1`] = `
+{
+  "message": "'table' or 'from' key is required.",
+}
+`;
+
+exports[`joins join items rejects a sql template as a join table alias value 1`] = `
+{
+  "message": "Table alias value is expected to be a string.",
+}
+`;
+
+exports[`joins join items rejects an empty join table alias 1`] = `
+{
+  "message": "java.util.NoSuchElementException",
+}
+`;
+
+exports[`joins join items rejects on and using together 1`] = `
+{
+  "message": "'on' and 'using' keys cannot be used together",
+}
+`;
+
+exports[`joins join items remove ignores joins 1`] = `
+{
+  "statements": [
+    "DELETE FROM "t"",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`joins join items several joins of one kind 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "t" LEFT JOIN "u" ON 1=1 LEFT JOIN "vv" as "v" ON 2=2",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`joins join items variables are numbered source, joins, where, limit 1`] = `
+{
+  "statements": [
+    "SELECT * FROM (SELECT * FROM "u" WHERE "a" = :P0) as "s" LEFT JOIN "v" ON "x" = :P1 LEFT JOIN "w" ON y = :P2 WHERE "b" = :P3 LIMIT :P4",
+  ],
+  "variableMap": {
+    ":P0": "from",
+    ":P1": "join1",
+    ":P2": "join2",
+    ":P3": "where",
+    ":P4": 3,
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`joins join kind precedence a malformed later kind is ignored 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "t" JOIN "u"",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`joins join kind precedence a null earlier kind is skipped 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "t" LEFT JOIN "u"",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`joins join kind precedence an empty earlier kind suppresses a later one 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "t"",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`joins join kind precedence crossJoin wins over leftJoin 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "t" CROSS JOIN "crossJoin"",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`joins join kind precedence fullOuterJoin wins over fullOuterJoinNatural 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "t" FULL OUTER JOIN "fullOuterJoin"",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`joins join kind precedence innerJoin wins over crossJoin 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "t" INNER JOIN "innerJoin"",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`joins join kind precedence innerJoinNatural wins over innerJoin 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "t" NATURAL INNER JOIN "innerJoinNatural"",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`joins join kind precedence join wins over joinNatural 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "t" JOIN "join"",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`joins join kind precedence joinNatural wins over innerJoinNatural 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "t" NATURAL JOIN "joinNatural"",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`joins join kind precedence leftJoin wins over leftJoinNatural 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "t" LEFT JOIN "leftJoin"",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`joins join kind precedence leftJoinNatural wins over leftOuterJoin 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "t" NATURAL LEFT JOIN "leftJoinNatural"",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`joins join kind precedence leftOuterJoin wins over leftOuterJoinNatural 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "t" LEFT OUTER JOIN "leftOuterJoin"",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`joins join kind precedence leftOuterJoinNatural wins over rightJoin 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "t" NATURAL LEFT OUTER JOIN "leftOuterJoinNatural"",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`joins join kind precedence rightJoin wins over rightJoinNatural 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "t" RIGHT JOIN "rightJoin"",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`joins join kind precedence rightJoinNatural wins over rightOuterJoin 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "t" NATURAL RIGHT JOIN "rightJoinNatural"",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`joins join kind precedence rightOuterJoin wins over rightOuterJoinNatural 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "t" RIGHT OUTER JOIN "rightOuterJoin"",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`joins join kind precedence rightOuterJoinNatural wins over fullOuterJoin 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "t" NATURAL RIGHT OUTER JOIN "rightOuterJoinNatural"",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`joins join kinds crossJoin 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "t" CROSS JOIN "u"",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`joins join kinds fullOuterJoin 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "t" FULL OUTER JOIN "u"",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`joins join kinds fullOuterJoinNatural 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "t" NATURAL FULL OUTER JOIN "u"",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`joins join kinds innerJoin 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "t" INNER JOIN "u"",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`joins join kinds innerJoinNatural 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "t" NATURAL INNER JOIN "u"",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`joins join kinds join 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "t" JOIN "u" ON t.id = u.tid",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`joins join kinds joinNatural 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "t" NATURAL JOIN "u"",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`joins join kinds leftJoin 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "t" LEFT JOIN "u"",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`joins join kinds leftJoinNatural 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "t" NATURAL LEFT JOIN "u"",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`joins join kinds leftOuterJoin 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "t" LEFT OUTER JOIN "u"",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`joins join kinds leftOuterJoinNatural 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "t" NATURAL LEFT OUTER JOIN "u"",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`joins join kinds rightJoin 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "t" RIGHT JOIN "u"",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`joins join kinds rightJoinNatural 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "t" NATURAL RIGHT JOIN "u"",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`joins join kinds rightOuterJoin 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "t" RIGHT OUTER JOIN "u"",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`joins join kinds rightOuterJoinNatural 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "t" NATURAL RIGHT OUTER JOIN "u"",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`joins on condition objects a null on renders no ON 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "t" LEFT JOIN "u"",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`joins on condition objects a type hinted value 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "t" LEFT JOIN "u" ON "a" = :P0",
+  ],
+  "variableMap": {
+    ":P0": "x",
+  },
+  "variableTypeHintMap": {
+    ":P0": "UUID",
+  },
+}
+`;
+
+exports[`joins on condition objects an empty condition renders no ON 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "t" LEFT JOIN "u"",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`joins on condition objects an or group 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "t" LEFT JOIN "u" ON "u"."x" = :P0 AND ("u"."y" != :P1) OR ("u"."z" <= :P2)",
+  ],
+  "variableMap": {
+    ":P0": "t.x",
+    ":P1": "t.y",
+    ":P2": "t.z",
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`joins on condition objects attributeExists 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "t" LEFT JOIN "u" ON "a" IS NOT NULL",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`joins on condition objects between strings 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "t" LEFT JOIN "u" ON "a" BETWEEN :P0 AND :P1",
+  ],
+  "variableMap": {
+    ":P0": "b",
+    ":P1": "c",
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`joins on condition objects comparisons bind string values 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "t" LEFT JOIN "u" ON "u"."x" = :P0 AND "u"."y" > :P1",
+  ],
+  "variableMap": {
+    ":P0": "t.x",
+    ":P1": "t.y",
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`joins on condition objects contains 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "t" LEFT JOIN "u" ON "a" LIKE :P0",
+  ],
+  "variableMap": {
+    ":P0": "%b%",
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`joins on condition objects in mysql 1`] = `
+{
+  "statements": [
+    "SELECT * FROM \`t\` LEFT JOIN \`db\`.\`u\` as \`s\` ON \`s\`.\`a\` = :P0",
+  ],
+  "variableMap": {
+    ":P0": "t.a",
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`joins on condition objects rejects a boolean 1`] = `
+{
+  "message": "ON expects a string value comparisons.",
+}
+`;
+
+exports[`joins on condition objects rejects a null value 1`] = `
+{
+  "message": "Value for a.eq can't be null.",
+}
+`;
+
+exports[`joins on condition objects rejects a number 1`] = `
+{
+  "message": "ON expects a string value comparisons.",
+}
+`;
+
+exports[`joins on condition objects rejects a number in a later join 1`] = `
+{
+  "message": "ON expects a string value comparisons.",
+}
+`;
+
+exports[`joins on condition objects rejects a number in an or group 1`] = `
+{
+  "message": "ON expects a string value comparisons.",
+}
+`;
+
+exports[`joins on condition objects rejects a number in size 1`] = `
+{
+  "message": "ON expects a string value comparisons.",
+}
+`;
+
+exports[`joins on condition objects rejects a plain string 1`] = `
+{
+  "message": "ON values are expected to be SQL templates or a condition object.",
+}
+`;
+
+exports[`joins on condition objects rejects an array 1`] = `
+{
+  "message": "ON values are expected to be SQL templates or a condition object.",
+}
+`;
+
+exports[`joins on condition objects rejects an unknown operator 1`] = `
+{
+  "message": "Unsupported condition a.foo.",
+}
+`;
+
+exports[`joins on condition objects rejects numbers in between 1`] = `
+{
+  "message": "ON expects a string value comparisons.",
+}
+`;
+
+exports[`joins on condition objects several comparisons on one column 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "t" LEFT JOIN "u" ON "a" < :P0 AND "a" >= :P1",
+  ],
+  "variableMap": {
+    ":P0": "b",
+    ":P1": "c",
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`joins on condition objects size against a string 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "t" LEFT JOIN "u" ON LENGTH ("a") = :P0",
+  ],
+  "variableMap": {
+    ":P0": "b",
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`joins using an empty using list 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "t" LEFT JOIN "u" USING ()",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`joins using rejects a number in using 1`] = `
+{
+  "message": "Invalid type in column array.",
+}
+`;
+
+exports[`joins using rejects a using alias with two entries 1`] = `
+{
+  "message": "column alias is allowed only one key-value pair.",
+}
+`;
+
+exports[`joins using rejects using given as a string 1`] = `
+{
+  "message": "Expected column to be * or an array.",
+}
+`;
+
+exports[`joins using using columns and aliases 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "t" LEFT JOIN "u" USING ("id", "kk" as "k")",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`subquery source with aliased columns and a left join 1`] = `
+{
+  "statements": [
+    "SELECT "item"."sys_i" as "sys_i", "item"."name", "s"."label" as "st" FROM (SELECT "sys_i", "name" FROM "item" WHERE "name" = :P0) as "item" LEFT JOIN "domain"."status" as "s" ON s.id = item.status_id AND s.kind = :P1 WHERE "item"."name" != :P2",
+  ],
+  "variableMap": {
+    ":P0": "x",
+    ":P1": "k",
+    ":P2": "y",
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`subquery sources from a nested subquery 1`] = `
+{
+  "statements": [
+    "SELECT * FROM (SELECT * FROM (SELECT * FROM "c") as "b") as "a"",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`subquery sources from a select 1`] = `
+{
+  "statements": [
+    "SELECT * FROM (SELECT * FROM "u" WHERE "id" = :P0) as "sub" WHERE "id" > :P1",
+  ],
+  "variableMap": {
+    ":P0": 1,
+    ":P1": 2,
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`subquery sources from a select in mysql 1`] = `
+{
+  "statements": [
+    "SELECT * FROM (SELECT * FROM \`db\`.\`u\`) as \`s\`",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`subquery sources from a select with its own limit 1`] = `
+{
+  "statements": [
+    "SELECT * FROM (SELECT * FROM "u" WHERE "a" = :P0 LIMIT :P1) as "s" WHERE "b" = :P2 LIMIT :P3",
+  ],
+  "variableMap": {
+    ":P0": "inner",
+    ":P1": 2,
+    ":P2": "outer",
+    ":P3": 9,
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`subquery sources from a sql template 1`] = `
+{
+  "statements": [
+    "SELECT * FROM (select * from u where id = :P0) as "sub"",
+  ],
+  "variableMap": {
+    ":P0": 1,
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`subquery sources from a sql template with type hints 1`] = `
+{
+  "statements": [
+    "SELECT * FROM (select :P0) as "s" WHERE "x" = :P1",
+  ],
+  "variableMap": {
+    ":P0": "a",
+    ":P1": "b",
+  },
+  "variableTypeHintMap": {
+    ":P0": "UUID",
+    ":P1": "UUID",
+  },
+}
+`;
+
+exports[`subquery sources rejects a bare select as from 1`] = `
+{
+  "message": "'from' value is expected to be string or object.",
+}
+`;
+
+exports[`subquery sources rejects a bare sql template as from 1`] = `
+{
+  "message": "'from' value is expected to be string or object.",
+}
+`;
+
+exports[`subquery sources rejects a number as the from source 1`] = `
+{
+  "message": "Object value must be a SQL statement or string.",
+}
+`;
+
+exports[`subquery sources rejects a select as the table alias value 1`] = `
+{
+  "message": "Table alias value is expected to be a string.",
+}
+`;
+
+exports[`subquery sources rejects a select as the table alias value in insert 1`] = `
+{
+  "message": "Table alias value is expected to be a string.",
+}
+`;
+
+exports[`subquery sources rejects an insert as the from source 1`] = `
+{
+  "message": "Object value must be a SQL statement or string.",
+}
+`;
