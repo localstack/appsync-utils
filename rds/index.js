@@ -127,6 +127,74 @@ export function remove(s) {
   return { type: "REMOVE", properties: statementPayload(s, 'remove') };
 }
 
+// the `rds.agg` helpers, which double as the aggregate condition keys of a `having` clause
+const AGGREGATE_FUNCTIONS = {
+  max: ['MAX', false],
+  maxDistinct: ['MAX', true],
+  min: ['MIN', false],
+  minDistinct: ['MIN', true],
+  count: ['COUNT', false],
+  countDistinct: ['COUNT', true],
+  avg: ['AVG', false],
+  avgDistinct: ['AVG', true],
+  sum: ['SUM', false],
+  sumDistinct: ['SUM', true],
+};
+
+// opaque to resolver code, like the value AWS returns from `rds.agg`
+class Aggregate {
+  constructor(sqlFunction, distinct, column) {
+    this.sqlFunction = sqlFunction;
+    this.distinct = distinct;
+    this.column = column;
+  }
+}
+
+/**
+ * Each helper validates its column when it is called, whether or not the aggregate is ever
+ * rendered. A nullish column is accepted and renders as an empty argument list, like on AWS.
+ */
+export const agg = Object.fromEntries(Object.entries(AGGREGATE_FUNCTIONS).map(
+  ([name, [sqlFunction, distinct]]) => [name, (...args) => {
+    if (args.length !== 1) {
+      throw codeError("A single argument is expected to be passed to aggregates.");
+    }
+
+    const [column] = args;
+    if ((column != null) && (typeof column !== 'string')) {
+      // the exception AWS's own implementation leaks for a non-string column, reproduced verbatim
+      // with the Java class the value arrives as
+      let javaClass = 'java.util.LinkedHashMap';
+      if (typeof column === 'boolean') {
+        javaClass = 'java.lang.Boolean';
+      } else if (typeof column === 'number') {
+        if (!Number.isInteger(column)) {
+          javaClass = 'java.lang.Double';
+        } else if ((column >= -(2 ** 31)) && (column < 2 ** 31)) {
+          javaClass = 'java.lang.Integer';
+        } else {
+          javaClass = 'java.lang.Long';
+        }
+      } else if (Array.isArray(column)) {
+        javaClass = 'java.util.ArrayList';
+      }
+      throw codeError(`java.lang.ClassCastException: class ${javaClass} cannot be cast to class java.lang.String (${javaClass} and java.lang.String are in module java.base of loader 'bootstrap')`);
+    }
+
+    if (column === '*') {
+      if (distinct) {
+        throw codeError("* is an invalid argument for distinct aggregates.");
+      }
+
+      if (sqlFunction !== 'COUNT') {
+        throw codeError("* is an invalid argument for all aggregates, except COUNT");
+      }
+    }
+
+    return new Aggregate(sqlFunction, distinct, column);
+  }],
+));
+
 // SQL operators for the simple comparison conditions, shared by the direct form (`{ eq: 1 }`) and
 // the `size` form (`{ size: { eq: 1 } }`)
 const COMPARISON_OPERATORS = {
@@ -171,8 +239,9 @@ class StatementBuilder {
     };
 
     this.variableIndex = 0;
-    // set while an `on` condition object renders, where AWS binds only strings and type hints
-    this.bindingOnCondition = false;
+    // the clause (WHERE, ON or HAVING) whose condition object is rendering: AWS accepts aggregate
+    // conditions in HAVING only, and binds only strings and type hints in ON
+    this.conditionClause = null;
   }
 
   render(statements) {
@@ -246,7 +315,7 @@ class StatementBuilder {
         const { where, returning, } = properties;
         const parts = [`DELETE FROM ${this.resolveTableName(properties)}`];
 
-        parts.push(...this.buildWhereParts(where));
+        parts.push(...this.buildConditionParts('WHERE', where));
 
         if (returning) {
           parts.push('RETURNING', this.renderReturning(returning));
@@ -286,7 +355,7 @@ class StatementBuilder {
         }
         parts.push(columnDefinitionItems.join(', '));
 
-        parts.push(...this.buildWhereParts(where));
+        parts.push(...this.buildConditionParts('WHERE', where));
 
         this.result.statements.push(this.joinClauses(parts));
         break;
@@ -301,16 +370,44 @@ class StatementBuilder {
    * text rather than pushing it, and a subquery binds its variables before the outer statement's.
    */
   renderSelect(properties) {
-    const { columns, where, orderBy, limit, offset } = properties;
+    const { columns, where, groupBy, having, orderBy, limit, offset } = properties;
     const parts = ["SELECT"];
 
     // an absent column list means every column. Anything else is validated, so `columns: []`
     // still leaves a dangling `SELECT`, like AWS
-    parts.push(columns == null ? '*' : this.renderColumnList(columns));
+    parts.push(columns == null ? '*' : this.renderColumnList(columns, true));
 
     parts.push(`FROM ${this.resolveTableName(properties, true)}`);
     parts.push(...this.buildJoinParts(properties));
-    parts.push(...this.buildWhereParts(where));
+    parts.push(...this.buildConditionParts('WHERE', where));
+
+    if (groupBy != null) {
+      if (!Array.isArray(groupBy)) {
+        throw codeError("groupBy expects an array.");
+      }
+
+      if (groupBy.length === 0) {
+        throw codeError("Column values are expected for GROUP BY.");
+      }
+
+      const items = groupBy.map(item => {
+        // a 32-bit integer is a column position and renders as is
+        if (Number.isInteger(item) && (item >= -(2 ** 31)) && (item < 2 ** 31)) {
+          return String(item);
+        }
+
+        if (typeof item !== 'string') {
+          throw codeError("Invalid type in GROUP BY column array.");
+        }
+
+        // unlike in a column list, a star is quoted
+        return this.quoteSegments(item);
+      });
+      parts.push('GROUP BY', items.join(', '));
+    }
+
+    // AWS renders HAVING whether or not there is a GROUP BY
+    parts.push(...this.buildConditionParts('HAVING', having));
 
     if (orderBy != null) {
       if (!Array.isArray(orderBy)) {
@@ -363,56 +460,48 @@ class StatementBuilder {
         throw codeError("'on' and 'using' keys cannot be used together");
       }
 
-      if (isSqlTemplate(on)) {
-        parts.push('ON', this.renderTemplate(on.strings, on.keys));
-      } else if (on != null) {
-        if ((typeof on !== 'object') || Array.isArray(on)) {
-          throw codeError("ON values are expected to be SQL templates or a condition object.");
-        }
-
-        // the condition renders like a WHERE clause, its values bound as variables rather than
-        // read as column references, but AWS binds only strings and type hints here. An empty
-        // condition drops the ON keyword too.
-        this.bindingOnCondition = true;
-        try {
-          const condition = this.buildWhereClause(on);
-          if (condition) {
-            parts.push('ON', condition);
-          }
-        } finally {
-          this.bindingOnCondition = false;
-        }
-      }
+      // a condition object renders like a WHERE clause, its values bound as variables rather than
+      // read as column references
+      parts.push(...this.buildConditionParts('ON', on));
 
       if (using != null) {
         // an empty list still renders, as `USING ()`, like AWS
-        parts.push(`USING (${this.renderColumnList(using)})`);
+        parts.push(`USING (${this.renderColumnList(using, true)})`);
       }
     }
 
     return parts;
   }
 
-  buildWhereParts(where) {
-    if (where == null) {
+  /**
+   * A WHERE, ON or HAVING clause, which AWS builds the same way: from a `sql` tagged template or a
+   * condition object.
+   */
+  buildConditionParts(keyword, condition) {
+    if (condition == null) {
       return [];
     }
 
     // the whole clause may be a `sql` tagged template instead of a condition object, sharing the
     // statement's variable numbering
-    if (isSqlTemplate(where)) {
-      const rendered = this.renderTemplate(where.strings, where.keys);
-      return rendered ? ['WHERE', rendered] : [];
+    if (isSqlTemplate(condition)) {
+      const rendered = this.renderTemplate(condition.strings, condition.keys);
+      return rendered ? [keyword, rendered] : [];
     }
 
-    if ((typeof where !== 'object') || Array.isArray(where)) {
-      throw codeError("WHERE values are expected to be SQL templates or a condition object.");
+    if ((typeof condition !== 'object') || Array.isArray(condition)) {
+      throw codeError(`${keyword} values are expected to be SQL templates or a condition object.`);
     }
 
-    // a `where` that renders to nothing - `{}`, `{ and: [] }`, or a column with no condition -
-    // drops the WHERE keyword along with its body
-    const clause = this.buildWhereClause(where);
-    return clause ? ['WHERE', clause] : [];
+    // a condition that renders to nothing - `{}`, `{ and: [] }`, or a column with no condition -
+    // drops the keyword along with its body
+    this.conditionClause = keyword;
+    try {
+      const clause = this.buildWhereClause(condition);
+      return clause ? [keyword, clause] : [];
+    } finally {
+      this.conditionClause = null;
+    }
   }
 
   renderOrderByItem(item) {
@@ -439,7 +528,7 @@ class StatementBuilder {
   renderReturning(returning) {
     // the column list is validated before the dialect is considered: a malformed `returning` on
     // MySQL is reported as malformed, not as unsupported
-    const columns = this.renderColumnList(returning);
+    const columns = this.renderColumnList(returning, false);
 
     // MySQL has no RETURNING clause and AWS refuses the key outright rather than emitting SQL the
     // engine would reject
@@ -454,7 +543,7 @@ class StatementBuilder {
    * Validate and quote a list of column names. AWS applies the same rules, and raises the same
    * messages, for a select's `columns` and an insert or delete's `returning`.
    */
-  renderColumnList(columns) {
+  renderColumnList(columns, allowAggregates) {
     // AWS accepts either the bare string `*` or an array of column names
     if (columns === '*') {
       return columns;
@@ -469,6 +558,15 @@ class StatementBuilder {
         return this.quoteIdentifier(column);
       }
 
+      if (column instanceof Aggregate) {
+        // `returning` refuses a bare aggregate, though an aliased one gets through
+        if (!allowAggregates) {
+          throw codeError("Only columns in SELECT statements can include aggregates.");
+        }
+
+        return this.renderAggregate(column);
+      }
+
       if ((column == null) || (typeof column !== 'object') || Array.isArray(column)) {
         throw codeError("Invalid type in column array.");
       }
@@ -476,13 +574,24 @@ class StatementBuilder {
       // a single-entry alias object, read like a table alias: `{ n: "p.name" }` becomes
       // `"p"."name" as "n"`
       const [alias, name] = this.aliasEntry(column, "column");
+      const quotedAlias = this.quoteIdentifier(alias);
+      if (name instanceof Aggregate) {
+        return `${this.renderAggregate(name)} as ${quotedAlias}`;
+      }
+
       if (typeof name !== 'string') {
         throw codeError("Column alias value is expected to be a string or rds.agg.");
       }
 
       // unlike a bare `*`, an aliased one is quoted
-      return `${this.quoteSegments(name)} as ${this.quoteIdentifier(alias)}`;
+      return `${this.quoteSegments(name)} as ${quotedAlias}`;
     }).join(', ');
+  }
+
+  renderAggregate({ sqlFunction, distinct, column }) {
+    // a nullish column leaves the argument list empty, as `MAX()` or `COUNT(DISTINCT )`
+    const argument = column == null ? '' : this.quoteIdentifier(column);
+    return `${sqlFunction}(${distinct ? 'DISTINCT ' : ''}${argument})`;
   }
 
   resolveValues(properties, verb) {
@@ -523,7 +632,11 @@ class StatementBuilder {
   }
 
   newVariable(value, addTypeHint = true) {
-    if (this.bindingOnCondition && (typeof value !== 'string') && !value.type) {
+    if (value instanceof Aggregate) {
+      throw codeError("Only primitive values are supported as parameter.");
+    }
+
+    if ((this.conditionClause === 'ON') && (typeof value !== 'string') && !value.type) {
       throw codeError("ON expects a string value comparisons.");
     }
 
@@ -597,6 +710,32 @@ class StatementBuilder {
   buildCondition(columnName, rawValue, conditionType) {
     const column = this.quoteIdentifier(columnName);
     const path = `${columnName}.${conditionType}`;
+
+    if (Object.hasOwn(AGGREGATE_FUNCTIONS, conditionType)) {
+      // nullness is checked first, then the clause, then the condition's shape
+      this.requireNonNull(rawValue, path);
+      if (this.conditionClause !== 'HAVING') {
+        throw codeError(`Aggregates are not valid for ${this.conditionClause} conditions.`);
+      }
+
+      if ((typeof rawValue !== 'object') || Array.isArray(rawValue)) {
+        throw codeError(`Expected ${path} to be an Object.`);
+      }
+
+      // built through `rds.agg` so a star gets the same validation, e.g. `{ "*": { count: ... } }`
+      // is `COUNT(*)` while `{ "*": { max: ... } }` is rejected
+      const target = this.renderAggregate(agg[conditionType](columnName));
+      return Object.keys(rawValue).map(operator => {
+        // unlike `size`, an aggregate condition takes no `between`
+        const comparison = COMPARISON_OPERATORS[operator];
+        if (!comparison) {
+          throw codeError(`${path} has invalid aggregate operator.`);
+        }
+
+        // a nullish value is inlined, as in a `size` condition
+        return `${target} ${comparison} ${this.renderValue(rawValue[operator])}`;
+      }).join(" AND ");
+    }
 
     switch (conditionType) {
       case "size":
