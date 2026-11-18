@@ -1,0 +1,810 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`agg imported by name 1`] = `
+{
+  "statements": [
+    "SELECT COUNT(*) FROM "t"",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`aggregate arguments rejects a boolean 1`] = `
+{
+  "message": "java.lang.ClassCastException: class java.lang.Boolean cannot be cast to class java.lang.String (java.lang.Boolean and java.lang.String are in module java.base of loader 'bootstrap')",
+}
+`;
+
+exports[`aggregate arguments rejects a fractional number 1`] = `
+{
+  "message": "java.lang.ClassCastException: class java.lang.Double cannot be cast to class java.lang.String (java.lang.Double and java.lang.String are in module java.base of loader 'bootstrap')",
+}
+`;
+
+exports[`aggregate arguments rejects a missing argument 1`] = `
+{
+  "message": "A single argument is expected to be passed to aggregates.",
+}
+`;
+
+exports[`aggregate arguments rejects a star in a distinct aggregate 1`] = `
+{
+  "message": "* is an invalid argument for distinct aggregates.",
+}
+`;
+
+exports[`aggregate arguments rejects a star in a distinct aggregate other than count 1`] = `
+{
+  "message": "* is an invalid argument for distinct aggregates.",
+}
+`;
+
+exports[`aggregate arguments rejects a star in an aggregate other than count 1`] = `
+{
+  "message": "* is an invalid argument for all aggregates, except COUNT",
+}
+`;
+
+exports[`aggregate arguments rejects an aggregate as a compared value 1`] = `
+{
+  "message": "Only primitive values are supported as parameter.",
+}
+`;
+
+exports[`aggregate arguments rejects an aggregate as a from source 1`] = `
+{
+  "message": "Object value must be a SQL statement or string.",
+}
+`;
+
+exports[`aggregate arguments rejects an aggregate as a statement 1`] = `
+{
+  "message": "Unsupported type is passed as argument to createPgStatement",
+}
+`;
+
+exports[`aggregate arguments rejects an aggregate as an inserted value 1`] = `
+{
+  "message": "Only primitive values are supported as parameter.",
+}
+`;
+
+exports[`aggregate arguments rejects an array 1`] = `
+{
+  "message": "java.lang.ClassCastException: class java.util.ArrayList cannot be cast to class java.lang.String (java.util.ArrayList and java.lang.String are in module java.base of loader 'bootstrap')",
+}
+`;
+
+exports[`aggregate arguments rejects an integer 1`] = `
+{
+  "message": "java.lang.ClassCastException: class java.lang.Integer cannot be cast to class java.lang.String (java.lang.Integer and java.lang.String are in module java.base of loader 'bootstrap')",
+}
+`;
+
+exports[`aggregate arguments rejects an integer beyond 32 bits 1`] = `
+{
+  "message": "java.lang.ClassCastException: class java.lang.Long cannot be cast to class java.lang.String (java.lang.Long and java.lang.String are in module java.base of loader 'bootstrap')",
+}
+`;
+
+exports[`aggregate arguments rejects an object 1`] = `
+{
+  "message": "java.lang.ClassCastException: class java.util.LinkedHashMap cannot be cast to class java.lang.String (java.util.LinkedHashMap and java.lang.String are in module java.base of loader 'bootstrap')",
+}
+`;
+
+exports[`aggregate columns a null column 1`] = `
+{
+  "statements": [
+    "SELECT MAX() FROM "t"",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`aggregate columns a null column in a distinct aggregate 1`] = `
+{
+  "statements": [
+    "SELECT COUNT(DISTINCT ) FROM "t"",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`aggregate columns a qualified column 1`] = `
+{
+  "statements": [
+    "SELECT SUM(DISTINCT "x"."y") FROM "t"",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`aggregate columns a qualified star in a distinct count 1`] = `
+{
+  "statements": [
+    "SELECT COUNT(DISTINCT "t"."*") FROM "t"",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`aggregate columns an aggregate in a subquery 1`] = `
+{
+  "statements": [
+    "SELECT * FROM (SELECT MAX("a") as "m" FROM "u" GROUP BY "b") as "s"",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`aggregate columns an aggregate in using 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "t" LEFT JOIN "u" USING (MAX("a"))",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`aggregate columns an aliased aggregate 1`] = `
+{
+  "statements": [
+    "SELECT MAX("a") as "m", "b" FROM "t"",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`aggregate columns an aliased aggregate in mysql 1`] = `
+{
+  "statements": [
+    "SELECT AVG(\`db\`.\`a\`) as \`m\` FROM \`t\`",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`aggregate columns an aliased aggregate in returning 1`] = `
+{
+  "statements": [
+    "DELETE FROM "t" RETURNING MAX("a") as "m"",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`aggregate columns an aliased aggregate in using 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "t" LEFT JOIN "u" USING (MAX("a") as "k")",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`aggregate columns an empty column 1`] = `
+{
+  "statements": [
+    "SELECT COUNT(DISTINCT "") FROM "t"",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`aggregate columns an undefined column 1`] = `
+{
+  "statements": [
+    "SELECT MAX() FROM "t"",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`aggregate columns count of every row 1`] = `
+{
+  "statements": [
+    "SELECT COUNT(*) FROM "t"",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`aggregate columns every aggregate 1`] = `
+{
+  "statements": [
+    "SELECT MAX("a"), MAX(DISTINCT "a"), MIN("a"), MIN(DISTINCT "a"), COUNT("a"), COUNT(DISTINCT "a"), AVG("a"), AVG(DISTINCT "a"), SUM("a"), SUM(DISTINCT "a") FROM "t"",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`aggregate columns rejects an aggregate in returning 1`] = `
+{
+  "message": "Only columns in SELECT statements can include aggregates.",
+}
+`;
+
+exports[`aggregate columns rejects an aggregate in returning in mysql 1`] = `
+{
+  "message": "Only columns in SELECT statements can include aggregates.",
+}
+`;
+
+exports[`aggregate conditions outside having rejects a malformed one in where 1`] = `
+{
+  "message": "Aggregates are not valid for WHERE conditions.",
+}
+`;
+
+exports[`aggregate conditions outside having rejects a null one in where 1`] = `
+{
+  "message": "Value for a.count can't be null.",
+}
+`;
+
+exports[`aggregate conditions outside having rejects one in a remove 1`] = `
+{
+  "message": "Aggregates are not valid for WHERE conditions.",
+}
+`;
+
+exports[`aggregate conditions outside having rejects one in an update 1`] = `
+{
+  "message": "Aggregates are not valid for WHERE conditions.",
+}
+`;
+
+exports[`aggregate conditions outside having rejects one in on 1`] = `
+{
+  "message": "Aggregates are not valid for ON conditions.",
+}
+`;
+
+exports[`aggregate conditions outside having rejects one in where 1`] = `
+{
+  "message": "Aggregates are not valid for WHERE conditions.",
+}
+`;
+
+exports[`aggregate conditions outside having rejects one nested in where 1`] = `
+{
+  "message": "Aggregates are not valid for WHERE conditions.",
+}
+`;
+
+exports[`aggregate conditions outside having rejects one with a number in on 1`] = `
+{
+  "message": "Aggregates are not valid for ON conditions.",
+}
+`;
+
+exports[`aggregate counts grouped by a column 1`] = `
+{
+  "statements": [
+    "SELECT "customer", COUNT(*) as "orders", SUM("price") as "total" FROM "orders" WHERE "status" = :P0 GROUP BY "customer" HAVING SUM("price") > :P1 ORDER BY "customer" ASC",
+  ],
+  "variableMap": {
+    ":P0": "PAID",
+    ":P1": 100,
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`group by a null group by renders nothing 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "t"",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`group by column positions 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "t" GROUP BY 1, "a", 0, -2, 2",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`group by columns 1`] = `
+{
+  "statements": [
+    "SELECT "a", COUNT(*) as "n" FROM "t" GROUP BY "a", "b"."c"",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`group by group by is validated before having 1`] = `
+{
+  "message": "Column values are expected for GROUP BY.",
+}
+`;
+
+exports[`group by in mysql 1`] = `
+{
+  "statements": [
+    "SELECT * FROM \`t\` GROUP BY \`db\`.\`a\`, 2",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`group by insert ignores group by and having 1`] = `
+{
+  "statements": [
+    "INSERT INTO "t" ("a") VALUES (:P0)",
+  ],
+  "variableMap": {
+    ":P0": 1,
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`group by rejects NaN 1`] = `
+{
+  "message": "Invalid type in GROUP BY column array.",
+}
+`;
+
+exports[`group by rejects a boolean 1`] = `
+{
+  "message": "Invalid type in GROUP BY column array.",
+}
+`;
+
+exports[`group by rejects a fractional number 1`] = `
+{
+  "message": "Invalid type in GROUP BY column array.",
+}
+`;
+
+exports[`group by rejects a string 1`] = `
+{
+  "message": "groupBy expects an array.",
+}
+`;
+
+exports[`group by rejects an aggregate 1`] = `
+{
+  "message": "Invalid type in GROUP BY column array.",
+}
+`;
+
+exports[`group by rejects an alias object 1`] = `
+{
+  "message": "Invalid type in GROUP BY column array.",
+}
+`;
+
+exports[`group by rejects an empty list 1`] = `
+{
+  "message": "Column values are expected for GROUP BY.",
+}
+`;
+
+exports[`group by rejects an integer beyond 32 bits 1`] = `
+{
+  "message": "Invalid type in GROUP BY column array.",
+}
+`;
+
+exports[`group by rejects null 1`] = `
+{
+  "message": "Invalid type in GROUP BY column array.",
+}
+`;
+
+exports[`group by remove ignores group by 1`] = `
+{
+  "statements": [
+    "DELETE FROM "t"",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`group by stars are quoted 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "t" GROUP BY "*", "a"."*"",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`group by where is validated before group by 1`] = `
+{
+  "message": "WHERE values are expected to be SQL templates or a condition object.",
+}
+`;
+
+exports[`having a count of every row 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "t" HAVING COUNT(*) > :P0",
+  ],
+  "variableMap": {
+    ":P0": 1,
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`having a null having renders nothing 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "t" GROUP BY "a"",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`having a null value 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "t" GROUP BY "a" HAVING COUNT("a") > NULL",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`having a qualified column 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "t" HAVING SUM("x"."y") > :P0",
+  ],
+  "variableMap": {
+    ":P0": 1,
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`having a sql template 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "t" GROUP BY "a" HAVING count(*) > :P0",
+  ],
+  "variableMap": {
+    ":P0": 2,
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`having a string value 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "t" HAVING MAX("a") > :P0",
+  ],
+  "variableMap": {
+    ":P0": "z",
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`having a type hinted value 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "t" HAVING SUM("a") > :P0",
+  ],
+  "variableMap": {
+    ":P0": "1.5",
+  },
+  "variableTypeHintMap": {
+    ":P0": "DECIMAL",
+  },
+}
+`;
+
+exports[`having an aggregate condition 1`] = `
+{
+  "statements": [
+    "SELECT "a" FROM "t" GROUP BY "a" HAVING COUNT("a") > :P0",
+  ],
+  "variableMap": {
+    ":P0": 2,
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`having an and group 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "t" HAVING (COUNT("a") > :P0) AND (SUM("b") < :P1)",
+  ],
+  "variableMap": {
+    ":P0": 1,
+    ":P1": 2,
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`having an empty aggregate condition renders nothing 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "t" GROUP BY "a"",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`having an empty condition renders nothing 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "t" GROUP BY "a"",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`having avg 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "t" HAVING AVG("a") >= :P0",
+  ],
+  "variableMap": {
+    ":P0": 3,
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`having avgDistinct 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "t" HAVING AVG(DISTINCT "a") = :P0",
+  ],
+  "variableMap": {
+    ":P0": 8,
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`having count 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "t" HAVING COUNT("a") = :P0",
+  ],
+  "variableMap": {
+    ":P0": 5,
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`having countDistinct 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "t" HAVING COUNT(DISTINCT "a") = :P0",
+  ],
+  "variableMap": {
+    ":P0": 10,
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`having in mysql 1`] = `
+{
+  "statements": [
+    "SELECT * FROM \`t\` GROUP BY \`db\`.\`a\` HAVING COUNT(\`db\`.\`a\`) > :P0",
+  ],
+  "variableMap": {
+    ":P0": 1,
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`having max 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "t" HAVING MAX("a") > :P0 AND MAX("a") < :P1",
+  ],
+  "variableMap": {
+    ":P0": 1,
+    ":P1": 9,
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`having maxDistinct 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "t" HAVING MAX(DISTINCT "a") != :P0",
+  ],
+  "variableMap": {
+    ":P0": 6,
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`having min 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "t" HAVING MIN("a") < :P0",
+  ],
+  "variableMap": {
+    ":P0": 2,
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`having minDistinct 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "t" HAVING MIN(DISTINCT "a") = :P0",
+  ],
+  "variableMap": {
+    ":P0": 7,
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`having plain and aggregate conditions on one column 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "t" HAVING COUNT("a") > :P0 AND "a" = :P1 AND MAX("a") < :P2",
+  ],
+  "variableMap": {
+    ":P0": 1,
+    ":P1": "x",
+    ":P2": 3,
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`having plain conditions alongside aggregate ones 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "t" GROUP BY "a" HAVING "a" = :P0 AND (COUNT("b") > :P1) OR (LENGTH ("c") < :P2)",
+  ],
+  "variableMap": {
+    ":P0": "x",
+    ":P1": 1,
+    ":P2": 2,
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`having rejects a condition operator 1`] = `
+{
+  "message": "a.count has invalid aggregate operator.",
+}
+`;
+
+exports[`having rejects a distinct count of every row 1`] = `
+{
+  "message": "* is an invalid argument for distinct aggregates.",
+}
+`;
+
+exports[`having rejects a max of every row 1`] = `
+{
+  "message": "* is an invalid argument for all aggregates, except COUNT",
+}
+`;
+
+exports[`having rejects a null aggregate condition 1`] = `
+{
+  "message": "Value for a.count can't be null.",
+}
+`;
+
+exports[`having rejects a string 1`] = `
+{
+  "message": "HAVING values are expected to be SQL templates or a condition object.",
+}
+`;
+
+exports[`having rejects a value that is not an object 1`] = `
+{
+  "message": "Expected a.count to be an Object.",
+}
+`;
+
+exports[`having rejects an array 1`] = `
+{
+  "message": "HAVING values are expected to be SQL templates or a condition object.",
+}
+`;
+
+exports[`having rejects between 1`] = `
+{
+  "message": "a.count has invalid aggregate operator.",
+}
+`;
+
+exports[`having sum 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "t" HAVING SUM("a") <= :P0",
+  ],
+  "variableMap": {
+    ":P0": 4,
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`having sumDistinct 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "t" HAVING SUM(DISTINCT "a") = :P0",
+  ],
+  "variableMap": {
+    ":P0": 9,
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`having with every other select clause 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "t" LEFT JOIN "u" ON x = :P0 WHERE "w" = :P1 GROUP BY "a" HAVING COUNT("a") > :P2 ORDER BY "a" ASC LIMIT :P3 OFFSET :P4",
+  ],
+  "variableMap": {
+    ":P0": "j",
+    ":P1": "w",
+    ":P2": "h",
+    ":P3": 1,
+    ":P4": 2,
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`having without a group by 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "t" HAVING COUNT("a") > :P0",
+  ],
+  "variableMap": {
+    ":P0": 2,
+  },
+  "variableTypeHintMap": {},
+}
+`;

@@ -4,6 +4,7 @@ This package provides an implementation for the `@aws-appsync/utils` package tha
 
 ## Changelog:
 
+- v0.1.11: `rds.select()` renders joins (`join`, `leftJoin` and the other kinds, with `on` or `using`), which were previously dropped without an error, subqueries aliased in `from` and aliased columns; add `rds.agg` aggregates, the `groupBy` and `having` select clauses and `not` conditions; `and`/`or`/`not` are recognised in any casing, and an `or` item with several columns now ANDs them instead of ORing them
 - v0.1.10: `util.authType()` now reports `User Pool Authorization` for the user pool identity of an Event API request, which carries no `defaultAuthStrategy` unlike the GraphQL one
 - v0.1.9: add `runtime.earlyReturn()`, importable from `@aws-appsync/utils`; it validates the `skipTo` return option and hands the value and target to the host, which decides which handlers still run
 - v0.1.8: `util.authType()` now reports `Lambda Authorization` for the identity of a Lambda-authorized Event API request, which carries what the authorizer returned as `handlerContext` rather than the `resolverContext` a GraphQL API uses
