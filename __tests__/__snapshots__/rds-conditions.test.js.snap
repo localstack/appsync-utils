@@ -1,0 +1,397 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`group items with several columns an empty item in an and group 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "t" WHERE  AND ("a" = :P0)",
+  ],
+  "variableMap": {
+    ":P0": 1,
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`group items with several columns in an and group 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "t" WHERE ("a" = :P0 AND "b" > :P1)",
+  ],
+  "variableMap": {
+    ":P0": 1,
+    ":P1": 2,
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`group items with several columns in an or group 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "t" WHERE ("a" = :P0 AND "b" > :P1) OR ("c" = :P2)",
+  ],
+  "variableMap": {
+    ":P0": 1,
+    ":P1": 2,
+    ":P2": 3,
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`logical key casing mixed case and 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "t" WHERE ("a" = :P0) AND ("b" = :P1)",
+  ],
+  "variableMap": {
+    ":P0": 1,
+    ":P1": 2,
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`logical key casing rejects a string item in an upper case or 1`] = `
+{
+  "message": "Expected OR to be an Object.",
+}
+`;
+
+exports[`logical key casing rejects an upper case aggregate 1`] = `
+{
+  "message": "Unsupported condition a.COUNT.",
+}
+`;
+
+exports[`logical key casing rejects an upper case not that is not an array 1`] = `
+{
+  "message": "NOT expects conditions to be an array",
+}
+`;
+
+exports[`logical key casing rejects an upper case operator 1`] = `
+{
+  "message": "Unsupported condition a.EQ.",
+}
+`;
+
+exports[`logical key casing rejects an upper case or that is not an array 1`] = `
+{
+  "message": "OR expects conditions to be an array",
+}
+`;
+
+exports[`logical key casing upper case not 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "t" WHERE NOT (("a" = :P0))",
+  ],
+  "variableMap": {
+    ":P0": 1,
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`logical key casing upper case or 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "t" WHERE ("a" = :P0) OR ("b" = :P1)",
+  ],
+  "variableMap": {
+    ":P0": 1,
+    ":P1": 2,
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`not a not inside a not 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "t" WHERE NOT ((NOT (("a" = :P0))))",
+  ],
+  "variableMap": {
+    ":P0": 1,
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`not a single condition 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "t" WHERE NOT (("a" = :P0))",
+  ],
+  "variableMap": {
+    ":P0": 1,
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`not after an or group 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "t" WHERE ("a" = :P0) OR ("b" = :P1) AND NOT (("c" = :P2))",
+  ],
+  "variableMap": {
+    ":P0": 1,
+    ":P1": 2,
+    ":P2": 3,
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`not an empty item 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "t" WHERE NOT ()",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`not an empty item beside a condition 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "t" WHERE NOT ( AND ("a" = :P0))",
+  ],
+  "variableMap": {
+    ":P0": 1,
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`not an empty not 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "t" WHERE NOT ()",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`not an empty not beside a condition 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "t" WHERE NOT () AND "a" = :P0",
+  ],
+  "variableMap": {
+    ":P0": 1,
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`not an empty not in on 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "t" LEFT JOIN "u" ON NOT ()",
+  ],
+  "variableMap": {},
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`not an item with several columns 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "t" WHERE NOT (("a" = :P0 AND "b" > :P1))",
+  ],
+  "variableMap": {
+    ":P0": 1,
+    ":P1": 2,
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`not an item with several conditions on one column 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "t" WHERE NOT (("a" > :P0 AND "a" < :P1))",
+  ],
+  "variableMap": {
+    ":P0": 1,
+    ":P1": 5,
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`not attributeExists, size and between 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "t" WHERE NOT (("a" IS NOT NULL) AND (LENGTH ("b") > :P0) AND ("c" BETWEEN :P1 AND :P2))",
+  ],
+  "variableMap": {
+    ":P0": 1,
+    ":P1": 1,
+    ":P2": 2,
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`not between sibling conditions 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "t" WHERE "x" = :P0 AND NOT (("a" = :P1)) AND "y" = :P2",
+  ],
+  "variableMap": {
+    ":P0": "first",
+    ":P1": "second",
+    ":P2": "third",
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`not holding an or group 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "t" WHERE NOT ((("a" = :P0) OR ("b" = :P1)))",
+  ],
+  "variableMap": {
+    ":P0": 1,
+    ":P1": 2,
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`not in a remove in mysql 1`] = `
+{
+  "statements": [
+    "DELETE FROM \`t\` WHERE NOT ((\`b\` = :P0))",
+  ],
+  "variableMap": {
+    ":P0": 2,
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`not in an update 1`] = `
+{
+  "statements": [
+    "UPDATE "t" SET "a" = :P0 WHERE NOT (("b" = :P1))",
+  ],
+  "variableMap": {
+    ":P0": 1,
+    ":P1": 2,
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`not in having 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "t" GROUP BY "a" HAVING NOT ((COUNT("a") > :P0))",
+  ],
+  "variableMap": {
+    ":P0": 1,
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`not in on 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "t" LEFT JOIN "u" ON NOT (("a" = :P0))",
+  ],
+  "variableMap": {
+    ":P0": "b",
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`not nested in an and group 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "t" WHERE (NOT (("a" = :P0) AND ("b" = :P1)))",
+  ],
+  "variableMap": {
+    ":P0": 1,
+    ":P1": 2,
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`not nested in an or group 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "t" WHERE (NOT (("a" = :P0))) OR ("b" = :P1)",
+  ],
+  "variableMap": {
+    ":P0": 1,
+    ":P1": 2,
+  },
+  "variableTypeHintMap": {},
+}
+`;
+
+exports[`not rejects a null item 1`] = `
+{
+  "message": "Expected not to be an Object.",
+}
+`;
+
+exports[`not rejects a number in on 1`] = `
+{
+  "message": "ON expects a string value comparisons.",
+}
+`;
+
+exports[`not rejects a sql template item 1`] = `
+{
+  "message": "Expected not to be an Object.",
+}
+`;
+
+exports[`not rejects a string item 1`] = `
+{
+  "message": "Expected not to be an Object.",
+}
+`;
+
+exports[`not rejects an aggregate in where 1`] = `
+{
+  "message": "Aggregates are not valid for WHERE conditions.",
+}
+`;
+
+exports[`not rejects an object 1`] = `
+{
+  "message": "not expects conditions to be an array",
+}
+`;
+
+exports[`not rejects null 1`] = `
+{
+  "message": "not expects conditions to be an array",
+}
+`;
+
+exports[`not several conditions 1`] = `
+{
+  "statements": [
+    "SELECT * FROM "t" WHERE NOT (("a" = :P0) AND ("b" > :P1))",
+  ],
+  "variableMap": {
+    ":P0": 1,
+    ":P1": 2,
+  },
+  "variableTypeHintMap": {},
+}
+`;

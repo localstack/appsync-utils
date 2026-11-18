@@ -653,44 +653,56 @@ class StatementBuilder {
     return name;
   }
 
-  buildWhereClause(where, startGrouping = "", endGrouping = "", default_operator="AND") {
-    let blocks = [];
+  /**
+   * Render a condition object: its entries are ANDed together, each either a column's conditions
+   * or an `and`/`or`/`not` group, which AWS recognises in any casing.
+   */
+  buildWhereClause(where) {
+    const blocks = [];
     for (const key in where) {
-      if ( ["or", "and"].includes(key)) {
-        const ops = key.toUpperCase();
-        if (!Array.isArray(where[key])) {
-          throw codeError(`${key} expects conditions to be an array`);
-        }
-        const parts = where[key].map(part => {
-          // only a condition object is accepted here - unlike a top-level `where`, a nested `sql`
-          // template is refused
-          if ((part == null) || (typeof part !== 'object') || Array.isArray(part) || isSqlTemplate(part)) {
-            throw codeError(`Expected ${key} to be an Object.`);
-          }
+      const logicalOperator = key.toLowerCase();
+      if (!["and", "or", "not"].includes(logicalOperator)) {
+        blocks.push(this.buildWhereStatement(key, where[key]));
+        continue;
+      }
 
-          return this.buildWhereClause(part, "(", ")", ops);
-        });
-        const group = parts.join(` ${ops} `);
+      // the messages name the key as it was written
+      if (!Array.isArray(where[key])) {
+        throw codeError(`${key} expects conditions to be an array`);
+      }
+
+      const items = where[key].map(item => {
+        // only a condition object is accepted here - unlike a top-level `where`, a nested `sql`
+        // template is refused
+        if ((item == null) || (typeof item !== 'object') || Array.isArray(item) || isSqlTemplate(item)) {
+          throw codeError(`Expected ${key} to be an Object.`);
+        }
+
+        // an item is grouped as a whole, so the columns of `{ a: ..., b: ... }` stay ANDed together
+        // inside an `or`. An item that renders nothing contributes an empty string, which still
+        // takes its place in the list, like on AWS.
+        const clause = this.buildWhereClause(item);
+        return clause === "" ? "" : `(${clause})`;
+      });
+
+      if (logicalOperator === "not") {
+        // the negated items are ANDed together, and unlike an empty `and`/`or`, an empty `not`
+        // still renders, as `NOT ()`
+        blocks.push(`NOT (${items.join(" AND ")})`);
+      } else {
         // an `and`/`or` holding no conditions contributes nothing at all: emitting the grouping on
         // its own would produce `WHERE ()`
+        const group = items.join(` ${logicalOperator.toUpperCase()} `);
         if (group !== "") {
-          blocks.push(`${startGrouping}${group}${endGrouping}`);
+          blocks.push(group);
         }
-      } else {
-        // implicit single clause
-        const block = {};
-        block[key] = where[key];
-        blocks.push(this.buildWhereStatement(block, startGrouping, endGrouping));
       }
     }
 
-    return blocks.join(` ${default_operator} `);
+    return blocks.join(" AND ");
   }
 
-  buildWhereStatement(defn, startGrouping = "(", endGrouping = ")") {
-    const columnName = Object.keys(defn)[0];
-    const condition = defn[columnName];
-
+  buildWhereStatement(columnName, condition) {
     if ((condition == null) || (typeof condition !== 'object') || Array.isArray(condition)) {
       throw codeError("Expected condition to be an Object.");
     }
@@ -700,11 +712,7 @@ class StatementBuilder {
       conditionType => this.buildCondition(columnName, condition[conditionType], conditionType)
     );
 
-    // a column that renders nothing - carrying no condition at all, e.g. an optional filter the
-    // resolver left empty, or only an empty `size` - contributes nothing, and must not pick up the
-    // grouping on its way out or it would produce `WHERE ()`
-    const joined = statements.join(" AND ");
-    return joined === "" ? "" : `${startGrouping}${joined}${endGrouping}`;
+    return statements.join(" AND ");
   }
 
   buildCondition(columnName, rawValue, conditionType) {
